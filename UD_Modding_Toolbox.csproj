@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>UD_Modding_Toolbox</AssemblyName>
+    <PackageId>UD_Modding_Toolbox</PackageId>
+    <Authors>UnderDoug</Authors>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <Title>UD Modding Toolbox</Title>
+  </PropertyGroup>
+  <Import Project="../Mods.csproj" />
+</Project>

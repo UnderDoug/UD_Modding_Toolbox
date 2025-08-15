@@ -1,0 +1,9 @@
+{
+    "id": "UD_Modding_Toolbox",
+    "title": "{{K-g-G-Y-G-g-K alternation|UnderDoug}}'s {{c|Modding}} {{Y|Tool}}{{C|box}}",
+    "description": "This is a mod library. It contains tools common to several of my projects which will be dependant on it.",
+    "version": "0.0.1",
+    "author": "{{K-g-G-Y-G-g-K alternation|UnderDoug}}",
+    "tags": "Library,Utils,Extensions,Harmony",
+    "PreviewImage": "preview.png"
+}

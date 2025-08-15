@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<options>
+
+  <!-- 
+  Debug Options
+  -->
+  
+  <option
+        ID="Option_UD_ModdingToolbox_DebugVerbosity"
+        DisplayText="{{g|U}}{{G|D}} {{c|Modding}} {{Y|Tool}}{{C|box}}: Verbosity of debug entries output to Player.log"
+        Category="Debug"
+        Type="Slider" 
+        Default="0"
+        Min="0"
+        Max="4"
+        Increment="1"
+    >
+		<helptext>
+      {{g|0}}: Only infrequnet entries will be sent to Player.log, and only for reporting on normal function.
+      {{W|1}}: Debug entries will be sent to Player.log when certain functions are perfomed within this mod.
+      {{o|2}}: More frequent Player.log entries for a wider array of functions, often tracing broad program flow.
+      {{r|3}}: Even more Player.log entries including current internal values as they're passed around.
+      {{R|4}}: {{R|Not Recommended}} | Maximum number of entries to Player.log including tracing common or frequent loops.
+
+      The value default is {{g|0}}.
+    </helptext>
+	</option>
+	
+  <option
+        ID="Option_UD_ModdingToolbox_DebugIncludeInMessage"
+		    Requires="Option_UD_ModdingToolbox_DebugVerbosity!=0"
+        DisplayText="{{g|U}}{{G|D}} {{c|Modding}} {{Y|Tool}}{{C|box}}: Also show debug entries in the Message Queue"
+        Category="Debug"
+        Type="Checkbox"
+        Default="No"
+    >
+    <helptext>
+      When enabled, debug entries will be sent to the Message Queue any time (with few exceptions) they would be sent to Player.log.
+      At higher levels of verbosity, this can be {{r|very}} "loud" and spammy.
+
+      The default is {{w|Disabled}}.
+    </helptext>
+  </option>
+	
+  <option
+        ID="Option_UD_ModdingToolbox_DebugGeneralDebugDescriptions"
+        DisplayText="{{g|U}}{{G|D}} {{c|Modding}} {{Y|Tool}}{{C|box}}: Show General Stuff internal debug information in relevant ShortDescriptions displayed in the [{{W|l}}]ook UI."
+        Category="Debug"
+        Type="Checkbox"
+        Default="No"
+    >
+    <helptext>
+      When enabled, internal debug information relating to General Stuff will be displayed when [{{W|l}}]ooking at anything with the relevant part.
+
+      {{M|General Stuff}}:
+      {{W|General}}: General stuff.
+      {{W|Mechanics}}: Information specific to the function of General Stuff.
+      {{W|State}}: Current internal flags used to determine different actions happening.
+
+      The default is {{w|Disabled}}.
+    </helptext>
+  </option>
+  
+  <!-- 
+  Mod Options
+  -->
+  <!--option
+        ID="Option_UD_ModdingToolbox_ExampleOption"
+        DisplayText="Enable an example Option."
+        Category="Mod: UD Modding Toolbox"
+        Type="Checkbox"
+        Default="Yes"
+    >
+    <helptext>
+      When enabled, this option is true.
+
+      The default is {{w|Enabled}}.
+    </helptext>
+  </option-->
+
+  <!-- End of Mod Options -->
+  
+</options>
