@@ -32,5 +32,7 @@ namespace UD_Modding_Toolbox
         public const string LAST = TANDR + HONLY + HONLY + SPACE; // "└── "
         public const string DIST = SPACE + SPACE + SPACE + SPACE; // "    "
         public const string NACE = NBSP + NBSP + NBSP + NBSP;     // "    " (NBSP)
+
+        public const int MAX_DIST = 9999999;
     }
 }
