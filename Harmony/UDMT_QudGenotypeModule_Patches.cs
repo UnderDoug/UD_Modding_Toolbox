@@ -11,7 +11,7 @@ using static UD_Modding_Toolbox.Utils;
 namespace UD_Blink_Mutation.Harmony
 {
     [HarmonyPatch]
-    public static class QudGenotypeModule_Patches
+    public static class UDMT_QudGenotypeModule_Patches
     {
         public static bool doDebug = true;
 
@@ -34,7 +34,7 @@ namespace UD_Blink_Mutation.Harmony
             catch (Exception x)
             {
                 MetricsManager.LogException(
-                    $"[{MOD_ID}] {nameof(QudGenotypeModule_Patches)}." +
+                    $"[{MOD_ID}] {nameof(UDMT_QudGenotypeModule_Patches)}." +
                     $"{nameof(handleUIEvent_BlockSpecificValue_Prefix)}()", 
                     x);
             }
@@ -58,7 +58,7 @@ namespace UD_Blink_Mutation.Harmony
             catch (Exception x)
             {
                 MetricsManager.LogException(
-                    $"[{MOD_ID}] {nameof(QudGenotypeModule_Patches)}." +
+                    $"[{MOD_ID}] {nameof(UDMT_QudGenotypeModule_Patches)}." +
                     $"{nameof(getSelected_BlockSpecificValue_Prefix)}()", 
                     x);
             }

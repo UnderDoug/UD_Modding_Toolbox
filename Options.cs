@@ -13,6 +13,8 @@ namespace UD_Modding_Toolbox
             // General
             { nameof(Utils), true },
             { nameof(Extensions), true },
+
+            { "LiquidVolume_Patches", true },
         };
 
         public static bool getClassDoDebug(string Class)

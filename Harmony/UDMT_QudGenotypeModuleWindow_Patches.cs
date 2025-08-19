@@ -13,7 +13,7 @@ using static UD_Modding_Toolbox.Utils;
 namespace UD_Modding_Toolbox.Harmony
 {
     [HarmonyPatch]
-    public static class QudGenotypeModuleWindow_Patches
+    public static class UDMT_QudGenotypeModuleWindow_Patches
     {
         public static bool doDebug = true;
 
@@ -40,7 +40,7 @@ namespace UD_Modding_Toolbox.Harmony
             catch (Exception x)
             {
                 MetricsManager.LogException(
-                    $"[{MOD_ID}] {nameof(QudGenotypeModuleWindow_Patches)}" +
+                    $"[{MOD_ID}] {nameof(UDMT_QudGenotypeModuleWindow_Patches)}" +
                     $"{nameof(GetSelections_NoPricklePigs_Postfix)}()",
                     x);
             }

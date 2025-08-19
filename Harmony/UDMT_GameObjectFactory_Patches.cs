@@ -13,7 +13,7 @@ using static UD_Modding_Toolbox.Utils;
 namespace UD_Modding_Toolbox.Harmony
 {
     [HarmonyPatch]
-    public static class GameObjectFactory_Patches
+    public static class UDMT_GameObjectFactory_Patches
     {
         public static bool doDebug = false;
 
@@ -39,7 +39,7 @@ namespace UD_Modding_Toolbox.Harmony
                     if (!node.NamedNodes("mutation").IsNullOrEmpty())
                     {
                         Debug.Entry(4,
-                            $"# [{MOD_ID}] {nameof(GameObjectFactory_Patches)}."
+                            $"# [{MOD_ID}] {nameof(UDMT_GameObjectFactory_Patches)}."
                             + $"{nameof(LoadBakedXML_MutationEntryIfSupplied_Postfix)}"
                             + $"(...)",
                             Indent: 0, Toggle: doDebug);
@@ -131,7 +131,7 @@ namespace UD_Modding_Toolbox.Harmony
                         __instance.Blueprints[node.Name] = __result;
 
                         Debug.Entry(4,
-                            $"x [{MOD_ID}] {nameof(GameObjectFactory_Patches)}."
+                            $"x [{MOD_ID}] {nameof(UDMT_GameObjectFactory_Patches)}."
                             + $"{nameof(LoadBakedXML_MutationEntryIfSupplied_Postfix)}"
                             + $"(ref GameObjectFactory __instance, "
                             + $"ref GameObjectBlueprint __result, "
@@ -142,7 +142,7 @@ namespace UD_Modding_Toolbox.Harmony
             }
             catch (Exception x)
             {
-                MetricsManager.LogException($"[{MOD_ID}] {nameof(GameObjectFactory_Patches)}", x);
+                MetricsManager.LogException($"[{MOD_ID}] {nameof(UDMT_GameObjectFactory_Patches)}", x);
             }
         }
     }
