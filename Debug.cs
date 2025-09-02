@@ -1,17 +1,16 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
-
+using System.Linq;
+using System.Reflection.Emit;
+using UD_Modding_Toolbox;
 using XRL;
 using XRL.Core;
+using XRL.Wish;
 using XRL.World;
 using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
-using XRL.Wish;
-
-using UD_Modding_Toolbox;
-
 using static UD_Modding_Toolbox.Const;
-
 using Debug = UD_Modding_Toolbox.Debug;
 using Options = UD_Modding_Toolbox.Options;
 
@@ -250,6 +249,85 @@ namespace UD_Modding_Toolbox
         {
             return Game.WasEventHandlerRegistered<H, E>(Toggle: Toggle);
         }
+
+        public static CodeMatcher Vomit(this CodeMatcher CodeMatcher, bool Do = false)
+        {
+            if (Do)
+            {
+                Dictionary<Label, int> labelInstructions = new();
+                int originalPos = CodeMatcher.Pos;
+                CodeMatcher.Start();
+                while (CodeMatcher.Advance(1).IsValid)
+                {
+                    CodeInstruction ci = CodeMatcher.Instruction;
+                    if (ci.labels.IsNullOrEmpty())
+                    {
+                        continue;
+                    }
+                    foreach (Label label in ci.labels)
+                    {
+                        if (!labelInstructions.ContainsKey(label))
+                        {
+                            labelInstructions.Add(label, CodeMatcher.Pos);
+                        }
+                        else
+                        {
+                            labelInstructions[label] = CodeMatcher.Pos;
+                        }
+                    }
+                }
+                CodeMatcher.Start().Advance(originalPos);
+
+                int counter = 0;
+                int counterPadding = Math.Max(4, (CodeMatcher.Instructions().Count + 1).ToString().Length);
+
+                foreach (CodeInstruction ci in CodeMatcher.InstructionEnumeration())
+                {
+                    string ciOperand = ci?.operand?.ToString();
+                    if (ci?.operand?.GetType() == typeof(string))
+                    {
+                        ciOperand = ci.operand?.ToString()?.ToLiteral(Quotes: true);
+                    }
+                    else
+                    if (ci.operand is Label ciLabel)
+                    {
+                        string ciLabelString = "????";
+                        if (labelInstructions.ContainsKey(ciLabel))
+                        {
+                            ciLabelString = labelInstructions[ciLabel].ToString().PadLeft(counterPadding, '0');
+                        }
+                        ciOperand = $"[{ciLabelString}]";
+                    }
+                    UnityEngine.Debug.Log($"[{counter.ToString().PadLeft(counterPadding, '0')}] {ci.opcode,-10} {ciOperand}");
+                    counter++;
+
+                    if (ci.opcode.IsEndOfSection())
+                    {
+                        UnityEngine.Debug.Log("");
+                    }
+                }
+            }
+            return CodeMatcher;
+        }
+        public static IEnumerable<CodeInstruction> Vomit(this IEnumerable<CodeInstruction> Instructions, bool Do = false)
+        {
+            return new CodeMatcher(Instructions).Vomit(Do).InstructionEnumeration();
+        }
+        public static CodeMatcher VomitInstruction(this CodeMatcher CodeMatcher, string Context = null)
+        {
+            int counter = CodeMatcher.Pos;
+            int counterPadding = Math.Max(4, (CodeMatcher.Length + 1).ToString().Length);
+
+            CodeInstruction ci = CodeMatcher.Instruction;
+            string ciOperand = ci?.operand?.ToString();
+            if (ci?.operand?.GetType() == typeof(string))
+            {
+                ciOperand = ci.operand?.ToString()?.ToLiteral(Quotes: true);
+            }
+            UnityEngine.Debug.Log($"[{counter.ToString().PadLeft(counterPadding, '0')}] {ci.opcode,-10} {ciOperand} {Context}");
+            return CodeMatcher;
+        }
+
 
         public static string Vomit(this string @string, int Verbosity, string Label = "", bool LoopItem = false, bool? Good = null, int Indent = 0, bool Toggle = true)
         {

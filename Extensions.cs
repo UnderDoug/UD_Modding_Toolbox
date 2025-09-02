@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -306,7 +307,7 @@ namespace UD_Modding_Toolbox
                         list.Add(equipped);
                         int partCountEquippedOn = Body.GetPartCountEquippedOn(equipped);
                         int slotsRequiredFor = equipped.GetSlotsRequiredFor(Actor, bodyPart.Type, true);
-                        if (!partCountEquippedOn.Is(slotsRequiredFor) 
+                        if (partCountEquippedOn != slotsRequiredFor 
                             && bodyPart.TryUnequip(true, true, false, false) 
                             && partCountEquippedOn > slotsRequiredFor)
                         {
@@ -404,7 +405,7 @@ namespace UD_Modding_Toolbox
 
         public static bool InheritsFrom(this GameObject Object, string Blueprint)
         {
-            return Object.Blueprint.Is(Blueprint) || Object.GetBlueprint().InheritsFrom(Blueprint);
+            return Object.Blueprint == Blueprint || Object.GetBlueprint().InheritsFrom(Blueprint);
         }
 
         // partially repurposed from https://stackoverflow.com/a/32184652
@@ -441,28 +442,6 @@ namespace UD_Modding_Toolbox
         public static string FarDemonstrative(this GameObject Object)
         {
             return Object.IsPlural ? "those" : "that";
-        }
-
-        public static bool Is(this string @this, string @string)
-        {
-            return @this == @string;
-        }
-        public static bool Is(this int @this, int @int)
-        {
-            return @this == @int;
-        }
-        public static bool Is(this float @this, float @float)
-        {
-            return @this == @float;
-        }
-        public static bool Is(this double @this, double @double)
-        {
-            return @this == @double;
-        }
-        public static bool Is<T>(this T @this, T @object)
-            where T : class
-        {
-            return @this == @object;
         }
 
         public static string GetProcessedItem(this List<string> item, bool second, List<List<string>> items, GameObject obj)
@@ -561,7 +540,7 @@ namespace UD_Modding_Toolbox
             {
                 if (missileWeapon.Skill.Contains("Shotgun") 
                     || Object.InheritsFrom("BaseShotgun") 
-                    || (Object.TryGetPart(out MagazineAmmoLoader loader) && loader.AmmoPart.Is("AmmoShotgunShell")))
+                    || (Object.TryGetPart(out MagazineAmmoLoader loader) && loader.AmmoPart is "AmmoShotgunShell"))
                     return "shotgun";
 
                 if (Object.InheritsFrom("BaseHeavyWeapon"))
@@ -621,15 +600,15 @@ namespace UD_Modding_Toolbox
                     {
                         case "Back":
                             {
-                                if (Object.Blueprint.Is("Mechanical Wings"))
+                                if (Object.Blueprint is "Mechanical Wings")
                                     return "wing";
 
-                                if (Object.Blueprint.Is("Gas Tumbler"))
+                                if (Object.Blueprint is "Gas Tumbler")
                                     return "tumbler";
 
                                 if (armor.CarryBonus > 0
-                                    || Object.Blueprint.Is("Gyrocopter Backpack")
-                                    || Object.Blueprint.Is("SkybearJetpack"))
+                                    || Object.Blueprint is "Gyrocopter Backpack"
+                                    || Object.Blueprint is "SkybearJetpack")
                                     return "pack";
 
                                 return "cloak";
@@ -679,10 +658,10 @@ namespace UD_Modding_Toolbox
                 {
                     case "Back":
                         {
-                            if (Object.Blueprint.Is("Mechanical Wings"))
+                            if (Object.Blueprint is "Mechanical Wings")
                                 return "wing";
 
-                            if (Object.Blueprint.Is("Gas Tumbler"))
+                            if (Object.Blueprint is "Gas Tumbler")
                                 return "tumbler";
 
                             break;
@@ -698,7 +677,7 @@ namespace UD_Modding_Toolbox
                             if (Object.InheritsFrom("BaseFaceJewelry"))
                                 return "jewelry";
 
-                            if (Object.Blueprint.Is("VISAGE"))
+                            if (Object.Blueprint is "VISAGE")
                                 return "scanner";
 
                             break;
@@ -733,7 +712,7 @@ namespace UD_Modding_Toolbox
                 {
                     if (!bodyType.IsNullOrEmpty())
                     {
-                        if (bodyType.Is("Pillow"))
+                        if (bodyType is "Pillow")
                         {
                             return "seat";
                         }
@@ -826,16 +805,16 @@ namespace UD_Modding_Toolbox
              && MeleeWeapon.MaxStrengthBonus == 0 
              && MeleeWeapon.PenBonus == 0 
              && MeleeWeapon.HitBonus == 0 
-             && (MeleeWeapon.BaseDamage.Is("1d2") || MeleeWeapon.BaseDamage.Is("1d2+3")) 
+             && (MeleeWeapon.BaseDamage is "1d2" || MeleeWeapon.BaseDamage is "1d2+3") 
              && MeleeWeapon.Ego == 0 
-             && MeleeWeapon.Skill.Is("Cudgel") 
-             && MeleeWeapon.Stat.Is("Strength") 
-             && MeleeWeapon.Slot.Is("Hand") 
+             && MeleeWeapon.Skill is "Cudgel" 
+             && MeleeWeapon.Stat is "Strength"
+             && MeleeWeapon.Slot is "Hand"
              && MeleeWeapon.Attributes.IsNullOrEmpty();
 
             bool hasImprovisedProp = 
                 MeleeWeapon.ParentObject.HasTagOrStringProperty("IsImprovisedMelee") 
-             && !MeleeWeapon.ParentObject.GetStringProperty("IsImprovisedMelee").Is("false");
+             && MeleeWeapon.ParentObject.GetStringProperty("IsImprovisedMelee") is not "false";
 
             MeleeWeapon @default = new();
 
@@ -850,6 +829,33 @@ namespace UD_Modding_Toolbox
         {
             static bool filter(GameObject GO) { return GO.HasPart<NaturalEquipment>() || GO.HasTag("NaturalGear"); }
             return Body.GetEquippedObjects(filter);
+        }
+
+        public static string ToLiteral(this string String, bool Quotes = false)
+        {
+            if (String.IsNullOrEmpty())
+            {
+                return null;
+            }
+            string output = Microsoft.CodeAnalysis.CSharp.SymbolDisplay.FormatLiteral(String, false);
+            if (Quotes)
+            {
+                output = output.Quote();
+            }
+            return output;
+        }
+        public static bool IsEndOfSection(this OpCode OpCode)
+        {
+            string ciOpcode = OpCode.ToString();
+            return ciOpcode.StartsWith("pop")
+                || ciOpcode.StartsWith("br")
+                || ciOpcode.StartsWith("be")
+                || ciOpcode.StartsWith("bg")
+                || ciOpcode.StartsWith("bl")
+                || ciOpcode.StartsWith("leave")
+                || ciOpcode.StartsWith("ret")
+                || ciOpcode.StartsWith("st")
+                || ciOpcode.StartsWith("throw");
         }
 
         public static T DrawRandomToken<T>(this List<T> Bag, T ExceptForToken = null, List<T> ExceptForTokens = null)
@@ -1109,7 +1115,7 @@ namespace UD_Modding_Toolbox
         public static bool TryGetGameObjectBlueprint(this GameObject GameObject, out GameObjectBlueprint GameObjectBlueprint)
         {
             GameObjectBlueprint = GameObject.GetGameObjectBlueprint();
-            return !GameObjectBlueprint.Is(null);
+            return GameObjectBlueprint is not null;
         }
 
         public static string DebugName(this BodyPart BodyPart)

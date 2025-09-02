@@ -252,7 +252,7 @@ namespace UD_Modding_Toolbox
         public static bool TryGetGameObjectBlueprint(string Blueprint, out GameObjectBlueprint GameObjectBlueprint)
         {
             GameObjectBlueprint = GetGameObjectBlueprint(Blueprint);
-            return !GameObjectBlueprint.Is(null);
+            return GameObjectBlueprint is not null;
         }
         public static string MakeAndList(IReadOnlyList<string> Words, bool Serial = true, bool IgnoreCommas = false)
         {

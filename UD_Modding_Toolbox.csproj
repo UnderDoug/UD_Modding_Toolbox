@@ -5,6 +5,7 @@
     <Authors>UnderDoug</Authors>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <Title>UD Modding Toolbox</Title>
+    <BaseOutputPath>%USERPROFILE%\AppData\LocalLow\Freehold Games\CavesOfQud\ModAssemblies</BaseOutputPath>
   </PropertyGroup>
   <Import Project="../Mods.csproj" />
 </Project>
