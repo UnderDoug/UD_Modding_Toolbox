@@ -17,14 +17,25 @@ namespace UD_Modding_Toolbox
             { "LiquidVolume_Patches", true },
         };
 
-        public static bool getClassDoDebug(string Class)
+        public static bool getDoDebug(object what = null, List<object> DoList = null, List<object> DontList = null, bool? DoDebug = null)
         {
-            if (classDoDebug.ContainsKey(Class))
+            DoList ??= new();
+            DontList ??= new();
+
+            if (what != null && !DoList.IsNullOrEmpty() && DoList.Contains(what))
             {
-                return classDoDebug[Class];
+                return true;
             }
-            return doDebug;
+
+            if (what != null && !DontList.IsNullOrEmpty() && DontList.Contains(what))
+            {
+                return false;
+            }
+
+            return DoDebug ?? doDebug;
         }
+
+        public static bool getClassDoDebug(string Class) => classDoDebug.ContainsKey(Class) ? classDoDebug[Class] : doDebug;
 
         // Debug Settings
         [OptionFlag] public static int DebugVerbosity;
@@ -34,5 +45,5 @@ namespace UD_Modding_Toolbox
         // Checkbox settings
         // [OptionFlag] public static bool ExampleOption;
 
-    } //!-- public static class Options
+    } 
 }
