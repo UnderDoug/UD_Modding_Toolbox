@@ -254,7 +254,7 @@ namespace UD_Modding_Toolbox
         {
             if (Do)
             {
-                bool haveILGen = Generator != null;
+                bool haveILGen = false && Generator != null;
                 Dictionary<Label, int> labelInstructions = new();
                 int originalPos = CodeMatcher.Pos;
                 CodeMatcher.Start();
