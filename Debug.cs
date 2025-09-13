@@ -278,7 +278,7 @@ namespace UD_Modding_Toolbox
                         }
                     }
                 }
-                CodeMatcher.Start().Advance(originalPos);
+                CodeMatcher.Start();
                 
                 int counterPadding = Math.Max(4, (CodeMatcher.Instructions().Count + 1).ToString().Length);
                 while (CodeMatcher.Advance(1).IsValid)
