@@ -250,16 +250,18 @@ namespace UD_Modding_Toolbox
             return Game.WasEventHandlerRegistered<H, E>(Toggle: Toggle);
         }
 
-        public static CodeMatcher Vomit(this CodeMatcher CodeMatcher, bool Do = false)
+        public static CodeMatcher Vomit(this CodeMatcher CodeMatcher, ILGenerator Generator, bool Do = false)
         {
             if (Do)
             {
+                bool haveILGen = Generator != null;
                 Dictionary<Label, int> labelInstructions = new();
                 int originalPos = CodeMatcher.Pos;
                 CodeMatcher.Start();
                 while (CodeMatcher.Advance(1).IsValid)
                 {
                     CodeInstruction ci = CodeMatcher.Instruction;
+                    int labelPos = haveILGen ? Generator.ILOffset : CodeMatcher.Pos;
                     if (ci.labels.IsNullOrEmpty())
                     {
                         continue;
@@ -268,21 +270,21 @@ namespace UD_Modding_Toolbox
                     {
                         if (!labelInstructions.ContainsKey(label))
                         {
-                            labelInstructions.Add(label, CodeMatcher.Pos);
+                            labelInstructions.Add(label, labelPos);
                         }
                         else
                         {
-                            labelInstructions[label] = CodeMatcher.Pos;
+                            labelInstructions[label] = labelPos;
                         }
                     }
                 }
                 CodeMatcher.Start().Advance(originalPos);
-
-                int counter = 0;
+                
                 int counterPadding = Math.Max(4, (CodeMatcher.Instructions().Count + 1).ToString().Length);
-
-                foreach (CodeInstruction ci in CodeMatcher.InstructionEnumeration())
+                while (CodeMatcher.Advance(1).IsValid)
                 {
+                    CodeInstruction ci = CodeMatcher.Instruction;
+                    int counter = haveILGen ? Generator.ILOffset : CodeMatcher.Pos;
                     string ciOperand = ci?.operand?.ToString();
                     if (ci?.operand?.GetType() == typeof(string))
                     {
@@ -295,19 +297,32 @@ namespace UD_Modding_Toolbox
                         if (labelInstructions.ContainsKey(ciLabel))
                         {
                             ciLabelString = labelInstructions[ciLabel].ToString().PadLeft(counterPadding, '0');
+                            if (haveILGen)
+                            {
+                                ciLabelString = $"IL_{labelInstructions[ciLabel]:X4}";
+                            }
                         }
                         ciOperand = $"[{ciLabelString}]";
                     }
-                    UnityEngine.Debug.Log($"[{counter.ToString().PadLeft(counterPadding, '0')}] {ci.opcode,-10} {ciOperand}");
-                    counter++;
+                    string codePos = $"[{counter.ToString().PadLeft(counterPadding, '0')}]";
+                    if (haveILGen)
+                    {
+                        codePos = $"IL_{counter:X4}:";
+                    }
+                    UnityEngine.Debug.Log($"{codePos} {ci.opcode,-10} {ciOperand}");
 
                     if (ci.opcode.IsEndOfSection())
                     {
                         UnityEngine.Debug.Log("");
                     }
                 }
+                CodeMatcher.Start().Advance(originalPos);
             }
             return CodeMatcher;
+        }
+        public static CodeMatcher Vomit(this CodeMatcher CodeMatcher, bool Do = false)
+        {
+            return CodeMatcher.Vomit(null, Do);
         }
         public static IEnumerable<CodeInstruction> Vomit(this IEnumerable<CodeInstruction> Instructions, bool Do = false)
         {
