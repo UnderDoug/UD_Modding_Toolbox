@@ -29,7 +29,7 @@ namespace UD_Modding_Toolbox.Harmony
         {
             try
             {
-                if (HNPS_GigantismPlus != null && !HNPS_GigantismPlus.IsEnabled)
+                if (false && HNPS_GigantismPlus != null && !HNPS_GigantismPlus.IsEnabled)
                 {
                     GameObjectBlueprint gameObjectBlueprint = __result;
                     if (gameObjectBlueprint.Mutations.IsNullOrEmpty())

@@ -21,7 +21,7 @@ namespace UD_Modding_Toolbox.Harmony
             declaringType: typeof(QudGenotypeModuleWindow),
             methodName: nameof(QudGenotypeModuleWindow.GetSelections))]
         [HarmonyPostfix]
-        public static void GetSelections_NoPricklePigs_Postfix(ref QudGenotypeModuleWindow __instance, ref IEnumerable<ChoiceWithColorIcon> __result)
+        public static void GetSelections_BlockSpecificValue_Postfix(ref QudGenotypeModuleWindow __instance, ref IEnumerable<ChoiceWithColorIcon> __result)
         {
             try
             {
@@ -41,7 +41,7 @@ namespace UD_Modding_Toolbox.Harmony
             {
                 MetricsManager.LogException(
                     $"[{MOD_ID}] {nameof(UDMT_QudGenotypeModuleWindow_Patches)}" +
-                    $"{nameof(GetSelections_NoPricklePigs_Postfix)}()",
+                    $"{nameof(GetSelections_BlockSpecificValue_Postfix)}()",
                     x);
             }
         }

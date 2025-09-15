@@ -1,7 +1,0 @@
-{
-    "Title": "UnderDoug's Modding Toolbox",
-    "Description": "This is a mod library. It contains tools common to several of my projects that I was sick of copying around (and which I shouldn't have been copying around to begin with).\r\n\r\n[h2]Source[/h2]\r\nWant to see how it's made? There's a [url=https://github.com/UnderDoug/Blink-Mutation]git repository[/url]!\r\n\r\nLicence is the \"Unlicence\". I don't know what that means, but I also don't care what you do with it. Easy.",
-    "Tags": "Library,Utils,Extensions,Harmony",
-    "Visibility": "2",
-    "ImagePath": "preview.png"
-}
