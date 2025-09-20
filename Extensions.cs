@@ -2204,5 +2204,45 @@ namespace UD_Modding_Toolbox
         {
             return TryGetStatisticPercent(GO?.GetStat("Hitpoints"), out Percent);
         }
+
+        public static List<GameObjectBlueprint> SafelyGetBlueprintsInheritingFrom(this GameObjectFactory Factory, string Name, bool ExcludeBase = true)
+        {
+            List<GameObjectBlueprint> outputList = new();
+            foreach (GameObjectBlueprint blueprint in Factory.BlueprintList)
+            {
+                if (blueprint.InheritsFromSafe(Name) && (!ExcludeBase || !blueprint.IsBaseBlueprint()))
+                {
+                    outputList.Add(blueprint);
+                }
+            }
+            return outputList;
+        }
+        public static List<string> InheritanceRoots => new()
+        {
+            nameof(Object),
+            "SultanMuralController",
+        };
+        public static bool InheritsFromSafe(this GameObjectBlueprint GameObjectBlueprint, string what)
+        {
+            string parentBlueprint = GameObjectBlueprint.Inherits;
+            while (!parentBlueprint.IsNullOrEmpty())
+            {
+                if (parentBlueprint == what)
+                {
+                    return true;
+                }
+                string inherits = parentBlueprint;
+                parentBlueprint = GameObjectFactory.Factory?.GetBlueprintIfExists(parentBlueprint)?.Inherits;
+                if (parentBlueprint.IsNullOrEmpty() 
+                    && !InheritanceRoots.Contains(inherits))
+                {
+                    MetricsManager.LogModWarning(ThisMod,
+                        $"{nameof(Extensions)}.{nameof(InheritsFromSafe)}({what.Quote()}):" +
+                        $" bluprint ancestor {inherits.Quote()} does not exist in blueprint list." +
+                        $" The first mention of this blueprint in this log should reveal the mod with this inheritance issue.");
+                }
+            }
+            return false;
+        }
     }
 }
