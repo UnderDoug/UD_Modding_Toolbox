@@ -21,7 +21,7 @@ using XRL.World.Effects;
 using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
 using XRL.World.Parts.Skill;
-
+using XRL.World.Text;
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Utils;
 
@@ -152,6 +152,73 @@ namespace UD_Modding_Toolbox
                 sb.AppendColored("K", "\xFF");
             }
             return sb;
+        }
+
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, char text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, bool text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, int text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, float text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, double text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, long text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+        public static StringBuilder AppendColored(this StringBuilder SB, string color, uint text)
+        {
+            return SB.AppendColored(color, text.ToString());
+        }
+
+        public static StringBuilder Append(this StringBuilder SB, char text)
+        {
+            return SB.Append(text.ToString());
+        }
+        public static StringBuilder Append(this StringBuilder SB, bool text)
+        {
+            return SB.Append(text.ToString());
+        }
+        public static StringBuilder Append(this StringBuilder SB, int text)
+        {
+            return SB.Append(text.ToString());
+        }
+        public static StringBuilder Append(this StringBuilder SB, float text)
+        {
+            return SB.Append(text.ToString());
+        }
+        public static StringBuilder Append(this StringBuilder SB, double text)
+        {
+            return SB.Append(text.ToString());
+        }
+        public static StringBuilder Append(this StringBuilder SB, long text)
+        {
+            return SB.Append(text.ToString());
+        }
+        public static StringBuilder Append(this StringBuilder SB, uint text)
+        {
+            return SB.Append(text.ToString());
+        }
+
+        public static string Replacer(this StringBuilder SB, GameObject Subject, GameObject Object = null)
+        {
+            return GameText.StartReplace(SB).AddObject(Subject).AddObject(Object).ToString();
+        }
+        public static string Replacer(this string text, GameObject Subject, GameObject Object = null)
+        {
+            return GameText.StartReplace(text).AddObject(Subject).AddObject(Object).ToString();
         }
 
         public static string MaybeColor(this string Text, string Color, bool Pretty = true)
