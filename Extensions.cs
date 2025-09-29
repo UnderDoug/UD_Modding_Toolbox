@@ -212,13 +212,21 @@ namespace UD_Modding_Toolbox
             return SB.Append(text.ToString());
         }
 
-        public static string Replacer(this StringBuilder SB, GameObject Subject, GameObject Object = null)
+        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, int Number, string Alias = null)
         {
-            return GameText.StartReplace(SB).AddObject(Subject).AddObject(Object).ToString();
+            return RB.AddExplicit(Number.ToString(), Alias);
         }
-        public static string Replacer(this string text, GameObject Subject, GameObject Object = null)
+        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, uint Number, string Alias = null)
         {
-            return GameText.StartReplace(text).AddObject(Subject).AddObject(Object).ToString();
+            return RB.AddExplicit(Number.ToString(), Alias);
+        }
+        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, double Number, string Alias = null)
+        {
+            return RB.AddExplicit(Number.ToString(), Alias);
+        }
+        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, float Number, string Alias = null)
+        {
+            return RB.AddExplicit(Number.ToString(), Alias);
         }
 
         public static string MaybeColor(this string Text, string Color, bool Pretty = true)
