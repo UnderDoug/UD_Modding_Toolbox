@@ -5,7 +5,6 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <BaseIntermediateOutputPath>.dotnet\obj\</BaseIntermediateOutputPath>
     <BaseOutputPath>.dotnet\bin\</BaseOutputPath>
-    <OutputPath>.dotnet\out\</OutputPath>
   </PropertyGroup>
   <Import Project="../Mods.csproj" />
 </Project>
