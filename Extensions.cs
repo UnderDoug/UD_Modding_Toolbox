@@ -22,6 +22,7 @@ using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
 using XRL.World.Parts.Skill;
 using XRL.World.Text;
+
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Utils;
 
@@ -210,23 +211,6 @@ namespace UD_Modding_Toolbox
         public static StringBuilder Append(this StringBuilder SB, uint text)
         {
             return SB.Append(text.ToString());
-        }
-
-        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, int Number, string Alias = null)
-        {
-            return RB.AddExplicit(Number.ToString(), Alias);
-        }
-        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, uint Number, string Alias = null)
-        {
-            return RB.AddExplicit(Number.ToString(), Alias);
-        }
-        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, double Number, string Alias = null)
-        {
-            return RB.AddExplicit(Number.ToString(), Alias);
-        }
-        public static ReplaceBuilder AddExplicit(this ReplaceBuilder RB, float Number, string Alias = null)
-        {
-            return RB.AddExplicit(Number.ToString(), Alias);
         }
 
         public static string MaybeColor(this string Text, string Color, bool Pretty = true)
