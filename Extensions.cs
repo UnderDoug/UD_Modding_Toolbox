@@ -1,13 +1,12 @@
-﻿using System;
+﻿using Genkit;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Text.RegularExpressions;
-
-using Genkit;
-
 using XRL;
 using XRL.CharacterBuilds;
 using XRL.CharacterBuilds.Qud;
@@ -22,7 +21,6 @@ using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
 using XRL.World.Parts.Skill;
 using XRL.World.Text;
-
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Utils;
 
@@ -58,6 +56,16 @@ namespace UD_Modding_Toolbox
                 return false;
 
             return doDebug;
+        }
+
+        public static bool IsNullOrZero([NotNullWhen(false)] this int? value)
+        {
+            if (value != null)
+            {
+                return value == 0;
+            }
+
+            return true;
         }
 
         public static int GetDieCount(this DieRoll DieRoll)
