@@ -925,64 +925,107 @@ namespace UD_Modding_Toolbox
                 || ciOpcode.StartsWith("throw");
         }
 
-        public static T DrawRandomToken<T>(this List<T> Bag, T ExceptForToken = null, List<T> ExceptForTokens = null)
-            where T : class
+        public static T DrawRandomToken<T>(
+            this List<T> Bag,
+            T ExceptForToken = null,
+            List<T> ExceptForTokens = null)
+                where T : class
         {
-            return Bag.DrawSeededToken((string)null, null, null, ExceptForToken, ExceptForTokens);
+            return Bag.DrawSeededToken(
+                Seed: (string)null,
+                Stepper: null,
+                Context: null,
+                ExceptForToken: ExceptForToken,
+                ExceptForTokens: ExceptForTokens);
         }
-        public static T DrawSeededToken<T>(this List<T> Bag, string Seed, int? Stepper = null, string Context = null, T ExceptForToken = null, List<T> ExceptForTokens = null)
+        public static T DrawRandomToken<T>(
+            this List<T> Bag,
+            Predicate<T> Filter = null)
             where T : class
         {
-            if (Bag.IsNullOrEmpty()) return null;
-            List<T> drawBag = new();
-            drawBag.AddRange(Bag);
-            ExceptForTokens ??= new();
-            if (drawBag.Contains(ExceptForToken))
+            return Bag.DrawSeededToken(
+                Seed: (string)null,
+                Stepper: null,
+                Context: null,
+                Filter: Filter);
+        }
+        public static T DrawSeededToken<T>(
+            this List<T> Bag,
+            string Seed,
+            int? Stepper = null,
+            string Context = null,
+            T ExceptForToken = null,
+            List<T> ExceptForTokens = null)
+            where T : class
+        {
+            if (ExceptForToken == null && ExceptForTokens == null)
             {
-                drawBag.Remove(ExceptForToken);
+                return Bag.DrawSeededToken(
+                    Seed: Seed,
+                    Stepper: Stepper,
+                    Context: Context,
+                    Filter: null);
             }
-            foreach (T exceptForToken in ExceptForTokens)
+
+            bool Filter(T t)
             {
-                if (drawBag.Contains(exceptForToken))
+                if ((ExceptForToken != null && t == ExceptForToken)
+                    || (!ExceptForTokens.IsNullOrEmpty() && ExceptForTokens.Contains(t)))
                 {
-                    drawBag.Remove(exceptForToken);
+                    return false;
                 }
+                return true;
             }
+            return Bag.DrawSeededToken(
+                Seed: Seed,
+                Stepper: Stepper,
+                Context: Context,
+                Filter: Filter);
+        }
+        public static T DrawSeededToken<T>(
+            this List<T> Bag,
+            string Seed,
+            int? Stepper = null,
+            string Context = null,
+            Predicate<T> Filter = null)
+            where T : class
+        {
+            if (Bag.IsNullOrEmpty())
+            {
+                return null;
+            }
+            List<T> drawBag = (from T t in Bag where Filter == null || Filter(t) select t).ToList();
             if (drawBag.IsNullOrEmpty())
             {
                 return null;
             }
+
             T token = null;
+
             if (!Seed.IsNullOrEmpty())
             {
-                string stepper = null;
-                string context = null;
-                if (!Context.IsNullOrEmpty())
-                {
-                    context = $"-{Context}";
-                }
-                if (Stepper != null)
-                {
-                    stepper = $"-{Stepper}";
-                }
-                string seed = $"{Seed}{context}{stepper}";
+                string stepper = Stepper == null ? null : ("-" + Stepper);
+                string context = Context.IsNullOrEmpty() ? null : ("-" + Context);
+
+                string seed = Seed + context + stepper;
                 int low = 0;
                 int high = (drawBag.Count - 1) * 7;
                 int roll = Stat.SeededRandom(seed, low, high) % (drawBag.Count - 1);
 
                 int indent = Debug.LastIndent;
-                Debug.Divider(4, HONLY, Count: 25, Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(Seed)}: {Seed}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(Stepper)}: {Stepper}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(Context)}: {Context}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(seed)}: {seed}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(low)}: {low}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(drawBag.Count)} - 1: {drawBag.Count - 1}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(high)}: {high}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Entry(4, $"{nameof(roll)}: {roll}", Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-                Debug.Divider(4, HONLY, Count: 25, Indent: indent + 1, Toggle: getDoDebug(nameof(DrawSeededToken)));
-
+                bool doDebug = getDoDebug(nameof(DrawSeededToken));
+                Debug.Divider(4, HONLY, Count: 25, Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(Seed)}: {Seed}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(Stepper)}: {Stepper}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(Context)}: {Context}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(seed)}: {seed}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(low)}: {low}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(drawBag.Count)} - 1: {drawBag.Count - 1}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(high)}: {high}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Entry(4, $"{nameof(roll)}: {roll}", Indent: indent + 1, Toggle: doDebug);
+                Debug.Divider(4, HONLY, Count: 25, Indent: indent + 1, Toggle: doDebug);
                 Debug.LastIndent = indent;
+
                 token = drawBag.ElementAt(roll);
             }
             token ??= drawBag.GetRandomElement();
