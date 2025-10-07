@@ -17,15 +17,15 @@ namespace UD_Modding_Toolbox
 
             private int Index;
 
-            public KeyValuePair<T, int> Current => new(Bag.Entries[Index].Token, Bag.Entries[Index].Weight);
+            public KeyValuePair<T, int> Current => new(Bag[Index], Bag.Weights[Index]);
 
-            object IEnumerator.Current => new KeyValuePair<T, int>(Bag.Entries[Index].Token, Bag.Entries[Index].Weight);
+            object IEnumerator.Current => Current;
 
-            DictionaryEntry IDictionaryEnumerator.Entry => new(Bag.Entries[Index].Token, Bag.Entries[Index].Weight);
+            DictionaryEntry IDictionaryEnumerator.Entry => new(Current.Key, Current.Value);
 
-            object IDictionaryEnumerator.Key => Bag.Entries[Index].Token;
+            object IDictionaryEnumerator.Key => Current.Key;
 
-            object IDictionaryEnumerator.Value => Bag.Entries[Index].Weight;
+            object IDictionaryEnumerator.Value => Current.Value;
 
             public KVPEnumerator(Raffle<T> Bag)
             {
@@ -42,7 +42,7 @@ namespace UD_Modding_Toolbox
                 }
                 while (++Index < Bag.Length)
                 {
-                    if (Bag.Entries[Index].Token != null)
+                    if (Bag[Index] is T token && Bag[token] > 0)
                     {
                         return true;
                     }

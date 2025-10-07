@@ -2,15 +2,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using XRL.Collections;
 
 namespace UD_Modding_Toolbox
 {
-    public partial class Raffle<T> : IEnumerable
+    public partial class Raffle<T> : ICollection<T>
     {
-        IEnumerator IEnumerable.GetEnumerator()
+        public void Clear()
         {
-            return new Enumerator(this);
+            throw new NotImplementedException();
         }
     }
 }

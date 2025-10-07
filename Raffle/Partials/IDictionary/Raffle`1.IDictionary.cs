@@ -8,17 +8,19 @@ namespace UD_Modding_Toolbox
 {
     public partial class Raffle<T> : IDictionary
     {
-        object IDictionary.this[object key] { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        object IDictionary.this[object key]
+        { 
+            get => throw new NotImplementedException(); 
+            set => throw new NotImplementedException();
+        }
 
-        ICollection IDictionary.Keys => throw new NotImplementedException();
+        ICollection IDictionary.Keys => Tokens;
 
-        ICollection IDictionary.Values => throw new NotImplementedException();
-
-        bool IDictionary.IsReadOnly => false;
+        ICollection IDictionary.Values => Weights;
 
         bool IDictionary.IsFixedSize => false;
 
-        void IDictionary.Add(object Key, object Value)
+        void IDictionary.Add(object Token, object Weight)
         {
             throw new NotImplementedException();
         }
@@ -28,7 +30,7 @@ namespace UD_Modding_Toolbox
             throw new NotImplementedException();
         }
 
-        bool IDictionary.Contains(object Key)
+        bool IDictionary.Contains(object Token)
         {
             throw new NotImplementedException();
         }
@@ -40,20 +42,7 @@ namespace UD_Modding_Toolbox
 
         void IDictionary.Remove(object Token)
         {
-            if (Token is T token)
-            {
-                int j = 0;
-                Entry[] newEntries = new Entry[Length - 1];
-                for (int i = 0; i < Length; i ++)
-                {
-                    if (Equals(token, Entries[i].Token))
-                    {
-                        continue;
-                    }
-                    newEntries[j++] = Entries[i];
-                }
-                Entries = newEntries;
-            }
+            throw new NotImplementedException();
         }
     }
 }

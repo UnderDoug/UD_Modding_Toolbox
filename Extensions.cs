@@ -1032,10 +1032,21 @@ namespace UD_Modding_Toolbox
             Bag.Remove(token);
             return token;
         }
-        public static T DrawSeededToken<T>(this List<T> Bag, Guid Seed, int? Stepper = null, string Context = null, T ExceptForToken = null, List<T> ExceptForTokens = null)
+        public static T DrawSeededToken<T>(
+            this List<T> Bag,
+            Guid Seed,
+            int? Stepper = null,
+            string Context = null,
+            T ExceptForToken = null,
+            List<T> ExceptForTokens = null)
             where T : class
         {
-            return Bag.DrawSeededToken(Seed.ToString(), Stepper, Context, ExceptForToken, ExceptForTokens);
+            return Bag.DrawSeededToken(
+                Seed: Seed.ToString(),
+                Stepper: Stepper,
+                Context: Context,
+                ExceptForToken: ExceptForToken,
+                ExceptForTokens: ExceptForTokens);
         }
         public static T DrawToken<T>(this List<T> Bag, T Token)
             where T : class
@@ -1044,12 +1055,29 @@ namespace UD_Modding_Toolbox
             return token;
         }
 
-        public static T DrawRandomToken<T>(this Dictionary<string, List<T>> Bag, string FromPocket = null, T ExceptForToken = null, List<T> ExceptForTokens = null)
+        public static T DrawRandomToken<T>(
+            this Dictionary<string, List<T>> Bag,
+            string FromPocket = null,
+            T ExceptForToken = null,
+            List<T> ExceptForTokens = null)
             where T : class
         {
-            return Bag.DrawSeededToken((string)null, null, null, FromPocket, ExceptForToken, ExceptForTokens);
+            return Bag.DrawSeededToken(
+                Seed: (string)null,
+                Stepper: null,
+                Context: null,
+                FromPocket: FromPocket,
+                ExceptForToken: ExceptForToken,
+                ExceptForTokens: ExceptForTokens);
         }
-        public static T DrawSeededToken<T>(this Dictionary<string, List<T>> Bag, string Seed, int? Stepper = null, string Context = null, string FromPocket = null, T ExceptForToken = null, List<T> ExceptForTokens = null)
+        public static T DrawSeededToken<T>(
+            this Dictionary<string,List<T>>
+            Bag, string Seed,
+            int? Stepper = null,
+            string Context = null,
+            string FromPocket = null,
+            T ExceptForToken = null,
+            List<T> ExceptForTokens = null)
             where T : class
         {
             List<T> drawBag = new();
@@ -1091,12 +1119,28 @@ namespace UD_Modding_Toolbox
             }
             return token;
         }
-        public static T DrawSeededToken<T>(this Dictionary<string, List<T>> Bag, Guid Seed, int? Stepper = null, string Context = null, string FromPocket = null, T ExceptForToken = null, List<T> ExceptForTokens = null)
+        public static T DrawSeededToken<T>(
+            this Dictionary<string, List<T>> Bag,
+            Guid Seed,
+            int? Stepper = null,
+            string Context = null,
+            string FromPocket = null,
+            T ExceptForToken = null,
+            List<T> ExceptForTokens = null)
             where T : class
         {
-            return Bag.DrawSeededToken(Seed.ToString(), Stepper, Context, FromPocket, ExceptForToken, ExceptForTokens);
+            return Bag.DrawSeededToken(
+                Seed: Seed.ToString(),
+                Stepper: Stepper,
+                Context: Context,
+                FromPocket: FromPocket,
+                ExceptForToken: ExceptForToken,
+                ExceptForTokens: ExceptForTokens);
         }
-        public static T DrawToken<T>(this Dictionary<string, List<T>> Bag, T Token, string FromPocket = null)
+        public static T DrawToken<T>(
+            this Dictionary<string, List<T>> Bag,
+            T Token,
+            string FromPocket = null)
             where T : class
         {
             List<T> drawBag = new();
@@ -1137,7 +1181,11 @@ namespace UD_Modding_Toolbox
             }
             return token;
         }
-        public static bool Contains<T>(this Dictionary<string, List<T>> Bag, T Token, out string Key, string InPocket = null)
+        public static bool Contains<T>(
+            this Dictionary<string, List<T>> Bag,
+            T Token,
+            out string Key,
+            string InPocket = null)
             where T : class
         {
             bool haveToken = false;
@@ -1164,10 +1212,10 @@ namespace UD_Modding_Toolbox
             }
             return haveToken;
         }
-        public static bool Contains<T>(this Dictionary<string, List<T>> Bag, T Token, string FromPocket = null)
+        public static bool Contains<T>(this Dictionary<string, List<T>> Bag, T Token, string InPocket = null)
             where T : class
         {
-            return Bag.Contains(Token, out _, FromPocket);
+            return Bag.Contains(Token, out _, InPocket);
         }
         public static IEnumerable<T> GetContents<T>(this Dictionary<string, List<T>> Bag, string FromPocket = null)
             where T : class
@@ -1189,7 +1237,10 @@ namespace UD_Modding_Toolbox
             }
             yield break;
         }
-        public static IEnumerable<string> GetContentsAsString<T>(this Dictionary<string, List<T>> Bag, string FromPocket = null, bool WithKey = false)
+        public static IEnumerable<string> GetContentsAsString<T>(
+            this Dictionary<string, List<T>> Bag,
+            string FromPocket = null,
+            bool WithKey = false)
             where T : class
         {
             if (!Bag.IsNullOrEmpty())

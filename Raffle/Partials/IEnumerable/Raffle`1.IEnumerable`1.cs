@@ -16,10 +16,10 @@ namespace UD_Modding_Toolbox
             private int Version;
 
             private int Index;
-            public T Current => Bag.Entries[Index].Token;
 
             private int Weight;
 
+            public T Current => Bag[Index];
             object IEnumerator.Current => Current;
 
             public Enumerator(Raffle<T> Bag)
@@ -43,9 +43,9 @@ namespace UD_Modding_Toolbox
                 }
                 while (++Index < Bag.Length)
                 {
-                    if (Bag.Entries[Index].Token != null)
+                    if (Bag[Index] is T token)
                     {
-                        while (++Weight < Bag.Entries[Index].Weight)
+                        while (++Weight < Bag[token])
                         {
                             return true;
                         }
@@ -70,7 +70,7 @@ namespace UD_Modding_Toolbox
             }
         }
 
-        IEnumerator<T> IEnumerable<T>.GetEnumerator()
+        public IEnumerator<T> GetEnumerator()
         {
             return new Enumerator(this);
         }
