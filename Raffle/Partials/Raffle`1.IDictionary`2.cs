@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using XRL.World;
 
 namespace UD_Modding_Toolbox
 {
@@ -14,46 +15,43 @@ namespace UD_Modding_Toolbox
             set => Entries[IndexOf(Token)].Weight = value;
         }
 
-        ICollection<T> IDictionary<T, int>.Keys => Tokens;
-        ICollection<int> IDictionary<T, int>.Values => Weights;
+        ICollection<T> IDictionary<T, int>.Keys => GetEnumerator() as ICollection<T>;
+        ICollection<int> IDictionary<T, int>.Values => GetEnumerator() as ICollection<int>;
 
         public void Add(T Token, int Weight)
         {
-            if (Tokens.Contains(Token))
+            if (Contains(Token))
             {
                 this[Token] += Weight;
             }
             else
             {
                 EnsureCapacity(Length + 1);
-                Tokens[Length] = Token;
-                Weights[Length] = Weight;
+                Entries[Length] = new(Token, Weight);
             }
+            TotalWeight += Weight;
+            Variant++;
         }
 
-        bool IDictionary<T, int>.ContainsKey(T key)
+        public bool ContainsKey(T Token)
         {
-            throw new NotImplementedException();
+            return Contains(Token);
         }
 
-        void ICollection<KeyValuePair<T, int>>.CopyTo(KeyValuePair<T, int>[] array, int arrayIndex)
+        public void CopyTo(KeyValuePair<T, int>[] Array, int Index)
         {
-            throw new NotImplementedException();
+            System.Array.Copy(Entries, 0, Array, Index, Length);
         }
 
-        bool IDictionary<T, int>.Remove(T key)
+        public bool TryGetValue(T Token, out int Weight)
         {
-            throw new NotImplementedException();
-        }
-
-        bool ICollection<KeyValuePair<T, int>>.Remove(KeyValuePair<T, int> item)
-        {
-            throw new NotImplementedException();
-        }
-
-        bool IDictionary<T, int>.TryGetValue(T key, out int value)
-        {
-            throw new NotImplementedException();
+            Weight = 0;
+            if (Contains(Token))
+            {
+                Weight = this[Token];
+                return true;
+            }
+            return false;
         }
     }
 }

@@ -2,17 +2,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using XRL.World;
 
 namespace UD_Modding_Toolbox
 {
-    public partial class Raffle<T> : IList<T>
+    public partial class Raffle<T>
+        : IList<T>
+        , IReadOnlyList<T>
     {
+        public int Count => Length;
+
         public T this[int Index]
         {
             get => Entries[Index];
             set
             {
-                if (!Equals(value, null))
+                if (!Equals(value, default))
                 {
                     Entries[Index].Token = value;
                 }
@@ -27,24 +32,24 @@ namespace UD_Modding_Toolbox
 
         public void Add(T Token)
         {
-            if (Tokens.Contains(Token))
-            {
-                this[Token]++;
-            }
-            else
-            {
-                Add(Token, 1);
-            }
+            Add(Token, 1);
         }
 
-        public bool Contains(T item)
+        public bool Contains(T Token)
         {
-            return ((ICollection<T>)Tokens).Contains(item);
+            foreach (T token in this)
+            {
+                if (Equals(token, Token))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
-        public void CopyTo(T[] array, int arrayIndex)
+        public void CopyTo(T[] Array, int Index)
         {
-            ((ICollection<T>)Tokens).CopyTo(array, arrayIndex);
+            System.Array.Copy(Entries, 0, Array, Index, Length);
         }
 
         public int IndexOf(T Token)
@@ -62,7 +67,7 @@ namespace UD_Modding_Toolbox
         void IList<T>.Insert(int Index, T Token)
         {
             throw new NotImplementedException(
-                "The order of the " + nameof(Tokens) + " in a " + nameof(Raffle<T>) + " is inconsequential." +
+                "The order of the " + nameof(Entry.Token) + " in a " + nameof(Raffle<T>) + " is inconsequential." +
                 "Consider a Dictionary<" + typeof(T).Name + ", int> or List<" + typeof(T).Name + ">.");
         }
 
@@ -78,20 +83,19 @@ namespace UD_Modding_Toolbox
 
         public void RemoveAt(int Index)
         {
-            T[] tokens = new T[Count - 1];
-            int[] weights = new int[Count - 1];
-            int counter = 0;
-            for (int i = 0; i < Count; i++)
+            if (Index >= Length)
             {
-                if (i == Index)
-                {
-                    continue;
-                }
-                tokens[counter++] = Tokens[i];
-                weights[counter] = Weights[i];
+                throw new ArgumentOutOfRangeException();
             }
-            Tokens = tokens;
-            Weights = weights;
+            int weight = Entries[Index];
+            Length--;
+            if (Index < Length)
+            {
+                Array.Copy(Entries, Index + 1, Entries, Index, Length - Index);
+            }
+            Entries[Length] = default;
+            TotalWeight -= weight;
+            Variant++;
         }
     }
 }

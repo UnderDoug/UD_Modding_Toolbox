@@ -6,12 +6,13 @@ using XRL.World;
 
 namespace UD_Modding_Toolbox
 {
-    public partial class Raffle<T> : ICollection<T>, ICollection<KeyValuePair<T, int>>
+    public partial class Raffle<T> 
+        : ICollection<T>
+        , ICollection<KeyValuePair<T, int>>
     {
         public void Clear()
         {
-            Array.Clear(Tokens, 0, Tokens.Length);
-            Array.Clear(Weights, 0, Weights.Length);
+            Array.Clear(Entries, 0, Count);
             TotalWeight = 0;
             Bag = new();
             Rnd = Utils.Rnd;
@@ -20,19 +21,23 @@ namespace UD_Modding_Toolbox
             Variant = 0;
         }
 
-        void ICollection<KeyValuePair<T, int>>.Add(KeyValuePair<T, int> Entry)
+        public void Add(KeyValuePair<T, int> Entry)
         {
-            throw new NotImplementedException();
+            Add(Entry.Key, Entry.Value);
         }
 
-        void ICollection<KeyValuePair<T, int>>.Clear()
+        public bool Remove(KeyValuePair<T, int> Entry)
         {
-            throw new NotImplementedException();
+            if (Contains(Entry))
+            {
+                return Remove(Entry.Key);
+            }
+            return false;
         }
 
-        bool ICollection<KeyValuePair<T, int>>.Contains(KeyValuePair<T, int> item)
+        public bool Contains(KeyValuePair<T, int> Entry)
         {
-            throw new NotImplementedException();
+            return Contains(Entry.Key) && this[Entry.Key] == Entry.Value;
         }
     }
 }

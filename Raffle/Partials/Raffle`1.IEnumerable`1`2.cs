@@ -6,13 +6,19 @@ using XRL.Collections;
 
 namespace UD_Modding_Toolbox
 {
-    public partial class Raffle<T> : IEnumerable<Raffle<T>.Entry>, IEnumerable<T>, IEnumerable<KeyValuePair<T, int>>
+    public partial class Raffle<T> 
+        : IEnumerable<Raffle<T>.Entry>
+        , IEnumerable<T>
+        , IEnumerable<KeyValuePair<T, int>>
     {
         [Serializable]
         public class TokenEnumerator : IEnumerable<T>
         {
             [Serializable]
-            public struct Enumerator : IEnumerator<T>, IEnumerator, IDisposable
+            public struct Enumerator
+                : IEnumerator<T>
+                , IEnumerator
+                , IDisposable
             {
                 private Raffle<T> Bag;
 
@@ -60,6 +66,7 @@ namespace UD_Modding_Toolbox
 
                 public void Dispose()
                 {
+                    Bag = null;
                 }
 
                 void IEnumerator.Reset()
@@ -92,7 +99,13 @@ namespace UD_Modding_Toolbox
         }
 
         [Serializable]
-        public struct Enumerator : IEnumerator<Entry>, IEnumerator<T>, IEnumerator<KeyValuePair<T, int>>, IEnumerator, IDisposable, IDictionaryEnumerator
+        public struct Enumerator
+            : IEnumerator<Entry>
+            , IEnumerator<T>
+            , IEnumerator<KeyValuePair<T, int>>
+            , IEnumerator
+            , IDisposable
+            , IDictionaryEnumerator
         {
             private Raffle<T> Bag;
 
@@ -139,6 +152,7 @@ namespace UD_Modding_Toolbox
 
             public void Dispose()
             {
+                Bag = null;
             }
 
             void IEnumerator.Reset()
