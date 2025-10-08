@@ -927,9 +927,8 @@ namespace UD_Modding_Toolbox
 
         public static T DrawRandomToken<T>(
             this List<T> Bag,
-            T ExceptForToken = null,
+            T ExceptForToken = default,
             List<T> ExceptForTokens = null)
-                where T : class
         {
             return Bag.DrawSeededToken(
                 Seed: (string)null,
@@ -941,7 +940,6 @@ namespace UD_Modding_Toolbox
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             Predicate<T> Filter = null)
-            where T : class
         {
             return Bag.DrawSeededToken(
                 Seed: (string)null,
@@ -954,9 +952,8 @@ namespace UD_Modding_Toolbox
             string Seed,
             int? Stepper = null,
             string Context = null,
-            T ExceptForToken = null,
+            T ExceptForToken = default,
             List<T> ExceptForTokens = null)
-            where T : class
         {
             if (ExceptForToken == null && ExceptForTokens == null)
             {
@@ -969,7 +966,7 @@ namespace UD_Modding_Toolbox
 
             bool Filter(T t)
             {
-                if ((ExceptForToken != null && t == ExceptForToken)
+                if ((ExceptForToken != null && Equals(t, ExceptForToken))
                     || (!ExceptForTokens.IsNullOrEmpty() && ExceptForTokens.Contains(t)))
                 {
                     return false;
@@ -988,19 +985,18 @@ namespace UD_Modding_Toolbox
             int? Stepper = null,
             string Context = null,
             Predicate<T> Filter = null)
-            where T : class
         {
             if (Bag.IsNullOrEmpty())
             {
-                return null;
+                return default;
             }
             List<T> drawBag = (from T t in Bag where Filter == null || Filter(t) select t).ToList();
             if (drawBag.IsNullOrEmpty())
             {
-                return null;
+                return default;
             }
 
-            T token = null;
+            T token = default;
 
             if (!Seed.IsNullOrEmpty())
             {
@@ -1037,9 +1033,8 @@ namespace UD_Modding_Toolbox
             Guid Seed,
             int? Stepper = null,
             string Context = null,
-            T ExceptForToken = null,
+            T ExceptForToken = default,
             List<T> ExceptForTokens = null)
-            where T : class
         {
             return Bag.DrawSeededToken(
                 Seed: Seed.ToString(),
@@ -1049,18 +1044,16 @@ namespace UD_Modding_Toolbox
                 ExceptForTokens: ExceptForTokens);
         }
         public static T DrawToken<T>(this List<T> Bag, T Token)
-            where T : class
         {
-            T token = (!Bag.IsNullOrEmpty() || Bag.Remove(Token)) ? Token : null;
+            T token = (!Bag.IsNullOrEmpty() || Bag.Remove(Token)) ? Token : default;
             return token;
         }
 
         public static T DrawRandomToken<T>(
             this Dictionary<string, List<T>> Bag,
             string FromPocket = null,
-            T ExceptForToken = null,
+            T ExceptForToken = default,
             List<T> ExceptForTokens = null)
-            where T : class
         {
             return Bag.DrawSeededToken(
                 Seed: (string)null,
@@ -1071,14 +1064,13 @@ namespace UD_Modding_Toolbox
                 ExceptForTokens: ExceptForTokens);
         }
         public static T DrawSeededToken<T>(
-            this Dictionary<string,List<T>>
-            Bag, string Seed,
+            this Dictionary<string,List<T>> Bag,
+            string Seed,
             int? Stepper = null,
             string Context = null,
             string FromPocket = null,
-            T ExceptForToken = null,
+            T ExceptForToken = default,
             List<T> ExceptForTokens = null)
-            where T : class
         {
             List<T> drawBag = new();
             ExceptForTokens ??= new();
@@ -1992,7 +1984,6 @@ namespace UD_Modding_Toolbox
         }
 
         public static bool TryAdd<T>(this List<T> List, T Item)
-            where T : class
         {
             if (!List.Contains(Item))
             {

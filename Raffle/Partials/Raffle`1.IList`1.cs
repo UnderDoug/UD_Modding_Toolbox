@@ -9,16 +9,12 @@ namespace UD_Modding_Toolbox
     {
         public T this[int Index]
         {
-            get => Tokens[Index];
+            get => Entries[Index];
             set
             {
                 if (!Equals(value, null))
                 {
-                    Tokens[Index] = value;
-                    if (Weights.Length <= Tokens.Length)
-                    {
-                        Weights[Index] = 1;
-                    }
+                    Entries[Index].Token = value;
                 }
                 else
                 {
@@ -55,7 +51,7 @@ namespace UD_Modding_Toolbox
         {
             for (int i = 0; i < Length; i++)
             {
-                if (Equals(Tokens[i], Token))
+                if (Equals(Entries[i].Token, Token))
                 {
                     return i;
                 }

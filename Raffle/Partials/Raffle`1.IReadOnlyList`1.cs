@@ -7,5 +7,6 @@ namespace UD_Modding_Toolbox
 {
     public partial class Raffle<T> : IReadOnlyList<T>
     {
+        public int Count => Tokens.Length;
     }
 }

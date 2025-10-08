@@ -10,8 +10,8 @@ namespace UD_Modding_Toolbox
     {
         public int this[T Token]
         {
-            get => Weights[IndexOf(Token)];
-            set => Weights[IndexOf(Token)] = value;
+            get => Entries[IndexOf(Token)];
+            set => Entries[IndexOf(Token)].Weight = value;
         }
 
         ICollection<T> IDictionary<T, int>.Keys => Tokens;
@@ -29,21 +29,6 @@ namespace UD_Modding_Toolbox
                 Tokens[Length] = Token;
                 Weights[Length] = Weight;
             }
-        }
-
-        void ICollection<KeyValuePair<T, int>>.Add(KeyValuePair<T, int> Entry)
-        {
-            throw new NotImplementedException();
-        }
-
-        void ICollection<KeyValuePair<T, int>>.Clear()
-        {
-            throw new NotImplementedException();
-        }
-
-        bool ICollection<KeyValuePair<T, int>>.Contains(KeyValuePair<T, int> item)
-        {
-            throw new NotImplementedException();
         }
 
         bool IDictionary<T, int>.ContainsKey(T key)

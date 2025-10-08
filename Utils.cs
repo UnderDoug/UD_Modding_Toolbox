@@ -1,23 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using ConsoleLib.Console;
-
+﻿using ConsoleLib.Console;
 using HistoryKit;
 using Kobold;
-
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using XRL;
+using XRL.Core;
 using XRL.Language;
 using XRL.Rules;
 using XRL.UI;
 using XRL.World;
 using XRL.World.Text.Attributes;
 using XRL.World.Text.Delegates;
-
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Options;
 
 namespace UD_Modding_Toolbox
 {
+    [HasGameBasedStaticCache]
     [HasVariableReplacer]
     public static class Utils
     {
@@ -34,7 +34,91 @@ namespace UD_Modding_Toolbox
         }
 
         public static ModInfo ThisMod => ModManager.GetMod(MOD_ID);
+
+        public static string ModName => ThisMod?.Manifest?.Title;
+        public static string ModNameStripped => ThisMod?.Manifest?.Title.Strip();
+
+        public static string ModAuthor => ThisMod?.Manifest?.Author;
+        public static string ModAuthorStripped => ModAuthor?.Strip();
+
+        public static string TellModAuthor => ModAuthor.IsNullOrEmpty() ? null : "Let " + ModAuthor + " know on the steam workshop discussion for this mod.";
+        public static string TellModAuthorStripped => ModAuthorStripped.IsNullOrEmpty() ? null : "Let " + ModAuthorStripped + " know on the steam workshop discussion for this mod.";
+
+
         public static ModInfo HNPS_GigantismPlus => ModManager.GetMod(HNPS_GIGANTISMPLUS_MOD_ID);
+
+        private static Random _rnd;
+        public static Random Rnd
+        {
+            get
+            {
+                if (_rnd == null)
+                {
+                    if (The.Game == null)
+                    {
+                        throw new Exception(ModNameStripped + " mod attempted to retrieve " + nameof(Random) + ", but Game is not created yet.");
+                    }
+                    else
+                    if (The.Game.IntGameState.ContainsKey(ModNameStripped + ":Random"))
+                    {
+                        _rnd = new Random(The.Game.GetIntGameState(ModNameStripped + ":Random"));
+                    }
+                    else
+                    {
+                        _rnd = Stat.GetSeededRandomGenerator(ModNameStripped);
+                    }
+                    The.Game.SetIntGameState(ModNameStripped + ":Random", _rnd.Next());
+                }
+                return _rnd;
+            }
+        }
+
+        [GameBasedCacheInit]
+        public static void ResetRandom()
+        {
+            _rnd = null;
+        }
+
+        public static int RndNext(int minInclusive, int maxInclusive)
+        {
+            return Rnd.Next(minInclusive, maxInclusive + 1);
+        }
+        public static Span<T> Shuffle<T>(Span<T> Values)
+        {
+            if (Values == null)
+            {
+                throw new ArgumentNullException(nameof(Values));
+            }
+            int length = Values.Length;
+            for (int i = 0; i < length - 1; i++)
+            {
+                int num = RndNext(i, length);
+                if (num != i)
+                {
+                    (Values[num], Values[i]) = (Values[i], Values[num]);
+                }
+            }
+            return Values;
+        }
+        public static T[] Shuffle<T>(T[] Values)
+        {
+            if (Values == null)
+            {
+                throw new ArgumentNullException(nameof(Values));
+            }
+            return Shuffle(Values.AsSpan()).ToArray();
+        }
+        public static IEnumerable<T> Shuffle<T>(IEnumerable<T> Values)
+        {
+            if (Values == null)
+            {
+                throw new ArgumentNullException(nameof(Values));
+            }
+            foreach(T value in Shuffle(Values.ToArray()))
+            {
+                yield return value;
+            }
+        }
 
         [VariableReplacer]
         public static string nbsp(DelegateContext Context)
