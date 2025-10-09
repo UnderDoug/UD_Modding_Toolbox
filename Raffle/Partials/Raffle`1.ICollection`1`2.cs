@@ -14,7 +14,6 @@ namespace UD_Modding_Toolbox
         {
             Array.Clear(Entries, 0, Count);
             TotalWeight = 0;
-            Bag = new();
             Rnd = Utils.Rnd;
             Size = DefaultCapacity;
             Length = 0;

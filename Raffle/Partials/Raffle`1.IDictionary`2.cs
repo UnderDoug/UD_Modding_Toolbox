@@ -18,19 +18,28 @@ namespace UD_Modding_Toolbox
         ICollection<T> IDictionary<T, int>.Keys => GetEnumerator() as ICollection<T>;
         ICollection<int> IDictionary<T, int>.Values => GetEnumerator() as ICollection<int>;
 
-        public void Add(T Token, int Weight)
+        static void Add(Raffle<T> Bag, T Token, int Weight)
         {
-            if (Contains(Token))
+            if (Bag.Contains(Token))
             {
-                this[Token] += Weight;
+                Bag[Token] += Weight;
             }
             else
             {
-                EnsureCapacity(Length + 1);
-                Entries[Length] = new(Token, Weight);
+                Bag.EnsureCapacity(Bag.Length + 1);
+                Bag.Entries[Bag.Length] = new(Token, Weight);
             }
-            TotalWeight += Weight;
-            Variant++;
+            Bag.TotalWeight += Weight;
+            Bag.Variant++;
+        }
+
+        public void Add(T Token, int Weight)
+        {
+            if (Active)
+            {
+                throw new InvalidOperationException("Can't add " + nameof(Entries) + " to raffle while draw is active.");
+            }
+            Add(this, Token, Weight);
         }
 
         public bool ContainsKey(T Token)

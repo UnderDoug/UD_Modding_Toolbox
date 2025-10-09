@@ -64,7 +64,15 @@ namespace UD_Modding_Toolbox
             {
                 return value == 0;
             }
+            return true;
+        }
 
+        public static bool IsNullOrEmpty<T>([NotNullWhen(false)] this Raffle<T> value)
+        {
+            if (value != null)
+            {
+                return value.Count == 0;
+            }
             return true;
         }
 
@@ -2395,6 +2403,46 @@ namespace UD_Modding_Toolbox
                 }
             }
             return false;
+        }
+
+        public static long SubtractModulo(this long operand1, long operand2)
+        {
+            return operand1 - (operand1 % operand2);
+        }
+        public static int SubtractModulo(this int operand1, int operand2)
+        {
+            return operand1 - (operand1 % operand2);
+        }
+
+        public static double AsGameHours(this long TimeTick)
+        {
+            return TimeTick / Calendar.TurnsPerHour;
+        }
+        public static double AsGameDays(this long TimeTick)
+        {
+            return TimeTick / Calendar.TurnsPerDay;
+        }
+        public static double AsGameYears(this long TimeTick)
+        {
+            return TimeTick / Calendar.TurnsPerYear;
+        }
+
+        public static long TurnTicksUntil(this long TimeTickEnd)
+        {
+            return Math.Max(0, TurnTicksBetween(The.CurrentTurn, TimeTickEnd));
+        }
+
+        public static long GameHoursAsTurnTicks(this double Hours)
+        {
+            return (long)(Hours * Calendar.TurnsPerHour);
+        }
+        public static long GameDaysAsTurnTicks(this double Days)
+        {
+            return (long)(Days * Calendar.TurnsPerDay);
+        }
+        public static long GameYearsAsTurnTicks(this double Years)
+        {
+            return (long)(Years * Calendar.TurnsPerYear);
         }
     }
 }

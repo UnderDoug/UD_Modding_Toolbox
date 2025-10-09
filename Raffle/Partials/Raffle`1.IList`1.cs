@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Wintellect.PowerCollections;
 using XRL.World;
 
 namespace UD_Modding_Toolbox
@@ -25,10 +26,11 @@ namespace UD_Modding_Toolbox
                 {
                     RemoveAt(Index);
                 }
+                Variant++;
             }
         }
 
-        public bool IsReadOnly => false;
+        public bool IsReadOnly => Active;
 
         public void Add(T Token)
         {
@@ -46,22 +48,40 @@ namespace UD_Modding_Toolbox
             }
             return false;
         }
+        public bool DrawnContains(T Token)
+        {
+            if (DrawnEntries.Length > 0)
+            {
+                foreach (T drawnToken in DrawnEntries)
+                {
+                    if (Equals(drawnToken, Token))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         public void CopyTo(T[] Array, int Index)
         {
             System.Array.Copy(Entries, 0, Array, Index, Length);
         }
 
-        public int IndexOf(T Token)
+        static int IndexOf(Raffle<T> Bag, T Token)
         {
-            for (int i = 0; i < Length; i++)
+            for (int i = 0; i < Bag.Length; i++)
             {
-                if (Equals(Entries[i].Token, Token))
+                if (Equals(Bag.Entries[i].Token, Token))
                 {
                     return i;
                 }
             }
             return -1;
+        }
+        public int IndexOf(T Token)
+        {
+            return IndexOf(this, Token);
         }
 
         void IList<T>.Insert(int Index, T Token)
@@ -81,21 +101,30 @@ namespace UD_Modding_Toolbox
             return false;
         }
 
-        public void RemoveAt(int Index)
+        static void RemoveAt(Raffle<T> Bag, int Index)
         {
-            if (Index >= Length)
+            int length = Bag.Length;
+            if (Index >= length)
             {
                 throw new ArgumentOutOfRangeException();
             }
-            int weight = Entries[Index];
-            Length--;
-            if (Index < Length)
+            int weight = Bag.Entries[Index];
+            length = --Bag.Length;
+            if (Index < length)
             {
-                Array.Copy(Entries, Index + 1, Entries, Index, Length - Index);
+                Array.Copy(Bag.Entries, Index + 1, Bag.Entries, Index, length - Index);
             }
-            Entries[Length] = default;
-            TotalWeight -= weight;
-            Variant++;
+            Bag.Entries[length] = default;
+            Bag.TotalWeight -= weight;
+            Bag.Variant++;
+        }
+        public void RemoveAt(int Index)
+        {
+            if (Active)
+            {
+                throw new InvalidOperationException("Can't add " + nameof(Entries) + " to raffle while draw is active.");
+            }
+            RemoveAt(this, Index);
         }
     }
 }

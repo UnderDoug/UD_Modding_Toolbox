@@ -44,7 +44,6 @@ namespace UD_Modding_Toolbox
         public static string TellModAuthor => ModAuthor.IsNullOrEmpty() ? null : "Let " + ModAuthor + " know on the steam workshop discussion for this mod.";
         public static string TellModAuthorStripped => ModAuthorStripped.IsNullOrEmpty() ? null : "Let " + ModAuthorStripped + " know on the steam workshop discussion for this mod.";
 
-
         public static ModInfo HNPS_GigantismPlus => ModManager.GetMod(HNPS_GIGANTISMPLUS_MOD_ID);
 
         private static Random _rnd;
@@ -410,5 +409,60 @@ namespace UD_Modding_Toolbox
             return output.Replace("%s", @bool ? trueString : falseString);
         }
 
-    } //!-- public static class Utils
+        public static long TurnTicksBetween(long TimeTickStart, long TimeTickEnd)
+        {
+            if (TimeTickStart > TimeTickEnd)
+            {
+                // throw new ArgumentException(nameof(TimeTickEnd) + " cannot be less than " + nameof(TimeTickStart));
+            }
+            return TimeTickEnd - TimeTickStart;
+        }
+        public static double GameHoursBetween(long TimeTickStart, long TimeTickEnd)
+        {
+            return TurnTicksBetween(TimeTickStart, TimeTickEnd).AsGameHours();
+        }
+        public static double GameDaysBetween(long TimeTickStart, long TimeTickEnd)
+        {
+            return TurnTicksBetween(TimeTickStart, TimeTickEnd).AsGameDays();
+        }
+        public static double GameYearsBetween(long TimeTickStart, long TimeTickEnd)
+        {
+            return TurnTicksBetween(TimeTickStart, TimeTickEnd).AsGameYears();
+        }
+
+        public static long TurnTickAfterTimeTicks(long TimeTicks)
+        {
+            if (The.Game == null)
+            {
+                MetricsManager.LogModError(ThisMod, nameof(The) + "." + nameof(The.Game) + " hasn't loaded yet. " + nameof(The.CurrentTurn) + " can't be retreived.");
+                return default;
+            }
+            return The.CurrentTurn + TimeTicks;
+        }
+        public static long TurnTickAfterHours(double Hours)
+        {
+            return The.CurrentTurn + Hours.GameHoursAsTurnTicks();
+        }
+        public static long TurnTickAfterDays(double Days)
+        {
+            return The.CurrentTurn + Days.GameDaysAsTurnTicks();
+        }
+        public static long TurnTickAfterYears(double Years)
+        {
+            return The.CurrentTurn + Years.GameYearsAsTurnTicks();
+        }
+
+        public static long TimeTickAtStartOfCurrentGameHour()
+        {
+            return Math.Max(0, The.CurrentTurn.SubtractModulo(Calendar.TurnsPerHour));
+        }
+        public static long TimeTickAtStartOfCurrentGameDay()
+        {
+            return Math.Max(0, The.CurrentTurn.SubtractModulo(Calendar.TurnsPerDay));
+        }
+        public static long TimeTickAtStartOfCurrentGameYear()
+        {
+            return Math.Max(0, The.CurrentTurn.SubtractModulo(Calendar.TurnsPerYear));
+        }
+    }
 }
