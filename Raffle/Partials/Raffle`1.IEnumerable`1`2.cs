@@ -20,7 +20,9 @@ namespace UD_Modding_Toolbox
                 , IEnumerator
                 , IDisposable
             {
-                private Raffle<T> Bag;
+                private Raffle<T> Raffle;
+
+                private Entry[] Entries;
 
                 private int Version;
 
@@ -28,13 +30,18 @@ namespace UD_Modding_Toolbox
 
                 private int Weight;
 
-                public T Current => Bag[Index];
+                public T Current => Entries[Index];
                 object IEnumerator.Current => Current;
 
-                public Enumerator(Raffle<T> Bag)
+                public Enumerator(Raffle<T> Raffle, Entry[] Entries)
                 {
-                    this.Bag = Bag;
-                    Version = Bag.Version;
+                    this.Raffle = Raffle;
+                    this.Entries = new Entry[Entries.Length];
+                    for (int i = 0; i < Entries.Length; i++)
+                    {
+                        this.Entries[i] = new(Entries[i]);
+                    }
+                    Version = Raffle.Version;
                     Index = -1;
                     Weight = -1;
                 }
@@ -46,15 +53,15 @@ namespace UD_Modding_Toolbox
 
                 public bool MoveNext()
                 {
-                    if (Version != Bag.Version)
+                    if (Version != Raffle.Version)
                     {
                         throw new InvalidOperationException("Collection was modified; enumeration operation may not execute.");
                     }
-                    while (++Index < Bag.Length)
+                    while (++Index < Entries.Length)
                     {
-                        if (Bag[Index] is T token)
+                        if (Entries[Index] is T token)
                         {
-                            while (++Weight < Bag[token])
+                            while (++Weight < Entries[Raffle.IndexOf(token)])
                             {
                                 return true;
                             }
@@ -66,12 +73,13 @@ namespace UD_Modding_Toolbox
 
                 public void Dispose()
                 {
-                    Bag = null;
+                    Array.Clear(Entries, 0, Entries.Length);
+                    Raffle = null;
                 }
 
                 void IEnumerator.Reset()
                 {
-                    if (Version != Bag.Version)
+                    if (Version != Raffle.Version)
                     {
                         throw new InvalidOperationException("Collection was modified; enumeration operation may not execute.");
                     }
@@ -80,16 +88,23 @@ namespace UD_Modding_Toolbox
                 }
             }
 
-            protected Raffle<T> Bag;
+            protected Raffle<T> Raffle;
 
-            public TokenEnumerator(Raffle<T> Bag)
+            protected Entry[] Entries;
+
+            public TokenEnumerator(Raffle<T> Raffle, Entry[] Entries)
             {
-                this.Bag = Bag;
+                this.Raffle = Raffle;
+                this.Entries = new Entry[Entries.Length];
+                for (int i = 0; i < Entries.Length; i++)
+                {
+                    this.Entries[i] = new(Entries[i]);
+                }
             }
 
             public IEnumerator<T> GetEnumerator()
             {
-                return new Enumerator(Bag);
+                return new Enumerator(Raffle, Entries);
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -113,7 +128,7 @@ namespace UD_Modding_Toolbox
 
             private int Index;
 
-            public readonly Entry Current => new(Bag.Entries[Index].Token, Bag.Entries[Index].Weight);
+            public readonly Entry Current => new(Bag.ActiveEntries[Index].Token, Bag.ActiveEntries[Index].Weight);
 
             readonly T IEnumerator<T>.Current => Current;
 
@@ -183,7 +198,7 @@ namespace UD_Modding_Toolbox
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return Entries.GetEnumerator();
+            return ActiveEntries.GetEnumerator();
         }
     }
 }

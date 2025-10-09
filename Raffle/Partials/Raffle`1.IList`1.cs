@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Wintellect.PowerCollections;
 using XRL.World;
+using static XRL.World.Conversations.ConversationEvent;
 
 namespace UD_Modding_Toolbox
 {
@@ -15,22 +16,26 @@ namespace UD_Modding_Toolbox
 
         public T this[int Index]
         {
-            get => Entries[Index];
+            get => ActiveEntries[Index];
             set
             {
+                if (Index < 0 || Index >= Length)
+                {
+                    throw new ArgumentOutOfRangeException();
+                }
                 if (!Equals(value, default))
                 {
-                    Entries[Index].Token = value;
+                    ActiveEntries[Index].Token = value;
+                    Variant++;
                 }
                 else
                 {
                     RemoveAt(Index);
                 }
-                Variant++;
             }
         }
 
-        public bool IsReadOnly => Active;
+        public bool IsReadOnly => false;
 
         public void Add(T Token)
         {
@@ -39,22 +44,21 @@ namespace UD_Modding_Toolbox
 
         public bool Contains(T Token)
         {
-            foreach (T token in this)
-            {
-                if (Equals(token, Token))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return !(IndexOf(Token) < 0);
+        }
+        public bool ActiveContains(T Token)
+        {
+            return IndexOf(Token) is int index
+                && index > -1
+                && ActiveEntries[index] > 0;
         }
         public bool DrawnContains(T Token)
         {
             if (DrawnEntries.Length > 0)
             {
-                foreach (T drawnToken in DrawnEntries)
+                foreach (Entry drawnEntry in ActiveEntries)
                 {
-                    if (Equals(drawnToken, Token))
+                    if (Equals(drawnEntry, Token) && drawnEntry > 0)
                     {
                         return true;
                     }
@@ -65,23 +69,19 @@ namespace UD_Modding_Toolbox
 
         public void CopyTo(T[] Array, int Index)
         {
-            System.Array.Copy(Entries, 0, Array, Index, Length);
+            System.Array.Copy(ActiveEntries, 0, Array, Index, Length);
         }
 
-        static int IndexOf(Raffle<T> Bag, T Token)
+        public int IndexOf(T Token)
         {
-            for (int i = 0; i < Bag.Length; i++)
+            for (int i = 0; i < Length; i++)
             {
-                if (Equals(Bag.Entries[i].Token, Token))
+                if (Equals(ActiveEntries[i].Token, Token))
                 {
                     return i;
                 }
             }
             return -1;
-        }
-        public int IndexOf(T Token)
-        {
-            return IndexOf(this, Token);
         }
 
         void IList<T>.Insert(int Index, T Token)
@@ -101,30 +101,27 @@ namespace UD_Modding_Toolbox
             return false;
         }
 
-        static void RemoveAt(Raffle<T> Bag, int Index)
+        public void RemoveAt(int Index)
         {
-            int length = Bag.Length;
-            if (Index >= length)
+            int length = Length;
+            if (Index < 0 || Index >= length)
             {
                 throw new ArgumentOutOfRangeException();
             }
-            int weight = Bag.Entries[Index];
-            length = --Bag.Length;
+            int activeWeight = ActiveEntries[Index];
+            int drawnWeight = DrawnEntries[Index];
+            length = --Length;
             if (Index < length)
             {
-                Array.Copy(Bag.Entries, Index + 1, Bag.Entries, Index, length - Index);
+                Array.Copy(ActiveEntries, Index + 1, ActiveEntries, Index, length - Index);
+                Array.Copy(DrawnEntries, Index + 1, DrawnEntries, Index, length - Index);
             }
-            Bag.Entries[length] = default;
-            Bag.TotalWeight -= weight;
-            Bag.Variant++;
-        }
-        public void RemoveAt(int Index)
-        {
-            if (Active)
-            {
-                throw new InvalidOperationException("Can't add " + nameof(Entries) + " to raffle while draw is active.");
-            }
-            RemoveAt(this, Index);
+            ActiveEntries[length] = default;
+            DrawnEntries[length] = default;
+            TotalActiveWeights -= activeWeight;
+            TotalDrawnWeights -= drawnWeight;
+            TotalWeights = TotalActiveWeights + TotalDrawnWeights;
+            Variant++;
         }
     }
 }

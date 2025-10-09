@@ -12,7 +12,7 @@ namespace UD_Modding_Toolbox
     public partial class Raffle<T>
     {
         [Serializable]
-        public class Entry 
+        public class Entry
             : IComposite
             , IEquatable<Entry>
             , IEquatable<int>
@@ -30,6 +30,11 @@ namespace UD_Modding_Toolbox
             {
                 this.Token = Token;
                 this.Weight = Weight;
+            }
+
+            public Entry(Entry Source)
+                : this(Source, Source)
+            {
             }
 
             public void Deconstruct(out T Token, out int Weight)

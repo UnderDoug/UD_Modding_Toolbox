@@ -12,9 +12,12 @@ namespace UD_Modding_Toolbox
     {
         public void Clear()
         {
-            Array.Clear(Entries, 0, Count);
-            TotalWeight = 0;
-            Rnd = Utils.Rnd;
+            Array.Clear(ActiveEntries, 0, Count);
+            Array.Clear(DrawnEntries, 0, Count);
+            TotalWeights = 0;
+            TotalActiveWeights = 0;
+            TotalDrawnWeights = 0;
+            Rnd = null;
             Size = DefaultCapacity;
             Length = 0;
             Variant = 0;

@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using Wintellect.PowerCollections;
 using XRL.World;
 
 namespace UD_Modding_Toolbox
@@ -11,35 +12,39 @@ namespace UD_Modding_Toolbox
     {
         public int this[T Token]
         {
-            get => Entries[IndexOf(Token)];
-            set => Entries[IndexOf(Token)].Weight = value;
+            get => ActiveEntries[IndexOf(Token)];
+            set
+            {
+                int cappedValue = Math.Max(0, value);
+                if (Contains(Token))
+                {
+                    ActiveEntries[IndexOf(Token)].Weight = cappedValue;
+                }
+                else
+                {
+                    Add(Token, cappedValue);
+                }
+            }
         }
 
         ICollection<T> IDictionary<T, int>.Keys => GetEnumerator() as ICollection<T>;
         ICollection<int> IDictionary<T, int>.Values => GetEnumerator() as ICollection<int>;
 
-        static void Add(Raffle<T> Bag, T Token, int Weight)
+        public void Add(T Token, int Weight)
         {
-            if (Bag.Contains(Token))
+            if (Contains(Token))
             {
-                Bag[Token] += Weight;
+                this[Token] += Weight;
             }
             else
             {
-                Bag.EnsureCapacity(Bag.Length + 1);
-                Bag.Entries[Bag.Length] = new(Token, Weight);
+                EnsureCapacity(Length + 1);
+                ActiveEntries[Length] = new(Token, Weight);
+                DrawnEntries[Length] = new(Token, 0);
             }
-            Bag.TotalWeight += Weight;
-            Bag.Variant++;
-        }
-
-        public void Add(T Token, int Weight)
-        {
-            if (Active)
-            {
-                throw new InvalidOperationException("Can't add " + nameof(Entries) + " to raffle while draw is active.");
-            }
-            Add(this, Token, Weight);
+            TotalActiveWeights += Weight;
+            TotalWeights += TotalActiveWeights;
+            Variant++;
         }
 
         public bool ContainsKey(T Token)
@@ -49,15 +54,43 @@ namespace UD_Modding_Toolbox
 
         public void CopyTo(KeyValuePair<T, int>[] Array, int Index)
         {
-            System.Array.Copy(Entries, 0, Array, Index, Length);
+            System.Array.Copy(ActiveEntries, 0, Array, Index, Length);
         }
 
         public bool TryGetValue(T Token, out int Weight)
         {
             Weight = 0;
-            if (Contains(Token))
+            bool anyWeight = false;
+            if (TryGetActiveValue(Token, out int activeWeight))
             {
-                Weight = this[Token];
+                Weight += activeWeight;
+                anyWeight =  true;
+            }
+            if (TryGetDrawnValue(Token, out int drawnWeight))
+            {
+                Weight += drawnWeight;
+                anyWeight = true;
+            }
+            return anyWeight;
+        }
+        public bool TryGetActiveValue(T Token, out int Weight)
+        {
+            Weight = 0;
+            int index = IndexOf(Token);
+            if (index > -1)
+            {
+                Weight = ActiveEntries[index];
+                return true;
+            }
+            return false;
+        }
+        public bool TryGetDrawnValue(T Token, out int Weight)
+        {
+            Weight = 0;
+            int index = IndexOf(Token);
+            if (index > -1)
+            {
+                Weight = DrawnEntries[index];
                 return true;
             }
             return false;
