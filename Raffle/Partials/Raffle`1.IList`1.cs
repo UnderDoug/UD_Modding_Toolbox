@@ -69,7 +69,15 @@ namespace UD_Modding_Toolbox
 
         public void CopyTo(T[] Array, int Index)
         {
-            System.Array.Copy(ActiveEntries, 0, Array, Index, Length);
+            List<T> activeTokens = new();
+            for (int i = 0; i < Length; i++)
+            {
+                if (ActiveEntries[i] > 0)
+                {
+                    activeTokens.Add(ActiveEntries[i]);
+                }
+            }
+            System.Array.Copy(activeTokens.ToArray(), 0, Array, Index, activeTokens.Count);
         }
 
         public int IndexOf(T Token)

@@ -21,6 +21,9 @@ namespace UD_Modding_Toolbox
         protected int TotalActiveWeights;
         protected int TotalDrawnWeights;
 
+        public int ActiveCount => TotalActiveWeights;
+        public int DrawnCount => TotalDrawnWeights;
+
         protected int Size;
 
         protected int Length;
@@ -38,13 +41,10 @@ namespace UD_Modding_Toolbox
 
         public bool WantFieldReflection => false;
 
-        protected Random _Rnd;
+        protected Random Rnd => Stat.GetSeededRandomGenerator(_NextSeed);
+        protected string _NextSeed => _Seed + "::" + TotalActiveWeights;
 
-        protected Random Rnd
-        {
-            get => _Rnd ??= Seeded ? Stat.GetSeededRandomGenerator(Seed) : Utils.Rnd;
-            set => _Rnd = value; 
-        }
+        protected string _Seed;
 
         public string Seed;
 
@@ -57,7 +57,7 @@ namespace UD_Modding_Toolbox
             Variant = 0;
             TotalWeights = 0;
             TotalDrawnWeights = 0;
-            _Rnd = null;
+            Shake();
             Seed = null;
         }
         public Raffle(int Capacity)
@@ -65,15 +65,15 @@ namespace UD_Modding_Toolbox
         {
             Size = Capacity;
         }
-        public Raffle(Random Rnd)
+        public Raffle(string Seed)
             : this()
         {
-            this.Rnd = Rnd;
+            SetSeed(Seed);
         }
-        public Raffle(Random Rnd, int Capacity)
+        public Raffle(string Seed, int Capacity)
             : this(Capacity)
         {
-            this.Rnd = Rnd;
+            SetSeed(Seed);
         }
         public Raffle(Raffle<T> Source)
             : this()
@@ -82,32 +82,32 @@ namespace UD_Modding_Toolbox
             {
                 throw new ArgumentNullException(nameof(Source));
             }
-            Rnd = Source.Rnd;
+            SetSeed(Seed);
             EnsureCapacity(Source.Count);
             foreach ((T token, int weight) in Source)
             {
                 Add(token, weight);
             }
         }
-        public Raffle(Random Rnd, Raffle<T> Source)
+        public Raffle(string Seed, Raffle<T> Source)
             : this(Source)
         {
-            this.Rnd = Rnd;
+            SetSeed(Seed);
         }
         public Raffle(ICollection<KeyValuePair<T, int>> Source)
             : this((Raffle<T>)Source)
         {
         }
-        public Raffle(Random Rnd, ICollection<KeyValuePair<T, int>> Source)
-            : this(Rnd, (Raffle<T>)Source)
+        public Raffle(string Seed, ICollection<KeyValuePair<T, int>> Source)
+            : this(Seed, (Raffle<T>)Source)
         {
         }
         public Raffle(Dictionary<T, int> Source)
             : this((Raffle<T>)Source)
         {
         }
-        public Raffle(Random Rnd, Dictionary<T, int> Source)
-            : this(Rnd, (Raffle<T>)Source)
+        public Raffle(string Seed, Dictionary<T, int> Source)
+            : this(Seed, (Raffle<T>)Source)
         {
         }
 
@@ -132,48 +132,64 @@ namespace UD_Modding_Toolbox
             Size = Capacity;
         }
 
+        protected Random SetSeed(string Seed)
+        {
+            _Seed = this.Seed = Seed ?? "none";
+            return Rnd;
+        }
+        protected void Shake()
+        {
+            if (!Seeded)
+            {
+                _Seed = Utils.Rnd.Next().ToString();
+            }
+        }
+
         // Weights
+        protected static int GetWeight(Entry[] Entries, T Token)
+        {
+            for (int i = 0; i < Entries.Length; i++)
+            {
+                if (!Equals(Entries[i], null) && Equals(Entries[i].Token, Token))
+                {
+                    return Entries[i];
+                }
+            }
+            return 0;
+        }
         public int GetTotalWeight(T Token)
         {
             return GetActiveWeight(Token) + GetDrawnWeight(Token);
         }
 
-        // Total Weights
         public int GetActiveWeight(T Token)
         {
-            if (IndexOf(Token) is int index && index > -1)
-            {
-                return ActiveEntries[index];
-            }
-            return 0;
+            return GetWeight(ActiveEntries, Token); ;
         }
         public int GetDrawnWeight(T Token)
         {
-            if (IndexOf(Token) is int index && index > -1)
-            {
-                return DrawnEntries[index];
-            }
-            return 0;
+            return GetWeight(DrawnEntries, Token);
         }
 
         // Chances
+        protected static float GetChance(Entry[] Entries, T Token, int TotalWeights)
+        {
+            for (int i = 0; i < Entries.Length; i++)
+            {
+                if (!Equals(Entries[i], null) && Equals(Entries[i].Token, Token) && Entries[i] > 0)
+                {
+                    return Entries[i] / TotalWeights;
+                }
+            }
+            return 0;
+        }
         public float GetTotalChance(T Token)
         {
             if (Contains(Token))
             {
                 return GetTotalWeight(Token) / TotalWeights;
             }
-            throw new ArgumentOutOfRangeException(nameof(Token), "Parameter not found in collection.");
-        }
-        public bool TryGetTotalChance(T Token, out float Chance)
-        {
-            Chance = 0;
-            if (Contains(Token))
-            {
-                Chance = GetTotalChance(Token);
-                return true;
-            }
-            return false;
+            return 0;
         }
 
         public float GetActiveChance(T Token)
@@ -182,17 +198,7 @@ namespace UD_Modding_Toolbox
             {
                 return GetActiveWeight(Token) / TotalActiveWeights;
             }
-            throw new ArgumentOutOfRangeException(nameof(Token), "Parameter not found in collection.");
-        }
-        public bool TryGetActiveChance(T Token, out float Chance)
-        {
-            Chance = 0;
-            if (Contains(Token))
-            {
-                Chance = GetActiveChance(Token);
-                return true;
-            }
-            return false;
+            return 0;
         }
 
         public IEnumerable<float> GetTotalChances()
@@ -308,44 +314,106 @@ namespace UD_Modding_Toolbox
         {
             return Rnd.Next(TotalActiveWeights);
         }
-
-        int SeededNext()
-        {
-            throw new NotImplementedException();
-        }
-
         T NextToken()
         {
             int draw = Next();
             int currentCombinedWeight = 0;
             for (int i = 0; i < Length; i++)
             {
-                Entry entry = ActiveEntries[i];
-                if (draw < (currentCombinedWeight += entry))
+                if (draw < (currentCombinedWeight += ActiveEntries[i]))
                 {
-                    return entry;
+                    return ActiveEntries[i];
                 }
             }
-            throw new InvalidOperationException("Attempted to ");
+            return default;
         }
-
-        public T DrawToken()
-        {
-            throw new NotImplementedException();
-        }
-
         bool DrawToken(T Token)
         {
-            throw new NotImplementedException();
+            if (IndexOf(Token) is int index
+                && index > -1
+                && ActiveEntries[index] > 0)
+            {
+                ActiveEntries[index]--;
+                TotalActiveWeights--;
+
+                DrawnEntries[index]++;
+                TotalDrawnWeights++;
+
+                return true;
+            }
+            return false;
         }
 
-        protected static int GetWeight(Entry[] Entries, T Token)
+        public T Draw(bool RefillIfEmpty)
         {
-            for (int i = 0; i < Entries.Length; i++)
+            if (NextToken() is T token
+                && DrawToken(token))
             {
-
+                if (RefillIfEmpty && ActiveCount < 1)
+                {
+                    Refill();
+                }
+                return token;
             }
-            return 0;
+            return default;
+        }
+
+        public T Draw()
+        {
+            return Draw(true);
+        }
+
+        public bool TryDraw(out T Token)
+        {
+            Token = Draw(false);
+            if (!Equals(Token, null) && !Equals(Token, default))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public T Sample()
+        {
+            if (NextToken() is T token)
+            {
+                return token;
+            }
+            return default;
+        }
+
+        public bool TrySample(out T Token)
+        {
+            Token = Sample();
+            if (!Equals(Token, null) && !Equals(Token, default))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public Raffle<T> Refill(string Seed = null)
+        {
+            for (int i = 0; i < Length; i++)
+            {
+                int drawnWeight = DrawnEntries[i];
+
+                ActiveEntries[i] += drawnWeight;
+                TotalActiveWeights += drawnWeight;
+
+                DrawnEntries[i] -= drawnWeight;
+                TotalDrawnWeights -= drawnWeight;
+            }
+            if (!Seeded)
+            {
+                Shake();
+            }
+            else
+            if (Seed != null)
+            {
+                SetSeed(Seed);
+            }
+            return this;
         }
 
         public static implicit operator Dictionary<T, int>(Raffle<T> Source)

@@ -174,6 +174,15 @@ namespace UD_Modding_Toolbox
                 return Entry.Weight;
             }
 
+            // Entry from T/int
+            public static implicit operator Entry(T Token)
+            {
+                return new(Token, 1);
+            }
+            public static implicit operator Entry(int Weight)
+            {
+                return new(default, Weight);
+            }
 
             // Entry +/- int
             public static Entry operator +(Entry operand1, int operand2)
@@ -199,7 +208,31 @@ namespace UD_Modding_Toolbox
             public static Entry operator +(Entry operand1, long operand2) => operand1 + (int)operand2;
             public static Entry operator -(Entry operand1, long operand2) => operand1 + -(int)operand2;
 
-            // Entry +/- Token
+            // int +/- Entry
+            public static int operator +(int operand1, Entry operand2)
+            {
+                operand1 += operand2.Weight;
+                return operand1;
+            }
+            public static int operator -(int operand1, Entry operand2) =>  operand1 + -operand2;
+
+            // uint +/- Entry
+            public static uint operator +(uint operand1, Entry operand2) => (uint)(operand1 + (int)operand2);
+            public static uint operator -(uint operand1, Entry operand2) => (uint)(operand1 + -(int)operand2);
+
+            // double +/- Entry
+            public static double operator +(double operand1, Entry operand2) => (double)(operand1 + (int)operand2);
+            public static double operator -(double operand1, Entry operand2) => (double)(operand1 + -(int)operand2);
+
+            // float +/- Entry
+            public static float operator +(float operand1, Entry operand2) => (float)(operand1 + (int)operand2);
+            public static float operator -(float operand1, Entry operand2) => (float)(operand1 + -(int)operand2);
+
+            // long +/- Entry
+            public static long operator +(long operand1, Entry operand2) => operand1 + (int)operand2;
+            public static long operator -(long operand1, Entry operand2) => operand1 + -(int)operand2;
+
+            // Token +/- Entry
             public static Entry operator +(Entry operand1, T operand2)
             {
                 if (Equals(operand1.Token, operand2))
@@ -218,8 +251,32 @@ namespace UD_Modding_Toolbox
             }
 
             // Entry +/- Entry
-            public static int operator +(Entry operand1, Entry operand2) => operand1.Weight + operand2.Weight;
-            public static int operator -(Entry operand1, Entry operand2) => operand1.Weight - operand2.Weight;
+            public static int operator +(Entry operand1, Entry operand2)
+            {
+                if (Equals(operand1.Token, default))
+                {
+                    return operand2.Weight + operand1.Weight;
+                }
+                else
+                if (Equals(operand2.Token, default))
+                {
+                    return operand1.Weight + operand2.Weight;
+                }
+                return default;
+            }
+            public static int operator -(Entry operand1, Entry operand2)
+            {
+                if (Equals(operand1.Token, default))
+                {
+                    return operand2.Weight - operand1.Weight;
+                }
+                else
+                if (Equals(operand2.Token, default))
+                {
+                    return operand1.Weight - operand2.Weight;
+                }
+                return default;
+            }
         }
     }
 }
