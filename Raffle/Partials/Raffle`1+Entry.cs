@@ -37,6 +37,11 @@ namespace UD_Modding_Toolbox
             {
             }
 
+            public override string ToString()
+            {
+                return Token.ToString() + ":" + Weight;
+            }
+
             public void Deconstruct(out T Token, out int Weight)
             {
                 Token = this.Token;

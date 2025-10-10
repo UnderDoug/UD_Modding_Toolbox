@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using Wintellect.PowerCollections;
 using XRL.World;
+using XRL.World.Parts.Skill;
 using static XRL.World.Conversations.ConversationEvent;
 
 namespace UD_Modding_Toolbox
@@ -44,7 +45,11 @@ namespace UD_Modding_Toolbox
 
         public bool Contains(T Token)
         {
-            return !(IndexOf(Token) < 0);
+            int indent = Debug.LastIndent;
+            Debug.Entry(4, nameof(Contains), Indent: indent + 1);
+            int index = IndexOf(Token);
+            Debug.LastIndent = indent;
+            return index > -1;
         }
         public bool ActiveContains(T Token)
         {
@@ -82,13 +87,18 @@ namespace UD_Modding_Toolbox
 
         public int IndexOf(T Token)
         {
+            int indent = Debug.LastIndent;
+            Debug.Entry(4, nameof(IndexOf), Indent: indent + 1);
             for (int i = 0; i < Length; i++)
             {
+                Debug.LoopItem(4, i.ToString(), Indent: indent + 2);
                 if (Equals(ActiveEntries[i].Token, Token))
                 {
+                    Debug.LastIndent = indent;
                     return i;
                 }
             }
+            Debug.LastIndent = indent;
             return -1;
         }
 
@@ -130,6 +140,33 @@ namespace UD_Modding_Toolbox
             TotalDrawnWeights -= drawnWeight;
             TotalWeights = TotalActiveWeights + TotalDrawnWeights;
             Variant++;
+        }
+
+        public static implicit operator Raffle<T>(List<T> List)
+        {
+            if (List == null)
+            {
+                return null;
+            }
+            Raffle<T> raffle = new();
+            for (int i = 0; i < List.Count; i++)
+            {
+                raffle.Add(List[i]);
+            }
+            return raffle;
+        }
+        public static implicit operator List<T>(Raffle<T> Raffle)
+        {
+            if (Raffle == null)
+            {
+                return null;
+            }
+            List<T> list = new();
+            for (int i = 0; i < Raffle.Count; i++)
+            {
+                list.Add(Raffle[i]);
+            }
+            return list;
         }
     }
 }

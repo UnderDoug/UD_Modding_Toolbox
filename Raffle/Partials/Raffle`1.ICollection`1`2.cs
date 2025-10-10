@@ -10,6 +10,11 @@ namespace UD_Modding_Toolbox
         : ICollection<T>
         , ICollection<KeyValuePair<T, int>>
     {
+        public void Clear(string Seed)
+        {
+            Clear();
+            SetSeed(Seed);
+        }
         public void Clear()
         {
             Array.Clear(ActiveEntries, 0, Count);
@@ -17,8 +22,9 @@ namespace UD_Modding_Toolbox
             TotalWeights = 0;
             TotalActiveWeights = 0;
             TotalDrawnWeights = 0;
-            Rnd = null;
             Size = DefaultCapacity;
+            Seed = null;
+            Shake();
             Length = 0;
             Variant = 0;
         }
@@ -40,6 +46,36 @@ namespace UD_Modding_Toolbox
         public bool Contains(KeyValuePair<T, int> Entry)
         {
             return Contains(Entry.Key) && this[Entry.Key] == Entry.Value;
+        }
+
+        public static implicit operator List<KeyValuePair<T, int>>(Raffle<T> Source)
+        {
+            if (Source == null)
+            {
+                return null;
+            }
+            List<KeyValuePair<T, int>> collection = new();
+            for (int i = 0; i < Source.Count; i++)
+            {
+                Entry entry = new(Source[i], Source.ActiveEntries[i] + Source.DrawnEntries[i]);
+                collection.Add(entry);
+            }
+            return collection;
+        }
+
+        public static implicit operator Raffle<T>(List<KeyValuePair<T, int>> Source)
+        {
+            if (Source == null)
+            {
+                return null;
+            }
+            List<KeyValuePair<T, int>> collection = new();
+            for (int i = 0; i < Source.Count; i++)
+            {
+                Entry entry = new(Source[i].Key, Source[i].Value);
+                collection.Add(entry);
+            }
+            return collection;
         }
     }
 }

@@ -32,19 +32,31 @@ namespace UD_Modding_Toolbox
 
         public void Add(T Token, int Weight)
         {
+            int indent = Debug.LastIndent;
+            Debug.Entry(4, nameof(Add), Indent: indent + 1, Toggle: doDebug);
             if (Contains(Token))
             {
+                Debug.CheckYeh(4, "Contains " + typeof(T).Name, Token.ToString(), Indent: indent + 2, Toggle: doDebug);
+                if (Weight == default)
+                {
+                    this[Token] = 1;
+                }
                 this[Token] += Weight;
             }
             else
             {
-                EnsureCapacity(Length + 1);
-                ActiveEntries[Length] = new(Token, Weight);
-                DrawnEntries[Length] = new(Token, 0);
+                Debug.CheckNah(4, "Doesn't contain " + typeof(T).Name, Token.ToString(), Indent: indent + 2, Toggle: doDebug);
+                Debug.Entry(4, nameof(Length), Length.ToString(), Indent: indent + 2, Toggle: doDebug);
+                int index = Length++;
+                EnsureCapacity(Length);
+                ActiveEntries[index] = new(Token, Weight);
+                DrawnEntries[index] = new(Token, 0);
             }
             TotalActiveWeights += Weight;
             TotalWeights += TotalActiveWeights;
             Variant++;
+
+            Debug.LastIndent = indent;
         }
 
         public bool ContainsKey(T Token)
