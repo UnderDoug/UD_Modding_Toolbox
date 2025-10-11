@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using XRL;
 using XRL.Wish;
@@ -13,35 +10,38 @@ namespace UD_Modding_Toolbox
     [HasWishCommand]
     public partial class RaffleWishes
     {
+        private static int CounterMax = 49;
+
         [WishCommand("UD raffle test")]
         public static void RaffleTest_WishHandler()
         {
             Raffle<string> creatures = new()
             {
                 { "Glowcrow", 3 },
-                { "Cave Spider", 5 },
+                { "Goat", 5 },
                 { "Pig", 2 },
             };
             Raffle<string> hat = new()
             {
-                { "Jane", 4 },
-                { "Doug", 2 },
+                { "Jofo Qudwufo", 4 },
+                { "UnderDoug", 2 },
                 { "Books", 2 },
                 { "Sol", 3 },
                 { "AFFINE", 2 },
             };
             Raffle<string> bag = new("Test Seed")
             {
-                { "Jane", 4 },
-                { "Doug", 2 },
+                { "Jofo Qudwufo", 4 },
+                { "UnderDoug", 2 },
                 { "Books", 2 },
                 { "Sol", 3 },
                 { "AFFINE", 2 },
             };
             Dictionary<string, int> dictionaryTest = new()
             {
-                { "Jane", 2 },
-                { "Doug", 3 },
+                { "Jofo Qudwufo", 2 },
+                { "UnderDoug", 3 },
+                { "John Qud", 2 },
                 { "Books", 5 },
                 { "Sol", 1 },
                 { "AFFINE", 2 },
@@ -50,12 +50,12 @@ namespace UD_Modding_Toolbox
             try
             {
                 Debug.Entry(4, nameof(Raffle<string>) + " assignment from dictionary test");
-                dictionaryConversionTest = dictionaryTest;
                 Debug.Entry(4, nameof(dictionaryTest), Indent: 1);
                 foreach ((string key, int value) in dictionaryTest)
                 {
                     Debug.LoopItem(4, nameof(key) + ": " + key + ", " + nameof(value) + ": " + value, Indent: 2);
                 }
+                dictionaryConversionTest = dictionaryTest;
                 Debug.Entry(4, nameof(dictionaryConversionTest), Indent: 1);
                 foreach ((string token, int weight) in dictionaryConversionTest)
                 {
@@ -70,7 +70,6 @@ namespace UD_Modding_Toolbox
             try
             {
                 Debug.Entry(4, nameof(Raffle<string>) + " & " + nameof(Raffle<string>) + " addition test");
-                raffleAdditionTest = hat + dictionaryConversionTest;
                 Debug.Entry(4, nameof(hat), Indent: 1);
                 foreach ((string token, int weight) in hat)
                 {
@@ -81,6 +80,7 @@ namespace UD_Modding_Toolbox
                 {
                     Debug.LoopItem(4, nameof(token) + ": " + token + ", " + nameof(weight) + ": " + weight, Indent: 2);
                 }
+                raffleAdditionTest = hat + dictionaryConversionTest;
                 Debug.Entry(4, nameof(raffleAdditionTest), Indent: 1);
                 foreach ((string token, int weight) in raffleAdditionTest)
                 {
@@ -139,18 +139,24 @@ namespace UD_Modding_Toolbox
             }
             try
             {
+                Debug.Entry(4, nameof(creatures) + "." + nameof(creatures.CanDraw) + " test");
                 int counter = 0;
                 int startingActiveCount = creatures.ActiveCount;
+                Debug.Entry(4, nameof(creatures) + "." + nameof(creatures.CanDraw) + " test", Indent: 1);
+                creatures.Vomit(4, nameof(RaffleWishes), "before loop", Indent: 2);
                 while (creatures.CanDraw() && counter < startingActiveCount + 5)
                 {
                     string blueprint = creatures.Draw();
-                    Debug.LoopItem(4, counter.ToString() + ": " + blueprint, Indent: 1);
-                    if (GameObject.Create(blueprint) is GameObject creatureObject)
+                    creatures.Vomit(4, counter.ToString() + ":", blueprint, Indent: 2);
+                    if (GameObject.Create(blueprint, AfterObjectCreated: GO => GO.SetStringProperty("Raffled", "true")) is GameObject creatureObject)
                     {
                         Cell spawnCell = The.ActiveZone?.GetRandomCell();
                         spawnCell?.AddObject(creatureObject);
                     }
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway while loop halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
             }
             catch (Exception x)
@@ -160,11 +166,19 @@ namespace UD_Modding_Toolbox
             }
             try
             {
+                Debug.Entry(4, nameof(hat) + "." + nameof(hat.CanDraw) + " test");
                 int counter = 0;
-                while (hat.CanDraw())
+                while (hat.CanDraw() && hat.Draw(false) is string draw)
                 {
-                    Debug.LoopItem(4, counter.ToString(), hat.Draw(false), Indent: 1);
-                    counter++;
+                    Debug.LoopItem(4, counter.ToString(), draw, Indent: 1);
+                    if (draw.IsNullOrEmpty())
+                    {
+                        throw new NotFiniteNumberException("Runaway while loop halted by null or empty " + nameof(draw));
+                    }
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway while loop halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
             }
             catch (Exception x)
@@ -180,15 +194,19 @@ namespace UD_Modding_Toolbox
             {
                 int counter = 0;
                 int n = 10;
+                Debug.Entry(4, nameof(hat) + "." + nameof(hat.DrawN) + "(" + n + ") test");
                 foreach (string draw in hat.DrawN(n))
                 {
                     Debug.LoopItem(4, counter.ToString(), draw, Indent: 1);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
             }
             catch (Exception x)
             {
-                MetricsManager.LogException(nameof(Raffle<string>) + "." + nameof(hat.DrawN) +
+                MetricsManager.LogException(nameof(hat) + "." + nameof(hat.DrawN) +
                     " from " + nameof(hat) + ", & foreach test", x, "game_test_exception");
             }
             finally
@@ -197,43 +215,77 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " seeded test");
+                Debug.Entry(4, nameof(bag) + "." + nameof(bag.DrawAll) + " seeded test");
                 Debug.Entry(4, "First...", Indent: 1);
                 int counter = 0;
                 foreach (string draw in bag.DrawAll(true))
                 {
                     Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
 
-                Debug.Entry(4, "Second (true)...", Indent: 1);
-                counter = 0;
-                foreach (string draw in bag.DrawAll(true))
+                try
                 {
-                    Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
-                    counter++;
+                    Debug.Entry(4, "Second (true)...", Indent: 1);
+                    counter = 0;
+                    foreach (string draw in bag.DrawAll(true))
+                    {
+                        Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
+                        if (++counter > CounterMax)
+                        {
+                            throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                        }
+                    }
+                }
+                catch (Exception x)
+                {
+                    MetricsManager.LogException("Second (true)", x, "game_test_exception");
                 }
 
-                bag.Refill();
-                Debug.Entry(4, "Third (manual refill)...", Indent: 1);
-                counter = 0;
-                foreach (string draw in bag.DrawAll(true))
+                try
                 {
-                    Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
-                    counter++;
+                    bag.Refill();
+                    Debug.Entry(4, "Third (manual refill)...", Indent: 1);
+                    counter = 0;
+                    foreach (string draw in bag.DrawAll(true))
+                    {
+                        Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
+                        if (++counter > CounterMax)
+                        {
+                            throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                        }
+                    }
+                }
+                catch (Exception x)
+                {
+                    MetricsManager.LogException("Third (manual refill)", x, "game_test_exception");
                 }
 
-                Debug.Entry(4, "Fourth (no refill)...", Indent: 1);
-                counter = 0;
-                foreach (string draw in bag.DrawAll(true))
+                try
                 {
-                    Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
-                    counter++;
+                    Debug.Entry(4, "Fourth (no refill)...", Indent: 1);
+                    counter = 0;
+                    foreach (string draw in bag.DrawAll(false))
+                    {
+                        Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
+                        if (++counter > CounterMax)
+                        {
+                            throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                        }
+                    }
                 }
+                catch (Exception x)
+                {
+                    MetricsManager.LogException("Fourth (no refill)", x, "game_test_exception");
+                }
+
             }
             catch (Exception x)
             {
-                MetricsManager.LogException(nameof(Raffle<string>) + "." + nameof(bag.DrawAll) +
+                MetricsManager.LogException(nameof(bag) + "." + nameof(bag.DrawAll) +
                     " from " + nameof(bag) + ", seeded, & foreach test", x, "game_test_exception");
             }
             finally
@@ -242,13 +294,16 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " unseeded sample & shake test");
+                Debug.Entry(4, nameof(hat) + " unseeded " + nameof(hat.Sample) + " & " + nameof(hat.Shake) + " test");
                 Debug.Entry(4, "First...", Indent: 1);
                 int counter = 0;
-                foreach (string draw in hat.DrawN(5))
+                foreach (string draw in hat.DrawN(5, true))
                 {
                     Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
                 Debug.Entry(4, "Sample", hat.Sample(), Indent: 2);
                 Debug.Entry(4, "Sample2", hat.Sample(), Indent: 2);
@@ -263,7 +318,10 @@ namespace UD_Modding_Toolbox
                 foreach (string draw in hat.DrawN(5))
                 {
                     Debug.LoopItem(4, counter.ToString(), draw, Indent: 2);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
                 Debug.Entry(4, "Sample", hat.Sample(), Indent: 2);
                 Debug.Entry(4, "Sample2", hat.Sample(), Indent: 2);
@@ -289,36 +347,49 @@ namespace UD_Modding_Toolbox
                 foreach (string token in bag.GroupedActiveTokens)
                 {
                     Debug.LoopItem(4, counter.ToString(), token, Indent: 2);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
 
                 Debug.Entry(4, nameof(bag.DrawAll) + "...", Indent: 1);
-                _ = bag.DrawAll(true);
+                bag.DrawAll(true);
 
                 Debug.Entry(4, "Second...", Indent: 1);
-                Debug.Entry(4, nameof(bag.GroupedActiveTokens), Indent: 2);
+                Debug.Entry(4, nameof(bag.GroupedActiveTokens), "should be full", Indent: 2);
                 counter = 0;
                 foreach (string token in bag.GroupedActiveTokens)
                 {
                     Debug.LoopItem(4, counter.ToString(), token, Indent: 3);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
-                Debug.Entry(4, nameof(bag.GroupedDrawnTokens), Indent: 2);
+                Debug.Entry(4, nameof(bag.GroupedDrawnTokens), "should be empty", Indent: 2);
                 counter = 0;
                 foreach (string token in bag.GroupedDrawnTokens)
                 {
                     Debug.LoopItem(4, counter.ToString(), token, Indent: 3);
-                    counter++;
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
                 Debug.Entry(4, nameof(bag.Refill) + "...", Indent: 1);
                 bag.Refill();
 
                 Debug.Entry(4, "Third...", Indent: 1);
+                Debug.Entry(4, nameof(bag.GroupedActiveTokens), "should be full", Indent: 2);
                 counter = 0;
                 foreach (string token in bag.GroupedActiveTokens)
                 {
-                    Debug.LoopItem(4, counter.ToString(), token, Indent: 2);
-                    counter++;
+                    Debug.LoopItem(4, counter.ToString(), token, Indent: 3);
+                    if (++counter > CounterMax)
+                    {
+                        throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
+                    }
                 }
             }
             catch (Exception x)
@@ -329,6 +400,18 @@ namespace UD_Modding_Toolbox
             finally
             {
                 bag.Refill();
+            }
+        }
+        [WishCommand("UD raffle cleanup")]
+        public static void RaffleCleanup_WishHandler()
+        {
+            try
+            {
+                The.ActiveZone.ForeachObjectWithTagOrProperty("Raffled", GO => GO.Obliterate());
+            }
+            catch (Exception x)
+            {
+                MetricsManager.LogException(nameof(Raffle<string>) + " borked the cleanup...", x, "game_test_exception");
             }
         }
     }

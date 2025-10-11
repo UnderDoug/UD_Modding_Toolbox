@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using XRL.Collections;
 
 namespace UD_Modding_Toolbox
 {
@@ -22,16 +20,16 @@ namespace UD_Modding_Toolbox
             {
                 private Raffle<T> Raffle;
 
-                private Entry[] Entries;
+                private readonly Entry[] Entries;
 
-                private int Version;
+                private readonly int Version;
 
                 private int Index;
 
                 private int Weight;
 
-                public T Current => Entries[Index];
-                object IEnumerator.Current => Current;
+                public readonly T Current => Entries[Index];
+                readonly object IEnumerator.Current => Current;
 
                 public Enumerator(Raffle<T> Raffle, Entry[] Entries)
                 {
@@ -57,17 +55,25 @@ namespace UD_Modding_Toolbox
                     {
                         throw new InvalidOperationException("Collection was modified; enumeration operation may not execute.");
                     }
-                    while (++Index < Entries.Length)
+                    int indent = Debug.LastIndent;
+                    bool doDebug = false;
+                    Debug.Entry(4,
+                        nameof(MoveNext) + ", " +
+                        nameof(Index) + ": " + Index + ", " +
+                        nameof(Weight) + ": " + Weight,
+                        Indent: indent + 1, Toggle: doDebug);
+                    while (Weight > -1 || ++Index < Entries.Length)
                     {
-                        if (Entries[Index] is T token)
+                        if (++Weight < Entries[Index])
                         {
-                            while (++Weight < Entries[Raffle.IndexOf(token)])
-                            {
-                                return true;
-                            }
-                            Weight = -1;
+                            Debug.CheckYeh(4, Current.ToString(), Indent: indent + 2, Toggle: doDebug);
+                            Debug.LastIndent = indent;
+                            return true;
                         }
+                        Debug.CheckNah(4, Current.ToString(), Indent: indent + 2, Toggle: doDebug);
+                        Weight = -1;
                     }
+                    Debug.LastIndent = indent;
                     return false;
                 }
 
@@ -122,42 +128,42 @@ namespace UD_Modding_Toolbox
             , IDisposable
             , IDictionaryEnumerator
         {
-            private Raffle<T> Bag;
+            private Raffle<T> Raffle;
 
-            private int Version;
+            private readonly int Version;
 
             private int Index;
 
-            public readonly Entry Current => new(Bag.ActiveEntries[Index].Token, Bag.ActiveEntries[Index].Weight);
+            public readonly Entry Current => new(Raffle.ActiveEntries[Index].Token, Raffle.ActiveEntries[Index].Weight);
 
             readonly T IEnumerator<T>.Current => Current;
 
-            KeyValuePair<T, int> IEnumerator<KeyValuePair<T, int>>.Current => Current;
+            readonly KeyValuePair<T, int> IEnumerator<KeyValuePair<T, int>>.Current => Current;
 
-            object IEnumerator.Current => Current;
+            readonly object IEnumerator.Current => Current;
 
-            DictionaryEntry IDictionaryEnumerator.Entry => new(Current.Token, Current.Weight);
+            readonly DictionaryEntry IDictionaryEnumerator.Entry => new(Current.Token, Current.Weight);
 
-            object IDictionaryEnumerator.Key => Current.Token;
+            readonly object IDictionaryEnumerator.Key => Current.Token;
 
-            object IDictionaryEnumerator.Value => Current.Weight;
+            readonly object IDictionaryEnumerator.Value => Current.Weight;
 
             public Enumerator(Raffle<T> Bag)
             {
-                this.Bag = Bag;
+                this.Raffle = Bag;
                 Version = Bag.Version;
                 Index = -1;
             }
 
             public bool MoveNext()
             {
-                if (Version != Bag.Version)
+                if (Version != Raffle.Version)
                 {
                     throw new InvalidOperationException("Collection was modified; enumeration operation may not execute.");
                 }
-                while (++Index < Bag.Length)
+                while (++Index < Raffle.Length)
                 {
-                    if (Bag[Index] is T token && Bag[token] > 0)
+                    if (Raffle[Index] is T token && Raffle[token] > 0)
                     {
                         return true;
                     }
@@ -167,12 +173,12 @@ namespace UD_Modding_Toolbox
 
             public void Dispose()
             {
-                Bag = null;
+                Raffle = null;
             }
 
             void IEnumerator.Reset()
             {
-                if (Version != Bag.Version)
+                if (Version != Raffle.Version)
                 {
                     throw new InvalidOperationException("Collection was modified; enumeration operation may not execute.");
                 }

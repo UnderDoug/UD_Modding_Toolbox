@@ -55,9 +55,12 @@ namespace UD_Modding_Toolbox
                 {
                     if (The.Game == null)
                     {
-                        throw new Exception(ModNameStripped + " mod attempted to retrieve " + nameof(Random) + ", but Game is not created yet.");
+                        MetricsManager.LogModWarning(ThisMod, 
+                            "Attempted to retrieve " + nameof(Random) + ", but Game is not created yet." +
+                            " Fall-back " + nameof(Random) + " provided.");
+                        return Stat.GetSeededRandomGenerator(ModNameStripped);
                     }
-                    else
+
                     if (The.Game.IntGameState.ContainsKey(ModNameStripped + ":Random"))
                     {
                         _rnd = new Random(The.Game.GetIntGameState(ModNameStripped + ":Random"));

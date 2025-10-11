@@ -174,6 +174,28 @@ namespace UD_Modding_Toolbox
             Entry(Verbosity, $"% Vomit: {Source} {context}", Indent, Toggle: Toggle);
         }
 
+        public static Raffle<T> Vomit<T>(
+            this Raffle<T> Raffle,
+            int Verbosity,
+            string Source,
+            string Context = null,
+            T Picked = default,
+            int Indent = 0,
+            bool Toggle = true)
+        {
+            string context = Context == null ? "" : $"{Context}:";
+            Entry(Verbosity, $"Vomit: {Source} {context}", Indent, Toggle: Toggle);
+
+            foreach (Raffle<T>.Entry entry in Raffle)
+            {
+                string wasPicked = Equals(Picked, (T)entry) ? true.ToString() : null;
+                LoopItem(Verbosity, entry.ToString(), wasPicked, Indent: Indent + 1, Toggle: Toggle);
+            }
+
+            LastIndent = Indent;
+            return Raffle;
+        }
+
         public static MeleeWeapon Vomit(this MeleeWeapon MeleeWeapon, int Verbosity, string Title = null, List<string> Categories = null, int Indent = 0, bool Toggle = true)
         {
             int indent = Indent;
@@ -345,7 +367,6 @@ namespace UD_Modding_Toolbox
             return CodeMatcher;
         }
 
-
         public static string Vomit(this string @string, int Verbosity, string Label = "", bool LoopItem = false, bool? Good = null, int Indent = 0, bool Toggle = true)
         {
             string Output = Label != "" ? $"{Label}: {@string}" : @string;
@@ -367,21 +388,36 @@ namespace UD_Modding_Toolbox
             else Entry(Verbosity, Output, Indent: Indent, Toggle: Toggle);
             return @bool;
         }
-        public static List<T> Vomit<T>(this List<T> List, int Verbosity, string Label = "", bool LoopItem = false, bool? Good = null, string DivAfter = "", int Indent = 0, bool Toggle = true)
-            where T : Type
+        public static List<T> Vomit<T>(
+            this List<T> List,
+            int Verbosity,
+            string Label = "",
+            bool LoopItem = false,
+            bool? Good = null,
+            string DivAfter = "",
+            int Indent = 0,
+            bool Toggle = true)
         {
             string Output = Label != "" ? $"{Label}: {nameof(List)}" : $"{nameof(List)}";
             if (LoopItem) Debug.LoopItem(Verbosity, Output, Good: Good, Indent: Indent, Toggle: Toggle);
             else Entry(Verbosity, Output, Indent: Indent, Toggle: Toggle);
             foreach (T item in List)
             {
-                if (LoopItem) Debug.LoopItem(Verbosity, item.ToString(), Good: Good, Indent: Indent+1, Toggle: Toggle);
+                if (LoopItem) Debug.LoopItem(Verbosity, item.ToString(), Good: Good, Indent: Indent + 1, Toggle: Toggle);
                 else Entry(Verbosity, item.ToString(), Indent: Indent + 1, Toggle: Toggle);
             }
             if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
             return List;
         }
-        public static List<object> Vomit(this List<object> List, int Verbosity, string Label, bool LoopItem = false, bool? Good = null, string DivAfter = "", int Indent = 0, bool Toggle = true)
+        public static List<object> Vomit(
+            this List<object> List,
+            int Verbosity,
+            string Label,
+            bool LoopItem = false,
+            bool? Good = null,
+            string DivAfter = "",
+            int Indent = 0,
+            bool Toggle = true)
         {
             if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
             else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
@@ -393,7 +429,15 @@ namespace UD_Modding_Toolbox
             if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
             return List;
         }
-        public static List<MutationEntry> Vomit(this List<MutationEntry> List, int Verbosity, string Label, bool LoopItem = false, bool? Good = null, string DivAfter = "", int Indent = 0, bool Toggle = true)
+        public static List<MutationEntry> Vomit(
+            this List<MutationEntry> List,
+            int Verbosity,
+            string Label,
+            bool LoopItem = false,
+            bool? Good = null,
+            string DivAfter = "",
+            int Indent = 0,
+            bool Toggle = true)
         {
             if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
             else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
@@ -405,7 +449,15 @@ namespace UD_Modding_Toolbox
             if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
             return List;
         }
-        public static List<MutationCategory> Vomit(this List<MutationCategory> List, int Verbosity, string Label, bool LoopItem = false, bool? Good = null, string DivAfter = "", int Indent = 0, bool Toggle = true)
+        public static List<MutationCategory> Vomit(
+            this List<MutationCategory> List,
+            int Verbosity,
+            string Label,
+            bool LoopItem = false,
+            bool? Good = null,
+            string DivAfter = "",
+            int Indent = 0,
+            bool Toggle = true)
         {
             if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
             else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
@@ -417,7 +469,15 @@ namespace UD_Modding_Toolbox
             if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
             return List;
         }
-        public static List<GameObject> Vomit(this List<GameObject> List, int Verbosity, string Label, bool LoopItem = false, bool? Good = null, string DivAfter = "", int Indent = 0, bool Toggle = true)
+        public static List<GameObject> Vomit(
+            this List<GameObject> List,
+            int Verbosity,
+            string Label,
+            bool LoopItem = false,
+            bool? Good = null,
+            string DivAfter = "",
+            int Indent = 0,
+            bool Toggle = true)
         {
             if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
             else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
@@ -429,7 +489,15 @@ namespace UD_Modding_Toolbox
             if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
             return List;
         }
-        public static List<BaseMutation> Vomit(this List<BaseMutation> List, int Verbosity, string Label, bool LoopItem = false, bool? Good = null, string DivAfter = "", int Indent = 0, bool Toggle = true)
+        public static List<BaseMutation> Vomit(
+            this List<BaseMutation> List,
+            int Verbosity,
+            string Label,
+            bool LoopItem = false,
+            bool? Good = null,
+            string DivAfter = "",
+            int Indent = 0,
+            bool Toggle = true)
         {
             if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
             else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);

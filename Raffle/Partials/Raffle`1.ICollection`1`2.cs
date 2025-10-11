@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using XRL.World;
 
 namespace UD_Modding_Toolbox
 {
@@ -45,7 +42,8 @@ namespace UD_Modding_Toolbox
 
         public bool Contains(KeyValuePair<T, int> Entry)
         {
-            return Contains(Entry.Key) && this[Entry.Key] == Entry.Value;
+            return Contains(Entry.Key)
+                && this[Entry.Key] == Entry.Value;
         }
 
         public static implicit operator List<KeyValuePair<T, int>>(Raffle<T> Source)
@@ -57,7 +55,7 @@ namespace UD_Modding_Toolbox
             List<KeyValuePair<T, int>> collection = new();
             for (int i = 0; i < Source.Count; i++)
             {
-                Entry entry = new(Source[i], Source.ActiveEntries[i] + Source.DrawnEntries[i]);
+                Entry entry = new(Source[i], (int)Source.ActiveEntries[i] + (int)Source.DrawnEntries[i]);
                 collection.Add(entry);
             }
             return collection;
@@ -69,11 +67,10 @@ namespace UD_Modding_Toolbox
             {
                 return null;
             }
-            List<KeyValuePair<T, int>> collection = new();
+            Raffle<T> collection = new();
             for (int i = 0; i < Source.Count; i++)
             {
-                Entry entry = new(Source[i].Key, Source[i].Value);
-                collection.Add(entry);
+                collection.Add(Source[i].Key, Source[i].Value);
             }
             return collection;
         }

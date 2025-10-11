@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-
-using XRL;
 using XRL.Rules;
 using XRL.World;
+using static XRL.World.Conversations.Expression;
 
 namespace UD_Modding_Toolbox
 {
@@ -22,8 +19,9 @@ namespace UD_Modding_Toolbox
         protected int TotalActiveWeights;
         protected int TotalDrawnWeights;
 
-        public int ActiveCount => TotalActiveWeights;
-        public int DrawnCount => TotalDrawnWeights;
+        public int TotalCount => SyncWeightTotals() ? TotalWeights : 0;
+        public int ActiveCount => SyncWeightTotals() ? TotalActiveWeights : 0;
+        public int DrawnCount => SyncWeightTotals() ? TotalDrawnWeights : 0;
 
         protected int Size;
 
@@ -43,7 +41,7 @@ namespace UD_Modding_Toolbox
         public bool WantFieldReflection => false;
 
         protected Random Rnd => Stat.GetSeededRandomGenerator(_NextSeed);
-        protected string _NextSeed => _Seed + "::" + TotalActiveWeights;
+        protected string _NextSeed => _Seed + "::" + ActiveCount;
 
         protected string _Seed;
 
@@ -58,6 +56,7 @@ namespace UD_Modding_Toolbox
             Length = 0;
             Variant = 0;
             TotalWeights = 0;
+            TotalActiveWeights = 0;
             TotalDrawnWeights = 0;
             Shake();
             Seed = null;
@@ -65,7 +64,7 @@ namespace UD_Modding_Toolbox
         public Raffle(int Capacity)
             : this()
         {
-            Size = Capacity;
+            EnsureCapacity(Capacity);
         }
         public Raffle(string Seed)
             : this()
@@ -135,6 +134,7 @@ namespace UD_Modding_Toolbox
         protected void Resize(int Capacity)
         {
             int indent = Debug.LastIndent;
+            bool doDebug = false;
             Debug.Entry(4, nameof(Resize), Capacity.ToString(), Indent: indent + 1, Toggle: doDebug);
             if (Capacity == 0)
             {
@@ -157,9 +157,32 @@ namespace UD_Modding_Toolbox
             Debug.LastIndent = indent;
         }
 
+        protected bool SyncWeightTotals()
+        {
+            TotalActiveWeights = 0;
+            TotalDrawnWeights = 0;
+            for (int i = 0; i < Count; i++)
+            {
+                TotalActiveWeights += (int)ActiveEntries[i];
+                TotalDrawnWeights += (int)DrawnEntries[i];
+            }
+            TotalWeights = TotalActiveWeights + TotalDrawnWeights;
+
+            int indent = Debug.LastIndent;
+            bool doDebug = false;
+            Debug.CheckYeh(4, nameof(SyncWeightTotals), Indent: indent + 1, Toggle: doDebug);
+            Debug.LastIndent = indent;
+            return true;
+        }
+
         protected Random SetSeed(string Seed)
         {
             _Seed = this.Seed = Seed ?? "none";
+
+            int indent = Debug.LastIndent;
+            bool doDebug = false;
+            Debug.Entry(4, nameof(SetSeed) + ", " + nameof(_NextSeed), _NextSeed, Indent: indent + 1, Toggle: doDebug);
+            Debug.LastIndent = indent;
             return Rnd;
         }
         public void Shake()
@@ -168,16 +191,35 @@ namespace UD_Modding_Toolbox
             {
                 _Seed = Utils.Rnd.Next().ToString();
             }
+            int indent = Debug.LastIndent;
+            bool doDebug = false;
+            Debug.Entry(4, nameof(Shake) + ", " + nameof(_NextSeed), _NextSeed, Indent: indent + 1, Toggle: doDebug);
+            Debug.LastIndent = indent;
         }
 
         public virtual bool HasTokens()
         {
-            return TotalActiveWeights > 0;
+            int indent = Debug.LastIndent;
+            bool doDebug = false;
+
+            int activeCount = ActiveCount;
+            bool activeCountGT0 = activeCount > 0;
+
+            Debug.LoopItem(4, nameof(HasTokens), activeCount.ToString() + " > 0", Good: activeCountGT0, Indent: indent + 1, Toggle: doDebug);
+            Debug.LastIndent = indent;
+            return activeCountGT0;
         }
 
         public virtual bool CanDraw()
         {
-            return HasTokens();
+            int indent = Debug.LastIndent;
+            bool doDebug = false;
+
+            bool hasTokens = HasTokens();
+
+            Debug.LoopItem(4, nameof(CanDraw), hasTokens.ToString(), Good: hasTokens, Indent: indent + 1, Toggle: doDebug);
+            Debug.LastIndent = indent;
+            return hasTokens;
         }
 
         // Weights
@@ -187,7 +229,7 @@ namespace UD_Modding_Toolbox
             {
                 if (!Equals(Entries[i], null) && Equals(Entries[i].Token, Token))
                 {
-                    return Entries[i];
+                    return (int)Entries[i];
                 }
             }
             return 0;
@@ -213,7 +255,7 @@ namespace UD_Modding_Toolbox
             {
                 if (!Equals(Entries[i], null) && Equals(Entries[i].Token, Token) && Entries[i] > 0)
                 {
-                    return Entries[i] / TotalWeights;
+                    return (int)Entries[i] / TotalWeights;
                 }
             }
             return 0;
@@ -222,7 +264,7 @@ namespace UD_Modding_Toolbox
         {
             if (Contains(Token))
             {
-                return GetTotalWeight(Token) / TotalWeights;
+                return GetTotalWeight(Token) / TotalCount;
             }
             return 0;
         }
@@ -231,7 +273,7 @@ namespace UD_Modding_Toolbox
         {
             if (Contains(Token))
             {
-                return GetActiveWeight(Token) / TotalActiveWeights;
+                return GetActiveWeight(Token) / ActiveCount;
             }
             return 0;
         }
@@ -347,20 +389,44 @@ namespace UD_Modding_Toolbox
 
         int Next()
         {
-            return Rnd.Next(TotalActiveWeights);
+            if (!HasTokens())
+            {
+                return -1;
+            }
+            return Rnd.Next(ActiveCount);
         }
-        T NextToken()
+        bool NextToken(out T Token)
         {
+            Token = default;
             int targetWeight = Next();
+            if (!HasTokens() || targetWeight < 0)
+            {
+                return false;
+            }
+            int indent = Debug.LastIndent;
+            bool doDebug = false;
             int currentCombinedWeight = 0;
+            Debug.Entry(4, nameof(NextToken) + ", " + nameof(targetWeight), targetWeight.ToString() + " (" + ActiveCount + ")",
+                Indent: indent + 1, Toggle: doDebug);
             for (int i = 0; i < Length; i++)
             {
-                if (targetWeight < (currentCombinedWeight += ActiveEntries[i]))
+                Entry entry = ActiveEntries[i];
+                if ((int)entry < 1)
                 {
-                    return ActiveEntries[i];
+                    continue;
                 }
+                string entryDebugString = entry.ToString() + " | " + nameof(currentCombinedWeight);
+                if (targetWeight < (currentCombinedWeight += (int)entry))
+                {
+                    Debug.CheckYeh(4, entryDebugString, currentCombinedWeight.ToString(), Indent: indent + 2, Toggle: doDebug);
+                    Token = ActiveEntries[i];
+                    Debug.LastIndent = indent;
+                    return true;
+                }
+                Debug.CheckNah(4, entryDebugString, currentCombinedWeight.ToString(), Indent: indent + 2, Toggle: doDebug);
             }
-            return default;
+            Debug.LastIndent = indent;
+            throw new IndexOutOfRangeException(nameof(targetWeight) + " was too big for total combined weight of " + currentCombinedWeight);
         }
         bool DrawToken(T Token)
         {
@@ -369,10 +435,9 @@ namespace UD_Modding_Toolbox
                 && ActiveEntries[index] > 0)
             {
                 ActiveEntries[index]--;
-                TotalActiveWeights--;
-
                 DrawnEntries[index]++;
-                TotalDrawnWeights++;
+
+                SyncWeightTotals();
 
                 return true;
             }
@@ -381,10 +446,10 @@ namespace UD_Modding_Toolbox
 
         public T Draw(bool RefillIfEmpty)
         {
-            if (NextToken() is T token
+            if (NextToken(out T token)
                 && DrawToken(token))
             {
-                if (RefillIfEmpty && ActiveCount < 1)
+                if (RefillIfEmpty && !HasTokens())
                 {
                     Refill();
                 }
@@ -423,7 +488,7 @@ namespace UD_Modding_Toolbox
 
         public IEnumerable<T> DrawUptoN(int Number, bool RefillFIrst)
         {
-            if (RefillFIrst && TotalDrawnWeights > 0)
+            if (RefillFIrst && !HasTokens())
             {
                 Refill();
             }
@@ -437,7 +502,7 @@ namespace UD_Modding_Toolbox
                     }
                     else
                     {
-                        yield break;
+                        break;
                     }
                 }
             }
@@ -489,7 +554,7 @@ namespace UD_Modding_Toolbox
 
         public T Sample()
         {
-            if (NextToken() is T token)
+            if (NextToken(out T token))
             {
                 return token;
             }
@@ -510,14 +575,13 @@ namespace UD_Modding_Toolbox
         {
             for (int i = 0; i < Length; i++)
             {
-                int drawnWeight = DrawnEntries[i];
+                T token = (T)ActiveEntries[i];
+                int combinedWeight = (int)ActiveEntries[i] + (int)DrawnEntries[i];
 
-                ActiveEntries[i] += drawnWeight;
-                TotalActiveWeights += drawnWeight;
-
-                DrawnEntries[i] -= drawnWeight;
-                TotalDrawnWeights -= drawnWeight;
+                ActiveEntries[i] = new(token, combinedWeight);
+                DrawnEntries[i] = new(token, 0);
             }
+            SyncWeightTotals();
             if (!Seeded)
             {
                 Shake();
@@ -527,17 +591,8 @@ namespace UD_Modding_Toolbox
             {
                 SetSeed(Seed);
             }
+            Variant++;
             return this;
-        }
-
-        public static implicit operator Dictionary<T, int>(Raffle<T> Source)
-        {
-            return new(Source);
-        }
-
-        public static implicit operator Raffle<T>(Dictionary<T, int> Source)
-        {
-            return new((ICollection<KeyValuePair<T, int>>)Source);
         }
 
         public static Raffle<T> operator +(Raffle<T> operand1, Raffle<T> operand2)
@@ -550,9 +605,38 @@ namespace UD_Modding_Toolbox
             {
                 T token = operand2[i];
                 int weight = operand2[token];
-                operand1.Add(token, weight);
+                operand1.Add(operand2[i], weight);
             }
             return operand1;
+        }
+
+        public virtual void Write(SerializationWriter Writer)
+        {
+            Writer.WriteOptimized(Size);
+            Writer.WriteOptimized(Length);
+            Writer.WriteOptimized(Variant);
+            Writer.WriteOptimized(TotalCount);
+            Writer.WriteOptimized(ActiveCount);
+            Writer.WriteOptimized(DrawnCount);
+            Writer.WriteOptimized(_Seed);
+            Writer.Write(ActiveEntries.ToList());
+            Writer.Write(DrawnEntries.ToList());
+            // TotalWeights = 0;
+            // TotalActiveWeights = 0;
+            // TotalDrawnWeights = 0;
+        }
+
+        public virtual void Read(SerializationReader Reader)
+        {
+            Size = Reader.ReadOptimizedInt32();
+            Length = Reader.ReadOptimizedInt32();
+            Variant = Reader.ReadOptimizedInt32();
+            TotalWeights = Reader.ReadOptimizedInt32();
+            TotalActiveWeights = Reader.ReadOptimizedInt32();
+            TotalDrawnWeights = Reader.ReadOptimizedInt32();
+            _Seed = Reader.ReadOptimizedString();
+            ActiveEntries = Reader.ReadList<Entry>().ToArray();
+            DrawnEntries = Reader.ReadList<Entry>().ToArray();
         }
     }
 }

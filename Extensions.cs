@@ -76,6 +76,33 @@ namespace UD_Modding_Toolbox
             return true;
         }
 
+        public static Raffle<T> ToRaffle<T>(this ICollection<T> Collection)
+        {
+            Raffle<T> raffle = new();
+            foreach (T item in Collection)
+            {
+                raffle.Add(item);
+            }
+            return raffle;
+        }
+        public static Raffle<T> ToRaffle<T>(this ReadOnlySpan<T> Span)
+        {
+            Raffle<T> raffle = new();
+            foreach (T item in Span)
+            {
+                raffle.Add(item);
+            }
+            return raffle;
+        }
+        public static Raffle<T> ToRaffle<T>(this Span<T> Span)
+        {
+            return ((ReadOnlySpan<T>)Span).ToRaffle();
+        }
+        public static Raffle<char> ToRaffle(this string Chars)
+        {
+            return ((ReadOnlySpan<char>)Chars).ToRaffle();
+        }
+
         public static int GetDieCount(this DieRoll DieRoll)
         {
             if (DieRoll == null)

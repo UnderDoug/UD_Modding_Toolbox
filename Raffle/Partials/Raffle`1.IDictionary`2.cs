@@ -1,10 +1,5 @@
-﻿using AiUnity.Common.Extensions;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Wintellect.PowerCollections;
-using XRL.World;
 
 namespace UD_Modding_Toolbox
 {
@@ -12,17 +7,25 @@ namespace UD_Modding_Toolbox
     {
         public int this[T Token]
         {
-            get => ActiveEntries[IndexOf(Token)];
+            get
+            {
+                int index = IndexOf(Token);
+                if (index >= 0)
+                {
+                    return (int)ActiveEntries[index];
+                }
+                return index;
+            }
             set
             {
-                int cappedValue = Math.Max(0, value);
-                if (Contains(Token))
+                if (IndexOf(Token) is int index
+                    && index >= 0)
                 {
-                    ActiveEntries[IndexOf(Token)].Weight = cappedValue;
+                    ActiveEntries[index].Weight = Math.Max(0, value);
                 }
                 else
                 {
-                    Add(Token, cappedValue);
+                    Add(Token, value);
                 }
             }
         }
@@ -33,27 +36,32 @@ namespace UD_Modding_Toolbox
         public void Add(T Token, int Weight)
         {
             int indent = Debug.LastIndent;
+            bool doDebug = false;
             Debug.Entry(4, nameof(Add), Indent: indent + 1, Toggle: doDebug);
-            if (Contains(Token))
+
+            if (IndexOf(Token) is int index && index >= 0)
             {
                 Debug.CheckYeh(4, "Contains " + typeof(T).Name, Token.ToString(), Indent: indent + 2, Toggle: doDebug);
-                if (Weight == default)
+
+                if (Weight < 0 && ActiveEntries[index].Weight <= Math.Abs(Weight))
                 {
-                    this[Token] = 1;
+                    ActiveEntries[index].Weight = 0;
                 }
-                this[Token] += Weight;
+                else
+                {
+                    ActiveEntries[index].Weight += Weight;
+                }
             }
             else
             {
                 Debug.CheckNah(4, "Doesn't contain " + typeof(T).Name, Token.ToString(), Indent: indent + 2, Toggle: doDebug);
                 Debug.Entry(4, nameof(Length), Length.ToString(), Indent: indent + 2, Toggle: doDebug);
-                int index = Length++;
+                index = Length++;
                 EnsureCapacity(Length);
-                ActiveEntries[index] = new(Token, Weight);
+                ActiveEntries[index] = new(Token, Math.Max(0, Weight));
                 DrawnEntries[index] = new(Token, 0);
             }
-            TotalActiveWeights += Weight;
-            TotalWeights += TotalActiveWeights;
+            SyncWeightTotals();
             Variant++;
 
             Debug.LastIndent = indent;
@@ -91,7 +99,7 @@ namespace UD_Modding_Toolbox
             int index = IndexOf(Token);
             if (index > -1)
             {
-                Weight = ActiveEntries[index];
+                Weight = (int)ActiveEntries[index];
                 return true;
             }
             return false;
@@ -102,10 +110,38 @@ namespace UD_Modding_Toolbox
             int index = IndexOf(Token);
             if (index > -1)
             {
-                Weight = DrawnEntries[index];
+                Weight = (int)DrawnEntries[index];
                 return true;
             }
             return false;
+        }
+
+        public static implicit operator Dictionary<T, int>(Raffle<T> Source)
+        {
+            if (Source == null)
+            {
+                return null;
+            }
+            Dictionary<T, int> dictionary = new(Source.Count);
+            for (int i = 0; i < Source.Count; i++)
+            {
+                dictionary.Add(Source[i], (int)Source.ActiveEntries[i] + (int)Source.DrawnEntries[i]);
+            }
+            return dictionary;
+        }
+
+        public static implicit operator Raffle<T>(Dictionary<T, int> Source)
+        {
+            if (Source == null)
+            {
+                return null;
+            }
+            Raffle<T> raffle = new(Source.Count);
+            foreach ((T key, int value) in Source)
+            {
+                raffle.Add(key, value);
+            }
+            return raffle;
         }
     }
 }

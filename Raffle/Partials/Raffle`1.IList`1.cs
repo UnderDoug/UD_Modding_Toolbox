@@ -1,11 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text;
-using Wintellect.PowerCollections;
-using XRL.World;
-using XRL.World.Parts.Skill;
-using static XRL.World.Conversations.ConversationEvent;
 
 namespace UD_Modding_Toolbox
 {
@@ -46,7 +40,7 @@ namespace UD_Modding_Toolbox
         public bool Contains(T Token)
         {
             int indent = Debug.LastIndent;
-            Debug.Entry(4, nameof(Contains), Indent: indent + 1);
+            Debug.Entry(4, nameof(Contains), Indent: indent + 1, Toggle: doDebug);
             int index = IndexOf(Token);
             Debug.LastIndent = indent;
             return index > -1;
@@ -88,10 +82,10 @@ namespace UD_Modding_Toolbox
         public int IndexOf(T Token)
         {
             int indent = Debug.LastIndent;
-            Debug.Entry(4, nameof(IndexOf), Indent: indent + 1);
+            Debug.Entry(4, nameof(IndexOf), Indent: indent + 1, Toggle: doDebug);
             for (int i = 0; i < Length; i++)
             {
-                Debug.LoopItem(4, i.ToString(), Indent: indent + 2);
+                Debug.LoopItem(4, i.ToString(), Indent: indent + 2, Toggle: doDebug);
                 if (Equals(ActiveEntries[i].Token, Token))
                 {
                     Debug.LastIndent = indent;
@@ -126,8 +120,8 @@ namespace UD_Modding_Toolbox
             {
                 throw new ArgumentOutOfRangeException();
             }
-            int activeWeight = ActiveEntries[Index];
-            int drawnWeight = DrawnEntries[Index];
+            int activeWeight = (int)ActiveEntries[Index];
+            int drawnWeight = (int)DrawnEntries[Index];
             length = --Length;
             if (Index < length)
             {
