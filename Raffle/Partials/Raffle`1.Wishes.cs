@@ -15,6 +15,7 @@ namespace UD_Modding_Toolbox
         [WishCommand("UD raffle test")]
         public static void RaffleTest_WishHandler()
         {
+            int indent = Debug.LastIndent;
             Raffle<string> creatures = new()
             {
                 { "Glowcrow", 3 },
@@ -400,6 +401,7 @@ namespace UD_Modding_Toolbox
             finally
             {
                 bag.Refill();
+                Debug.LastIndent = indent;
             }
         }
         [WishCommand("UD raffle cleanup")]
