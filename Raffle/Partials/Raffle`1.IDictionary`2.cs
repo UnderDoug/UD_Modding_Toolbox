@@ -35,14 +35,8 @@ namespace UD_Modding_Toolbox
 
         public void Add(T Token, int Weight)
         {
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-            Debug.Entry(4, nameof(Add), Indent: indent + 1, Toggle: doDebug);
-
             if (IndexOf(Token) is int index && index >= 0)
             {
-                Debug.CheckYeh(4, "Contains " + typeof(T).Name, Token.ToString(), Indent: indent + 2, Toggle: doDebug);
-
                 if (Weight < 0 && ActiveEntries[index].Weight <= Math.Abs(Weight))
                 {
                     ActiveEntries[index].Weight = 0;
@@ -54,8 +48,6 @@ namespace UD_Modding_Toolbox
             }
             else
             {
-                Debug.CheckNah(4, "Doesn't contain " + typeof(T).Name, Token.ToString(), Indent: indent + 2, Toggle: doDebug);
-                Debug.Entry(4, nameof(Length), Length.ToString(), Indent: indent + 2, Toggle: doDebug);
                 index = Length++;
                 EnsureCapacity(Length);
                 ActiveEntries[index] = new(Token, Math.Max(0, Weight));
@@ -63,8 +55,6 @@ namespace UD_Modding_Toolbox
             }
             SyncWeightTotals();
             Variant++;
-
-            Debug.LastIndent = indent;
         }
 
         public bool ContainsKey(T Token)

@@ -148,10 +148,10 @@ namespace UD_Modding_Toolbox
 
             readonly object IDictionaryEnumerator.Value => Current.Weight;
 
-            public Enumerator(Raffle<T> Bag)
+            public Enumerator(Raffle<T> Raffle)
             {
-                this.Raffle = Bag;
-                Version = Bag.Version;
+                this.Raffle = Raffle;
+                Version = Raffle.Version;
                 Index = -1;
             }
 
@@ -163,7 +163,7 @@ namespace UD_Modding_Toolbox
                 }
                 while (++Index < Raffle.Length)
                 {
-                    if (Raffle[Index] is T token && Raffle[token] > 0)
+                    if (Raffle[Index] != null)
                     {
                         return true;
                     }

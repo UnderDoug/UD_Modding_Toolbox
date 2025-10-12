@@ -122,39 +122,21 @@ namespace UD_Modding_Toolbox
 
         public void EnsureCapacity(int Capacity)
         {
-            int indent = Debug.LastIndent;
-            Debug.Entry(4, nameof(EnsureCapacity), Capacity.ToString() + " : " + Size.ToString(), Indent: indent + 1, Toggle: doDebug);
             if (Size < Capacity)
             {
                 Resize(Capacity);
             }
-            Debug.LastIndent = indent;
         }
 
         protected void Resize(int Capacity)
         {
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-            Debug.Entry(4, nameof(Resize), Capacity.ToString(), Indent: indent + 1, Toggle: doDebug);
             if (Capacity == 0)
             {
                 Capacity = DefaultCapacity;
             }
-            // Entry[] activeEntries = new Entry[Capacity];
-            // Entry[] drawnEntries = new Entry[Capacity];
-            for (int i = 0; i < Length; i++)
-            {
-                // activeEntries[i] = ActiveEntries[i];
-                // drawnEntries[i] = DrawnEntries[i];
-            }
-            // Array.Copy(ActiveEntries, 0, activeEntries, 0, Length);
-            // Array.Copy(DrawnEntries, 0, drawnEntries, 0, Length);
-            // ActiveEntries = activeEntries;
-            // DrawnEntries = drawnEntries;
             Array.Resize(array: ref ActiveEntries, Capacity);
             Array.Resize(array: ref DrawnEntries, Capacity);
             Size = Capacity;
-            Debug.LastIndent = indent;
         }
 
         protected bool SyncWeightTotals()
@@ -167,22 +149,12 @@ namespace UD_Modding_Toolbox
                 TotalDrawnWeights += (int)DrawnEntries[i];
             }
             TotalWeights = TotalActiveWeights + TotalDrawnWeights;
-
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-            Debug.CheckYeh(4, nameof(SyncWeightTotals), Indent: indent + 1, Toggle: doDebug);
-            Debug.LastIndent = indent;
             return true;
         }
 
         protected Random SetSeed(string Seed)
         {
             _Seed = this.Seed = Seed ?? "none";
-
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-            Debug.Entry(4, nameof(SetSeed) + ", " + nameof(_NextSeed), _NextSeed, Indent: indent + 1, Toggle: doDebug);
-            Debug.LastIndent = indent;
             return Rnd;
         }
         public void Shake()
@@ -191,35 +163,16 @@ namespace UD_Modding_Toolbox
             {
                 _Seed = Utils.Rnd.Next().ToString();
             }
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-            Debug.Entry(4, nameof(Shake) + ", " + nameof(_NextSeed), _NextSeed, Indent: indent + 1, Toggle: doDebug);
-            Debug.LastIndent = indent;
         }
 
         public virtual bool HasTokens()
         {
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-
-            int activeCount = ActiveCount;
-            bool activeCountGT0 = activeCount > 0;
-
-            Debug.LoopItem(4, nameof(HasTokens), activeCount.ToString() + " > 0", Good: activeCountGT0, Indent: indent + 1, Toggle: doDebug);
-            Debug.LastIndent = indent;
-            return activeCountGT0;
+            return ActiveCount > 0;
         }
 
         public virtual bool CanDraw()
         {
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
-
-            bool hasTokens = HasTokens();
-
-            Debug.LoopItem(4, nameof(CanDraw), hasTokens.ToString(), Good: hasTokens, Indent: indent + 1, Toggle: doDebug);
-            Debug.LastIndent = indent;
-            return hasTokens;
+            return HasTokens();
         }
 
         // Weights
@@ -249,33 +202,38 @@ namespace UD_Modding_Toolbox
         }
 
         // Chances
-        protected static float GetChance(Entry[] Entries, T Token, int TotalWeights)
+        public float GetTotalChance(T Token, int WeightAdjust, int CountAdjust)
         {
-            for (int i = 0; i < Entries.Length; i++)
+            if (Contains(Token))
             {
-                if (!Equals(Entries[i], null) && Equals(Entries[i].Token, Token) && Entries[i] > 0)
-                {
-                    return (int)Entries[i] / TotalWeights;
-                }
+                return (float)(GetTotalWeight(Token) + WeightAdjust) / (ActiveCount + CountAdjust);
             }
             return 0;
+        }
+        public float GetTotalChance(T Token, int WeightAdjust)
+        {
+            return GetTotalChance(Token, WeightAdjust, 0);
         }
         public float GetTotalChance(T Token)
         {
-            if (Contains(Token))
-            {
-                return GetTotalWeight(Token) / TotalCount;
-            }
-            return 0;
+            return GetTotalChance(Token, 0);
         }
 
-        public float GetActiveChance(T Token)
+        public float GetActiveChance(T Token, int WeightAdjust, int CountAdjust)
         {
             if (Contains(Token))
             {
-                return GetActiveWeight(Token) / ActiveCount;
+                return (float)(GetActiveWeight(Token) + WeightAdjust) / (ActiveCount + CountAdjust);
             }
             return 0;
+        }
+        public float GetActiveChance(T Token, int WeightAdjust)
+        {
+            return GetActiveChance(Token, WeightAdjust, 0);
+        }
+        public float GetActiveChance(T Token)
+        {
+            return GetActiveChance(Token, 0);
         }
 
         public IEnumerable<float> GetTotalChances()
@@ -387,7 +345,7 @@ namespace UD_Modding_Toolbox
             }
         }
 
-        int Next()
+        protected int Next(Random Rnd)
         {
             if (!HasTokens())
             {
@@ -395,19 +353,19 @@ namespace UD_Modding_Toolbox
             }
             return Rnd.Next(ActiveCount);
         }
-        bool NextToken(out T Token)
+        protected int Next()
+        {
+            return Next(Rnd);
+        }
+        bool NextToken(out T Token, Random Rnd)
         {
             Token = default;
-            int targetWeight = Next();
+            int targetWeight = Next(Rnd);
             if (!HasTokens() || targetWeight < 0)
             {
                 return false;
             }
-            int indent = Debug.LastIndent;
-            bool doDebug = false;
             int currentCombinedWeight = 0;
-            Debug.Entry(4, nameof(NextToken) + ", " + nameof(targetWeight), targetWeight.ToString() + " (" + ActiveCount + ")",
-                Indent: indent + 1, Toggle: doDebug);
             for (int i = 0; i < Length; i++)
             {
                 Entry entry = ActiveEntries[i];
@@ -415,27 +373,27 @@ namespace UD_Modding_Toolbox
                 {
                     continue;
                 }
-                string entryDebugString = entry.ToString() + " | " + nameof(currentCombinedWeight);
                 if (targetWeight < (currentCombinedWeight += (int)entry))
                 {
-                    Debug.CheckYeh(4, entryDebugString, currentCombinedWeight.ToString(), Indent: indent + 2, Toggle: doDebug);
                     Token = ActiveEntries[i];
-                    Debug.LastIndent = indent;
                     return true;
                 }
-                Debug.CheckNah(4, entryDebugString, currentCombinedWeight.ToString(), Indent: indent + 2, Toggle: doDebug);
             }
-            Debug.LastIndent = indent;
             throw new IndexOutOfRangeException(nameof(targetWeight) + " was too big for total combined weight of " + currentCombinedWeight);
         }
-        bool DrawToken(T Token)
+        bool NextToken(out T Token)
+        {
+            return NextToken(out Token, Rnd);
+        }
+        bool DrawToken(T Token, int Weight)
         {
             if (IndexOf(Token) is int index
                 && index > -1
                 && ActiveEntries[index] > 0)
             {
-                ActiveEntries[index]--;
-                DrawnEntries[index]++;
+                int weight = Math.Min(Weight, (int)ActiveEntries[index]);
+                ActiveEntries[index] -= weight;
+                DrawnEntries[index] += weight;
 
                 SyncWeightTotals();
 
@@ -443,10 +401,18 @@ namespace UD_Modding_Toolbox
             }
             return false;
         }
-
-        public T Draw(bool RefillIfEmpty)
+        bool DrawToken(T Token)
         {
-            if (NextToken(out T token)
+            return DrawToken(Token, 1);
+        }
+        bool DrawEntry(T Token)
+        {
+            return DrawToken(Token, this[Token]);
+        }
+
+        T Draw(Random Rnd, bool RefillIfEmpty)
+        {
+            if (NextToken(out T token, Rnd)
                 && DrawToken(token))
             {
                 if (RefillIfEmpty && !HasTokens())
@@ -457,19 +423,30 @@ namespace UD_Modding_Toolbox
             }
             return default;
         }
-
+        public T Draw(bool RefillIfEmpty)
+        {
+            return Draw(Rnd, RefillIfEmpty);
+        }
         public T Draw()
         {
             return Draw(true);
         }
+        public T DrawCosmetic(bool RefillIfEmpty)
+        {
+            return Draw(Stat.Rnd2, RefillIfEmpty);
+        }
+        public T DrawCosmetic()
+        {
+            return DrawCosmetic(true);
+        }
 
-        public IEnumerable<T> DrawN(int Number, bool RefillIfEmpty)
+        IEnumerable<T> DrawN(int Number, Random Rnd, bool RefillIfEmpty)
         {
             if ((RefillIfEmpty || ActiveCount > Number) && Number > 0)
             {
                 for (int i = 0; i < Number; i++)
                 {
-                    yield return Draw(RefillIfEmpty);
+                    yield return Draw(Rnd, RefillIfEmpty);
                 }
             }
             else
@@ -481,12 +458,25 @@ namespace UD_Modding_Toolbox
                         nameof(RefillIfEmpty) + " is false");
             }
         }
+        public IEnumerable<T> DrawN(int Number, bool RefillIfEmpty)
+        {
+            return DrawN(Number, Rnd, RefillIfEmpty);
+        }
         public IEnumerable<T> DrawN(int Number)
         {
             return DrawN(Number, true);
         }
 
-        public IEnumerable<T> DrawUptoN(int Number, bool RefillFIrst)
+        public IEnumerable<T> DrawNConsmetic(int Number, bool RefillIfEmpty)
+        {
+            return DrawN(Number, Stat.Rnd2, RefillIfEmpty);
+        }
+        public IEnumerable<T> DrawNConsmetic(int Number)
+        {
+            return DrawNConsmetic(Number, true);
+        }
+
+        IEnumerable<T> DrawUptoN(int Number, Random Rnd, bool RefillFIrst)
         {
             if (RefillFIrst && !HasTokens())
             {
@@ -496,7 +486,7 @@ namespace UD_Modding_Toolbox
             {
                 for (int i = 0; i < Number; i++)
                 {
-                    if (TryDraw(out T token))
+                    if (TryDraw(out T token, Rnd))
                     {
                         yield return token;
                     }
@@ -513,12 +503,25 @@ namespace UD_Modding_Toolbox
                     message: "Paramater must be greater than zero");
             }
         }
+        public IEnumerable<T> DrawUptoN(int Number, bool RefillFIrst)
+        {
+            return DrawUptoN(Number, Rnd, RefillFIrst);
+        }
         public IEnumerable<T> DrawUptoN(int Number)
         {
-            return DrawUptoN(Number, false);
+            return DrawUptoN(Number, true);
         }
 
-        public IEnumerable<T> DrawAll(bool RefillFirst)
+        public IEnumerable<T> DrawUptoNCosmetic(int Number, bool RefillFIrst)
+        {
+            return DrawUptoN(Number, Stat.Rnd2, RefillFIrst);
+        }
+        public IEnumerable<T> DrawUptoNCosmetic(int Number)
+        {
+            return DrawUptoNCosmetic(Number, true);
+        }
+
+        IEnumerable<T> DrawAll(Random Rnd, bool RefillFirst)
         {
             if (RefillFirst)
             {
@@ -528,7 +531,7 @@ namespace UD_Modding_Toolbox
             {
                 while (CanDraw())
                 {
-                    yield return Draw(false);
+                    yield return Draw(Rnd, false);
                 }
             }
             else
@@ -536,39 +539,115 @@ namespace UD_Modding_Toolbox
                 throw new InvalidOperationException("Can't " + nameof(DrawAll) + " from an empty " + nameof(Raffle<T>));
             }
         }
-
+        public IEnumerable<T> DrawAll(bool RefillFirst)
+        {
+            return DrawAll(Rnd, RefillFirst);
+        }
         public IEnumerable<T> DrawAll()
         {
-            return DrawAll(false);
+            return DrawAll(Rnd, true);
         }
 
-        public bool TryDraw(out T Token)
+        public IEnumerable<T> DrawAllCosmetic(bool RefillFirst)
         {
-            Token = Draw(false);
+            return DrawAll(Stat.Rnd2, RefillFirst);
+        }
+        public IEnumerable<T> DrawAllCosmetic()
+        {
+            return DrawAllCosmetic(true);
+        }
+
+        IEnumerable<T> DrawRemaining(Random Rnd)
+        {
+            return DrawAll(Rnd, false);
+        }
+        public IEnumerable<T> DrawRemaining()
+        {
+            return DrawRemaining(Rnd);
+        }
+        public IEnumerable<T> DrawRemainingCosmetic()
+        {
+            return DrawRemaining(Stat.Rnd2);
+        }
+
+        bool TryDraw(out T Token, Random Rnd)
+        {
+            Token = Draw(Rnd, false);
             if (!Equals(Token, null) && !Equals(Token, default))
             {
                 return true;
             }
             return false;
         }
-
-        public T Sample()
+        public bool TryDraw(out T Token)
         {
-            if (NextToken(out T token))
+            return TryDraw(out Token, Rnd);
+        }
+
+        T DrawUnique(Random Rnd, bool RefillIfEmpty)
+        {
+            if (NextToken(out T token, Rnd)
+                && DrawEntry(token))
+            {
+                if (RefillIfEmpty && !HasTokens())
+                {
+                    Refill();
+                }
+                return token;
+            }
+            return default;
+        }
+        public T DrawUnique(bool RefillIfEmpty)
+        {
+            return DrawUnique(Rnd, RefillIfEmpty);
+        }
+        public T DrawUnique()
+        {
+            return DrawUnique(true);
+        }
+
+        public T DrawUniqueCosmetic(bool RefillIfEmpty)
+        {
+            return DrawUnique(Stat.Rnd2, RefillIfEmpty);
+        }
+        public T DrawUniqueCosmetic()
+        {
+            return DrawUniqueCosmetic(true);
+        }
+
+        T Sample(Random Rnd)
+        {
+            if (NextToken(out T token, Rnd))
             {
                 return token;
             }
             return default;
         }
-
-        public bool TrySample(out T Token)
+        public T Sample()
         {
-            Token = Sample();
+            return Sample(Rnd);
+        }
+        public T SampleCosmetic()
+        {
+            return Sample(Stat.Rnd2);
+        }
+
+        bool TrySample(out T Token, Random Rnd)
+        {
+            Token = Sample(Rnd);
             if (!Equals(Token, null) && !Equals(Token, default))
             {
                 return true;
             }
             return false;
+        }
+        public bool TrySample(out T Token)
+        {
+            return TrySample(out Token, Rnd);
+        }
+        public bool TrySampleCosmetic(out T Token)
+        {
+            return TrySample(out Token, Stat.Rnd2);
         }
 
         public Raffle<T> Refill(string Seed = null)
@@ -621,9 +700,6 @@ namespace UD_Modding_Toolbox
             Writer.WriteOptimized(_Seed);
             Writer.Write(ActiveEntries.ToList());
             Writer.Write(DrawnEntries.ToList());
-            // TotalWeights = 0;
-            // TotalActiveWeights = 0;
-            // TotalDrawnWeights = 0;
         }
 
         public virtual void Read(SerializationReader Reader)

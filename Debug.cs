@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using Qud.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -179,19 +180,31 @@ namespace UD_Modding_Toolbox
             int Verbosity,
             string Source,
             string Context = null,
-            T Picked = default,
+            bool ShowChance = false,
+            T Drawn = default,
+            T Sampled = default,
             int Indent = 0,
             bool Toggle = true)
         {
             string context = Context == null ? "" : $"{Context}:";
             Entry(Verbosity, $"Vomit: {Source} {context}", Indent, Toggle: Toggle);
 
+            bool noneDrawn = Equals(Drawn, default);
+            T picked = !Equals(Drawn, default) ? Drawn : Sampled;
+            bool nonePicked = Equals(picked, default);
             foreach (Raffle<T>.Entry entry in Raffle)
             {
-                string wasPicked = Equals(Picked, (T)entry) ? true.ToString() : null;
-                LoopItem(Verbosity, entry.ToString(), wasPicked, Indent: Indent + 1, Toggle: Toggle);
+                bool? wasPicked = nonePicked ? null : entry.Equals(picked, false);
+                bool wasDrawn = !noneDrawn && entry.Equals(picked, false);
+                int weightAdjust = wasDrawn ? 1 : 0;
+                int countAdjust = noneDrawn ? 0 : 1;
+                string chance = ShowChance
+                    ? Math.Round(Raffle.GetActiveChance(entry, weightAdjust, countAdjust) * 100f, 2).ToString() + "%"
+                    : "";
+                string chanceText = ShowChance ? chance + ", " : "";
+                string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceText + entry.Token.ExtendedToString();
+                LoopItem(Verbosity, message, Good: wasPicked, Indent: Indent + 1, Toggle: Toggle);
             }
-
             LastIndent = Indent;
             return Raffle;
         }

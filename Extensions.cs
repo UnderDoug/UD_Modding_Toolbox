@@ -1,26 +1,30 @@
-﻿using Genkit;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+
+using Genkit;
+using Qud.API;
+
 using XRL;
-using XRL.CharacterBuilds;
-using XRL.CharacterBuilds.Qud;
-using XRL.Language;
-using XRL.Rules;
 using XRL.UI;
+using XRL.Rules;
+using XRL.Language;
 using XRL.World;
-using XRL.World.Anatomy;
-using XRL.World.Capabilities;
-using XRL.World.Effects;
 using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
 using XRL.World.Parts.Skill;
-using XRL.World.Text;
+using XRL.World.Effects;
+using XRL.World.Anatomy;
+using XRL.World.Capabilities;
+using XRL.CharacterBuilds;
+using XRL.CharacterBuilds.Qud;
+
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Utils;
 
@@ -56,6 +60,14 @@ namespace UD_Modding_Toolbox
                 return false;
 
             return doDebug;
+        }
+
+        public static bool InheritsFrom(this Type T, Type Type, bool IncludeSelf = true)
+        {
+            return (IncludeSelf && T == Type)
+                || Type.IsSubclassOf(T)
+                || T.IsAssignableFrom(Type)
+                || T.YieldInheritedTypes().Contains(Type);
         }
 
         public static bool IsNullOrZero([NotNullWhen(false)] this int? value)
@@ -2470,6 +2482,102 @@ namespace UD_Modding_Toolbox
         public static long GameYearsAsTurnTicks(this double Years)
         {
             return (long)(Years * Calendar.TurnsPerYear);
+        }
+
+        public static double GameHoursSince(this long TimeTick)
+        {
+            return GameHoursBetween(TimeTick, The.CurrentTurn);
+        }
+        public static double GameDaysSince(this long TimeTick)
+        {
+            return GameDaysBetween(TimeTick, The.CurrentTurn);
+        }
+        public static double GameYearsSince(this long TimeTick)
+        {
+            return GameYearsBetween(TimeTick, The.CurrentTurn);
+        }
+
+        public static int GameHoursAgo(this long TimeTick)
+        {
+            return (int)GameHoursSince(TimeTick);
+        }
+        public static int GameDaysAgo(this long TimeTick)
+        {
+            return (int)GameDaysSince(TimeTick);
+        }
+        public static int GameYearsAgo(this long TimeTick)
+        {
+            return (int)GameYearsSince(TimeTick);
+        }
+
+        public static string TimeAgo(this long TimeTick)
+        {
+            int yearsAgo = (int)Math.Floor(GameYearsSince(TimeTick));
+            int monthsAgo = (int)Math.Floor(GameYearsSince(TimeTick) / 13);
+            int daysAgo = GameDaysAgo(TimeTick);
+            int hoursAgo = GameHoursAgo(TimeTick);
+            string ago = " ago";
+            string unit = "some time";
+            if (yearsAgo > 0)
+            {
+                unit = yearsAgo.Things("year");
+            }
+            else
+            if (monthsAgo > 0)
+            {
+                unit = monthsAgo.Things("month");
+            }
+            else
+            if (daysAgo > 0)
+            {
+                unit = daysAgo.Things("day");
+            }
+            else
+            if (hoursAgo > 0)
+            {
+                unit = hoursAgo.Things("hour");
+            }
+            else
+            {
+                return "just now";
+            }
+            return unit + ago;
+        }
+
+        public static string ExtendedToString<T>(this T Thing)
+        {
+            foreach (MethodInfo methodInfo in typeof(Extensions).GetMethods())
+            {
+                if (methodInfo.GetParameters().Length == 1
+                    && Thing.GetType().InheritsFrom(methodInfo.GetParameters()[0].ParameterType)
+                    && methodInfo.ReturnType == typeof(string)
+                    && methodInfo.Name == nameof(ToString)
+                    && methodInfo.Invoke(Thing, new object[] { Thing }) is string thingString)
+                {
+                    return thingString;
+                }
+            }
+            foreach (MethodInfo methodInfo in ModManager.GetMethodsWithAttribute(typeof(ExtensionAttribute)))
+            {
+                if (Thing.GetType().InheritsFrom(methodInfo.GetParameters()[0].ParameterType)
+                    && methodInfo.ReturnType == typeof(string)
+                    && methodInfo.Name == nameof(ToString)
+                    && methodInfo.Invoke(Thing, new object[] { Thing }) is string thingString)
+                {
+                    return thingString;
+                }
+            }
+            return Thing.ToString();
+        }
+
+        public static string ToString(this IBaseJournalEntry JournalEntry)
+        {
+            string output = JournalEntry.GetShortText().Strip();
+            if (!output.IsNullOrEmpty() && output.Length > 30)
+            {
+                output = output[..29];
+            }
+            return output + "...";
         }
     }
 }

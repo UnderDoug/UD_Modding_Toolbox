@@ -18,9 +18,10 @@ namespace UD_Modding_Toolbox
                 {
                     throw new ArgumentOutOfRangeException();
                 }
-                if (!Equals(value, default))
+                if (!Equals(value, default) && !Equals(value, null))
                 {
                     ActiveEntries[Index].Token = value;
+                    DrawnEntries[Index].Token = value;
                     Variant++;
                 }
                 else

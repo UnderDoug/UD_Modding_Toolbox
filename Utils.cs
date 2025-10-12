@@ -4,6 +4,8 @@ using Kobold;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using XRL;
 using XRL.Core;
 using XRL.Language;
@@ -121,6 +123,23 @@ namespace UD_Modding_Toolbox
                 yield return value;
             }
         }
+
+        // see https://stackoverflow.com/questions/299515/reflection-to-identify-extension-methods
+        /*
+        public static IEnumerable<MethodInfo> GetExtensionMethods(Assembly Assembly, Type ExtendedType, Predicate<MethodInfo> Filter = null)
+        {
+            return from type in Assembly.GetTypes()
+                   where type.IsSealed && !type.IsGenericType && !type.IsNested
+                       from method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                       where method.IsDefined(typeof(ExtensionAttribute), false)
+                       where ExtendedType.IsGenericType && ExtendedType.IsTypeDefinition
+                           ? method.GetParameters()[0].ParameterType.IsGenericType
+                               && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == ExtendedType
+                           : method.GetParameters()[0].ParameterType == ExtendedType
+                       where Filter == null || Filter(method)
+                   select method;
+        }
+        */
 
         [VariableReplacer]
         public static string nbsp(DelegateContext Context)
@@ -442,15 +461,15 @@ namespace UD_Modding_Toolbox
             }
             return The.CurrentTurn + TimeTicks;
         }
-        public static long TurnTickAfterHours(double Hours)
+        public static long TurnTickAfterGameHours(double Hours)
         {
             return The.CurrentTurn + Hours.GameHoursAsTurnTicks();
         }
-        public static long TurnTickAfterDays(double Days)
+        public static long TurnTickAfterGameDays(double Days)
         {
             return The.CurrentTurn + Days.GameDaysAsTurnTicks();
         }
-        public static long TurnTickAfterYears(double Years)
+        public static long TurnTickAfterGameYears(double Years)
         {
             return The.CurrentTurn + Years.GameYearsAsTurnTicks();
         }

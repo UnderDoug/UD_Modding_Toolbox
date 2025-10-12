@@ -1,5 +1,10 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using XRL;
 using XRL.World;
 
 namespace UD_Modding_Toolbox
@@ -34,7 +39,7 @@ namespace UD_Modding_Toolbox
 
             public override string ToString()
             {
-                return (Token.ToString() ?? "Token") + ":" + Weight;
+                return (Token.ExtendedToString() ?? "Token") + ":" + Weight;
             }
 
             public void Deconstruct(out T Token, out int Weight)
@@ -88,7 +93,15 @@ namespace UD_Modding_Toolbox
             }
             public bool Equals(Entry other)
             {
-                return Equals(Token, (T)other) && Equals((int)other);
+                return Equals(other, true);
+            }
+            public bool Equals(Entry other, bool MatchWeight)
+            {
+                return Equals((T)other) && (!MatchWeight || Equals((int)other));
+            }
+            public bool Equals(T other)
+            {
+                return Equals(Token, other);
             }
             public bool Equals(int other)
             {
@@ -195,12 +208,12 @@ namespace UD_Modding_Toolbox
             // Entry +/- Entry
             public static Entry operator +(Entry operand1, Entry operand2)
             {
-                if (Equals((T)operand1, default))
+                if (operand1.Equals((T)default))
                 {
                     return operand2 + (int)operand1;
                 }
                 else
-                if (Equals((T)operand2, default))
+                if (operand2.Equals((T)default))
                 {
                     return operand1 + (int)operand2;
                 }
@@ -208,12 +221,12 @@ namespace UD_Modding_Toolbox
             }
             public static Entry operator -(Entry operand1, Entry operand2)
             {
-                if (Equals((T)operand1, default))
+                if (operand1.Equals((T)default))
                 {
                     return operand2 - (int)operand1;
                 }
                 else
-                if (Equals((T)operand2, default))
+                if (operand2.Equals((T)default))
                 {
                     return operand1 - (int)operand2;
                 }
