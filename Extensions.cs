@@ -972,6 +972,11 @@ namespace UD_Modding_Toolbox
                 || ciOpcode.StartsWith("throw");
         }
 
+        public static LocalBuilder GetLocalAtIndex(this MethodBase MethodBase, int Index)
+        {
+            return MethodBase.GetMethodBody().LocalVariables[Index] as LocalBuilder;
+        }
+
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             T ExceptForToken = default,
