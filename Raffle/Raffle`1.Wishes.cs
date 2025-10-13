@@ -148,7 +148,7 @@ namespace UD_Modding_Toolbox
                 while (creatures.CanDraw() && counter < startingActiveCount + 5)
                 {
                     string blueprint = creatures.Draw();
-                    creatures.Vomit(4, counter.ToString() + ":", blueprint, Indent: 2);
+                    // creatures.Vomit(4, counter.ToString() + ":", blueprint, Indent: 2);
                     if (GameObject.Create(blueprint, AfterObjectCreated: GO => GO.SetStringProperty("Raffled", "true")) is GameObject creatureObject)
                     {
                         Cell spawnCell = The.ActiveZone?.GetRandomCell();
@@ -163,7 +163,11 @@ namespace UD_Modding_Toolbox
             catch (Exception x)
             {
                 MetricsManager.LogException(nameof(Raffle<string>) + "." + nameof(creatures.CanDraw) +
-                    " " + nameof(creatures) + ", & while loop test", x, "game_test_exception");
+                        " " + nameof(creatures) + ", & while loop test", x, "game_test_exception");
+            }
+            finally
+            {
+                creatures.Vomit(4, nameof(RaffleWishes), "after loop", Indent: 2);
             }
             try
             {
@@ -280,7 +284,15 @@ namespace UD_Modding_Toolbox
                 }
                 catch (Exception x)
                 {
-                    MetricsManager.LogException("Fourth (no refill)", x, "game_test_exception");
+                    if (x.GetType().InheritsFrom(typeof(InvalidOperationException))
+                        && x.ToString().Contains("Can't " + nameof(bag.DrawAll) + " from an empty "))
+                    {
+                        Debug.CheckYeh(4, "Got the expected " + nameof(InvalidOperationException), Indent: 2);
+                    }
+                    else
+                    {
+                        MetricsManager.LogException("Fourth (no refill)", x, "game_test_exception");
+                    }
                 }
 
             }
@@ -306,7 +318,7 @@ namespace UD_Modding_Toolbox
                         throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
                     }
                 }
-                Debug.Entry(4, "Sample", hat.Sample(), Indent: 2);
+                Debug.Entry(4, "Sample1", hat.Sample(), Indent: 2);
                 Debug.Entry(4, "Sample2", hat.Sample(), Indent: 2);
                 Debug.Entry(4, "Shake...", Indent: 2);
                 hat.Shake();
@@ -324,7 +336,7 @@ namespace UD_Modding_Toolbox
                         throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
                     }
                 }
-                Debug.Entry(4, "Sample", hat.Sample(), Indent: 2);
+                Debug.Entry(4, "Sample1", hat.Sample(), Indent: 2);
                 Debug.Entry(4, "Sample2", hat.Sample(), Indent: 2);
                 Debug.Entry(4, "Shake...", Indent: 2);
                 hat.Shake();
@@ -404,6 +416,7 @@ namespace UD_Modding_Toolbox
                 Debug.LastIndent = indent;
             }
         }
+
         [WishCommand("UD raffle cleanup")]
         public static void RaffleCleanup_WishHandler()
         {
