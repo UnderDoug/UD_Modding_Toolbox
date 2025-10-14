@@ -43,8 +43,8 @@ namespace UD_Modding_Toolbox
         public static string ModAuthor => ThisMod?.Manifest?.Author;
         public static string ModAuthorStripped => ModAuthor?.Strip();
 
-        public static string TellModAuthor => ModAuthor.IsNullOrEmpty() ? null : "Let " + ModAuthor + " know on the steam workshop discussion for this mod.";
-        public static string TellModAuthorStripped => ModAuthorStripped.IsNullOrEmpty() ? null : "Let " + ModAuthorStripped + " know on the steam workshop discussion for this mod.";
+        public static string TellModAuthor => ModAuthor.IsNullOrEmpty() ? null : "Please let " + ModAuthor + " know on the steam workshop discussion for this mod.";
+        public static string TellModAuthorStripped => ModAuthorStripped.IsNullOrEmpty() ? null : "Please let " + ModAuthorStripped + " know on the steam workshop discussion for this mod.";
 
         public static ModInfo HNPS_GigantismPlus => ModManager.GetMod(HNPS_GIGANTISMPLUS_MOD_ID);
 

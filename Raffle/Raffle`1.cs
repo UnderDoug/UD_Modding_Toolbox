@@ -441,30 +441,70 @@ namespace UD_Modding_Toolbox
             return GetActiveChances().ToList();
         }
 
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/>. 
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/>.</returns>
+        public IEnumerable<KeyValuePair<T, int>> GetActiveEntries()
+        {
+            foreach (KeyValuePair<T, int> entry in ActiveEntries)
+            {
+                yield return new(entry.Key, entry.Value);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetActiveEntries(Predicate<KeyValuePair<T, int>> Filter)
         {
-            foreach (KeyValuePair<T, int> entry in ActiveEntries)
+            foreach (KeyValuePair<T, int> entry in GetActiveEntries())
             {
                 if (Filter == null || Filter(entry))
                 {
-                    yield return new(entry.Key, entry.Value);
+                    yield return entry;
                 }
             }
         }
+
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed the <see cref="Entry.Token"/>.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed the <see cref="Entry.Token"/>.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetActiveEntries(Predicate<T> Filter)
         {
-            foreach (KeyValuePair<T, int> entry in ActiveEntries)
+            foreach (KeyValuePair<T, int> entry in GetActiveEntries())
             {
                 if (Filter == null || Filter(entry.Key))
                 {
-                    yield return new(entry.Key, entry.Value);
+                    yield return entry;
                 }
             }
         }
 
-        public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries(Predicate<KeyValuePair<T, int>> Filter)
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/>. 
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/>.</returns>
+        public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries()
         {
             foreach (KeyValuePair<T, int> entry in DrawnEntries)
+            {
+                yield return new(entry.Key, entry.Value);
+            }
+        }
+
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
+        public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries(Predicate<KeyValuePair<T, int>> Filter)
+        {
+            foreach (KeyValuePair<T, int> entry in GetDrawnEntries())
             {
                 if (Filter == null || Filter(entry))
                 {
@@ -472,9 +512,15 @@ namespace UD_Modding_Toolbox
                 }
             }
         }
+
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries(Predicate<T> Filter)
         {
-            foreach (KeyValuePair<T, int> entry in DrawnEntries)
+            foreach (KeyValuePair<T, int> entry in GetDrawnEntries())
             {
                 if (Filter == null || Filter(entry.Key))
                 {
@@ -483,6 +529,10 @@ namespace UD_Modding_Toolbox
             }
         }
 
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/>. 
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/>.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetKeyValuePairEntries()
         {
             for (int i = 0; i < Length; i++)
@@ -491,6 +541,11 @@ namespace UD_Modding_Toolbox
             }
         }
 
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetKeyValuePairEntries(Predicate<KeyValuePair<T, int>> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetKeyValuePairEntries())
@@ -501,6 +556,12 @@ namespace UD_Modding_Toolbox
                 }
             }
         }
+
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetKeyValuePairEntries(Predicate<T> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetKeyValuePairEntries())
@@ -512,30 +573,44 @@ namespace UD_Modding_Toolbox
             }
         }
 
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding each <see cref="ActiveEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/>.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="Entry.Token"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of each <see cref="ActiveEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/></returns>
         public IEnumerable<T> GetGroupedActiveTokens(Predicate<T> Filter = null)
         {
             foreach (T token in GroupedActiveTokens)
             {
-                if (Filter != null && !Filter(token))
+                if (Filter == null || Filter(token))
                 {
-                    continue;
+                    yield return token;
                 }
-                yield return token;
             }
         }
 
+        /// <summary>
+        /// Enumerates the <see cref="Raffle{T}"/> yielding each <see cref="DrawnEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/>.
+        /// </summary>
+        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="Entry.Token"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of each <see cref="DrawnEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/></returns>
         public IEnumerable<T> GetGroupedDrawnTokens(Predicate<T> Filter = null)
         {
             foreach (T token in GroupedDrawnTokens)
             {
-                if (Filter != null && !Filter(token))
+                if (Filter == null || Filter(token))
                 {
-                    continue;
+                    yield return token;
                 }
-                yield return token;
             }
         }
 
+        /// <summary>
+        /// Returns the next target <see cref="Entry.Weight"/> value generated by the passed <paramref name="Rnd"/>, or -1 if there are no <see cref="Entry.Token"/>s available to <see cref="Draw()"/>.
+        /// </summary>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to generate the next target <see cref="Entry.Weight"/> value for the numerous <see cref="Draw()"/> methods.</param>
+        /// <returns>The next target <see cref="Entry.Weight"/> value generated by the passed <paramref name="Rnd"/> if there are <see cref="Entry.Token"/>s available to <see cref="Draw()"/>;<br/>
+        /// -1 otherwise.</returns>
         protected int Next(Random Rnd)
         {
             if (!HasTokens())
@@ -544,18 +619,37 @@ namespace UD_Modding_Toolbox
             }
             return Rnd.Next(ActiveCount);
         }
+
+        /// <summary>
+        /// Returns the next target <see cref="Entry.Weight"/> value generated by <see cref="Raffle{T}.Rnd"/>, or -1 if there are no <see cref="Entry.Token"/>s available to <see cref="Draw()"/>.
+        /// </summary>
+        /// <returns>The next target <see cref="Entry.Weight"/> value generated by <see cref="Raffle{T}.Rnd"/> if there are <see cref="Entry.Token"/>s available to <see cref="Draw()"/>;<br/>
+        /// -1 otherwise.</returns>
         protected int Next()
         {
             return Next(Rnd);
         }
 
-        protected bool NextToken(out T Token, Random Rnd)
+        /// <summary>
+        /// Accumulates each <see cref="Entry.Token"/>'s <see cref="Entry.Weight"/> from <see cref="ActiveEntries"/>, and retreives the first one where the <paramref name="TargetWeight"/> is less than the accumulated total.
+        /// </summary>
+        /// <param name="TargetWeight">The value used to determine when <see cref="Entry.Weight"/>s should stop being accumulated and the relevent <see cref="Entry.Token"/> returned.</param>
+        /// <returns>The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> value causes the accumulated amount to exceed the <paramref name="TargetWeight"/>.</returns>
+        /// <exception cref="IndexOutOfRangeException">If the <paramref name="TargetWeight"/> is less than 0; If the <paramref name="TargetWeight"/> is less than <see cref="ActiveCount"/>.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="HasTokens()"/> returns <see langword="false"/>.</exception>
+        protected T TokenAtWeight(int TargetWeight)
         {
-            Token = default;
-            int targetWeight = Next(Rnd);
-            if (!HasTokens() || targetWeight < 0)
+            if (TargetWeight < 0)
             {
-                return false;
+                throw new ArgumentException(nameof(TargetWeight) + " must be greater than 0");
+            }
+            if (TargetWeight >= ActiveCount)
+            {
+                throw new ArgumentException(nameof(TargetWeight) + " must be less than " + nameof(ActiveCount));
+            }
+            if (!HasTokens())
+            {
+                throw new InvalidOperationException("Can't retrieve " + nameof(Entry.Token) + " when " + nameof(Raffle<T>) + " has no " + nameof(Entry.Token).Pluralize());
             }
             int currentCombinedWeight = 0;
             for (int i = 0; i < Length; i++)
@@ -565,17 +659,51 @@ namespace UD_Modding_Toolbox
                 {
                     continue;
                 }
-                if (targetWeight < (currentCombinedWeight += (int)entry))
+                currentCombinedWeight += (int)entry;
+                if (TargetWeight < currentCombinedWeight)
                 {
-                    Token = ActiveEntries[i];
-                    return true;
+                    return (T)entry;
                 }
             }
-            throw new IndexOutOfRangeException(nameof(targetWeight) + " was too big for total combined weight of " + currentCombinedWeight);
+            throw new InvalidOperationException("Something unknown went wrong. " + Utils.TellModAuthorStripped);
         }
+
+        /// <summary>
+        /// Attempts to retreive the next <see cref="Entry.Token"/> by supplying <see cref="Next(Random)"/> with the passed <paramref name="Rnd"/>, checking the returned value is valid, passing it to <see cref="TokenAtWeight(int)"/>, and passing the result to <paramref name="Token"/>, returning <see langword="true"/> if a value is retreived and passed.
+        /// </summary>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to generate the next target <see cref="Entry.Weight"/> value to be passed to <see cref="TokenAtWeight(int)"/>.</param>
+        /// <param name="Token">The <see cref="Entry.Token"/> retreived from <see cref="TokenAtWeight(int)"/>, if <see cref="Next(Random)"/> returns a valid target weight.</param>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="Next(Random)"/> returns a valid target weight for <see cref="TokenAtWeight(int)"/> to assign a value to <paramref name="Token"/>;<br/>
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        protected bool NextToken(Random Rnd, out T Token)
+        {
+            Token = default;
+            int targetWeight = Next(Rnd);
+            if (!HasTokens()
+                || targetWeight < 0
+                || targetWeight >= ActiveCount)
+            {
+                return false;
+            }
+            Token = TokenAtWeight(targetWeight);
+            return true;
+        }
+
+        /// <summary>
+        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Token"/> by the passed <paramref name="Weight"/> in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by the same amount in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
+        /// </summary>
+        /// <param name="Token">The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> will be reduced by <paramref name="Weight"/> in <see cref="ActiveEntries"/> and increased in <see cref="DrawnEntries"/>.</param>
+        /// <param name="Weight">The amount <paramref name="Token"/>'s <see cref="Entry.Weight"/> will be reduced by in <see cref="ActiveEntries"/> and increase by in <see cref="DrawnEntries"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="Weight"/> is greater than 0, <paramref name="Token"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
+        /// <see langword="false"/> otherwise.
+        /// </returns>
         protected bool DrawToken(T Token, int Weight)
         {
-            if (IndexOf(Token) is int index
+            if (Weight > 0
+                && IndexOf(Token) is int index
                 && index > -1
                 && ActiveEntries[index] > 0)
             {
@@ -589,18 +717,50 @@ namespace UD_Modding_Toolbox
             }
             return false;
         }
+        /// <summary>
+        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Token"/> by 1 in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by 1 in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
+        /// </summary>
+        /// <param name="Token">The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> will be reduced in <see cref="ActiveEntries"/> and increased in <see cref="DrawnEntries"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="Token"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
+        /// <see langword="false"/> otherwise.
+        /// </returns>
         protected bool DrawToken(T Token)
         {
             return DrawToken(Token, 1);
         }
+
+        /// <summary>
+        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Token"/> by its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by the same amount in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
+        /// </summary>
+        /// <remarks>
+        /// Effectively removes the <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, placing it entirely in <see cref="DrawnEntries"/>, in a single operation.
+        /// </remarks>
+        /// <param name="Token">The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> will be transfered from <see cref="ActiveEntries"/> and into <see cref="DrawnEntries"/>.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="Token"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
+        /// <see langword="false"/> otherwise.
+        /// </returns>
         protected bool DrawEntry(T Token)
         {
             return DrawToken(Token, this[Token]);
         }
 
+        /// <summary>
+        /// Attempts to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, using <paramref name="Rnd"/> to determine which one, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to determine which <see cref="Entry.Token"/> to retrieve.</param>
+        /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
+        /// <returns>
+        /// The next <see cref="Entry.Token"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
         protected T Draw(Random Rnd, bool RefillIfEmpty)
         {
-            if (NextToken(out T token, Rnd)
+            if (NextToken(Rnd, out T token)
                 && DrawToken(token))
             {
                 if (RefillIfEmpty && !HasTokens())
@@ -609,25 +769,90 @@ namespace UD_Modding_Toolbox
                 }
                 return token;
             }
-            return default;
+            throw new InvalidOperationException("Can't " + nameof(Draw) + " from a " + nameof(Raffle<T>) + " with an " + nameof(ActiveCount) + " lower than 1");
         }
+
+        /// <summary>
+        /// Attempts to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
+        /// <returns>
+        /// The next <see cref="Entry.Token"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
         public T Draw(bool RefillIfEmpty)
         {
             return Draw(Rnd, RefillIfEmpty);
         }
+
+        /// <summary>
+        /// Attempts to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <returns>
+        /// The next <see cref="Entry.Token"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
         public T Draw()
         {
             return Draw(true);
         }
+
+        /// <summary>
+        /// Uses <see cref="Stat.Rnd2"/> to attempt to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
+        /// <returns>
+        /// A cosmetically random <see cref="Entry.Token"/> from those still available.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
         public T DrawCosmetic(bool RefillIfEmpty)
         {
             return Draw(Stat.Rnd2, RefillIfEmpty);
         }
+
+        /// <summary>
+        /// Uses <see cref="Stat.Rnd2"/> to attempt to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <returns>
+        /// A cosmetically random <see cref="Entry.Token"/> from those still available.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
         public T DrawCosmetic()
         {
             return DrawCosmetic(true);
         }
 
+        /// <summary>
+        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <paramref name="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="Number">
+        ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
+        ///     This argument should be greater than 0, and not exceed <see cref="ActiveCount"/> if <paramref name="RefillIfEmpty"/> is not passed <see langword="true"/>.
+        /// </param>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to determine which <see cref="Entry.Token"/>s to retrieve.</param>
+        /// <param name="RefillIfEmpty">
+        ///     Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.<br/><br/>
+        ///     This argument should be passed <see langword="true"/> if <paramref name="Number"/> exceeds <see cref="ActiveCount"/>.
+        /// </param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Token"/>s.</returns>
+        /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         protected IEnumerable<T> DrawN(int Number, Random Rnd, bool RefillIfEmpty)
         {
             if ((RefillIfEmpty || ActiveCount > Number) && Number > 0)
@@ -639,36 +864,95 @@ namespace UD_Modding_Toolbox
             }
             else
             {
-                throw new ArgumentOutOfRangeException(
-                    paramName: nameof(Number), 
-                    message: "Paramater must be greater than zero, " +
-                        "and not exceed " + nameof(ActiveCount) + " if " + 
-                        nameof(RefillIfEmpty) + " is false");
+                throw new ArgumentException(nameof(Number) + " must be greater than zero, " +
+                    "and not exceed " + nameof(ActiveCount) + " if " + nameof(RefillIfEmpty) + " is false");
             }
         }
 
+        /// <summary>
+        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="Number">
+        ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
+        ///     This argument should be greater than 0, and not exceed <see cref="ActiveCount"/> if <paramref name="RefillIfEmpty"/> is not passed <see langword="true"/>.
+        /// </param>
+        /// <param name="RefillIfEmpty">
+        ///     Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.<br/><br/>
+        ///     This argument should be passed <see langword="true"/> if <paramref name="Number"/> exceeds <see cref="ActiveCount"/>.
+        /// </param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Token"/>s.</returns>
+        /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         public IEnumerable<T> DrawN(int Number, bool RefillIfEmpty)
         {
             return DrawN(Number, Rnd, RefillIfEmpty);
         }
 
+        /// <summary>
+        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="Number">
+        ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
+        ///     This argument should be greater than 0.
+        /// </param>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Token"/>s.</returns>
+        /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1.</exception>
         public IEnumerable<T> DrawN(int Number)
         {
             return DrawN(Number, true);
         }
 
+        /// <summary>
+        /// Uses <see cref="Stat.Rnd2"/> to to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="Number">
+        ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
+        ///     This argument should be greater than 0.
+        /// </param>
+        /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of cosmetically random <see cref="Entry.Token"/>s.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         public IEnumerable<T> DrawNConsmetic(int Number, bool RefillIfEmpty)
         {
             return DrawN(Number, Stat.Rnd2, RefillIfEmpty);
         }
+
+        /// <summary>
+        /// Uses <see cref="Stat.Rnd2"/> to to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// </summary>
+        /// <remarks>
+        /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
+        /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
+        /// </remarks>
+        /// <param name="Number">
+        ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
+        ///     This argument should be greater than 0.
+        /// </param>
+        /// <returns>
+        /// An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of cosmetically random <see cref="Entry.Token"/>s.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         public IEnumerable<T> DrawNConsmetic(int Number)
         {
             return DrawNConsmetic(Number, true);
         }
 
-        protected IEnumerable<T> DrawUptoN(int Number, Random Rnd, bool RefillFIrst)
+        protected IEnumerable<T> DrawUptoN(int Number, Random Rnd, bool RefillFirst)
         {
-            if (RefillFIrst && !HasTokens())
+            if (RefillFirst && !HasTokens())
             {
                 Refill();
             }
@@ -676,7 +960,7 @@ namespace UD_Modding_Toolbox
             {
                 for (int i = 0; i < Number; i++)
                 {
-                    if (TryDraw(out T token, Rnd))
+                    if (TryDraw(Rnd, out T token))
                     {
                         yield return token;
                     }
@@ -694,18 +978,18 @@ namespace UD_Modding_Toolbox
             }
         }
 
-        public IEnumerable<T> DrawUptoN(int Number, bool RefillFIrst)
+        public IEnumerable<T> DrawUptoN(int Number, bool RefillFirst)
         {
-            return DrawUptoN(Number, Rnd, RefillFIrst);
+            return DrawUptoN(Number, Rnd, RefillFirst);
         }
         public IEnumerable<T> DrawUptoN(int Number)
         {
             return DrawUptoN(Number, true);
         }
 
-        public IEnumerable<T> DrawUptoNCosmetic(int Number, bool RefillFIrst)
+        public IEnumerable<T> DrawUptoNCosmetic(int Number, bool RefillFirst)
         {
-            return DrawUptoN(Number, Stat.Rnd2, RefillFIrst);
+            return DrawUptoN(Number, Stat.Rnd2, RefillFirst);
         }
         public IEnumerable<T> DrawUptoNCosmetic(int Number)
         {
@@ -761,7 +1045,7 @@ namespace UD_Modding_Toolbox
             return DrawRemaining(Stat.Rnd2);
         }
 
-        protected bool TryDraw(out T Token, Random Rnd)
+        protected bool TryDraw(Random Rnd, out T Token)
         {
             Token = Draw(Rnd, false);
             if (!Equals(Token, null) && !Equals(Token, default))
@@ -772,12 +1056,12 @@ namespace UD_Modding_Toolbox
         }
         public bool TryDraw(out T Token)
         {
-            return TryDraw(out Token, Rnd);
+            return TryDraw(Rnd, out Token);
         }
 
         protected T DrawUnique(Random Rnd, bool RefillIfEmpty)
         {
-            if (NextToken(out T token, Rnd)
+            if (NextToken(Rnd, out T token)
                 && DrawEntry(token))
             {
                 if (RefillIfEmpty && !HasTokens())
@@ -808,7 +1092,7 @@ namespace UD_Modding_Toolbox
 
         protected T Sample(Random Rnd)
         {
-            if (NextToken(out T token, Rnd))
+            if (NextToken(Rnd, out T token))
             {
                 return token;
             }
