@@ -198,9 +198,8 @@ namespace UD_Modding_Toolbox
                 bool? wasPicked = nonePicked ? null : entry.Equals(picked, false);
                 bool wasDrawn = !noneDrawn && entry.Equals(picked, false);
                 int weightAdjust = wasDrawn ? 1 : 0;
-                int countAdjust = noneDrawn ? 0 : 1;
                 string chance = ShowChance
-                    ? Math.Round(Raffle.GetActiveChance(entry, weightAdjust, countAdjust) * 100f, 2).ToString() + "%"
+                    ? Math.Round(Raffle.GetTotalChance(entry) * 100f, 2).ToString() + "%"
                     : "";
                 string chanceText = ShowChance ? chance + ", " : "";
                 string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceText + entry.Token.ExtendedToString();
