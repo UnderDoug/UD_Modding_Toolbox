@@ -977,7 +977,7 @@ namespace UD_Modding_Toolbox
             return MethodBase.GetMethodBody().LocalVariables[Index] as LocalBuilder;
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.DrawCosmetic) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             T ExceptForToken = default,
@@ -991,7 +991,7 @@ namespace UD_Modding_Toolbox
                 ExceptForTokens: ExceptForTokens);
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.DrawCosmetic) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             Predicate<T> Filter = null)
@@ -1003,7 +1003,7 @@ namespace UD_Modding_Toolbox
                 Filter: Filter);
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this List<T> Bag,
             string Seed,
@@ -1037,7 +1037,7 @@ namespace UD_Modding_Toolbox
                 Filter: Filter);
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this List<T> Bag,
             string Seed,
@@ -1088,7 +1088,7 @@ namespace UD_Modding_Toolbox
             return token;
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this List<T> Bag,
             Guid Seed,
@@ -1105,14 +1105,14 @@ namespace UD_Modding_Toolbox
                 ExceptForTokens: ExceptForTokens);
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawToken<T>(this List<T> Bag, T Token)
         {
             T token = (!Bag.IsNullOrEmpty() || Bag.Remove(Token)) ? Token : default;
             return token;
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.DrawCosmetic) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this Dictionary<string, List<T>> Bag,
             string FromPocket = null,
@@ -1128,7 +1128,7 @@ namespace UD_Modding_Toolbox
                 ExceptForTokens: ExceptForTokens);
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this Dictionary<string,List<T>> Bag,
             string Seed,
@@ -1178,7 +1178,7 @@ namespace UD_Modding_Toolbox
             return token;
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this Dictionary<string, List<T>> Bag,
             Guid Seed,
@@ -1198,7 +1198,7 @@ namespace UD_Modding_Toolbox
                 ExceptForTokens: ExceptForTokens);
         }
 
-        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
+        [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawToken<T>(
             this Dictionary<string, List<T>> Bag,
             T Token,
