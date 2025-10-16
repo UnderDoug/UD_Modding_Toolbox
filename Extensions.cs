@@ -977,6 +977,7 @@ namespace UD_Modding_Toolbox
             return MethodBase.GetMethodBody().LocalVariables[Index] as LocalBuilder;
         }
 
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             T ExceptForToken = default,
@@ -989,6 +990,8 @@ namespace UD_Modding_Toolbox
                 ExceptForToken: ExceptForToken,
                 ExceptForTokens: ExceptForTokens);
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             Predicate<T> Filter = null)
@@ -999,6 +1002,8 @@ namespace UD_Modding_Toolbox
                 Context: null,
                 Filter: Filter);
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this List<T> Bag,
             string Seed,
@@ -1031,6 +1036,8 @@ namespace UD_Modding_Toolbox
                 Context: Context,
                 Filter: Filter);
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this List<T> Bag,
             string Seed,
@@ -1080,6 +1087,8 @@ namespace UD_Modding_Toolbox
             Bag.Remove(token);
             return token;
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this List<T> Bag,
             Guid Seed,
@@ -1095,12 +1104,15 @@ namespace UD_Modding_Toolbox
                 ExceptForToken: ExceptForToken,
                 ExceptForTokens: ExceptForTokens);
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawToken<T>(this List<T> Bag, T Token)
         {
             T token = (!Bag.IsNullOrEmpty() || Bag.Remove(Token)) ? Token : default;
             return token;
         }
 
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this Dictionary<string, List<T>> Bag,
             string FromPocket = null,
@@ -1115,6 +1127,8 @@ namespace UD_Modding_Toolbox
                 ExceptForToken: ExceptForToken,
                 ExceptForTokens: ExceptForTokens);
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this Dictionary<string,List<T>> Bag,
             string Seed,
@@ -1163,6 +1177,8 @@ namespace UD_Modding_Toolbox
             }
             return token;
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
             this Dictionary<string, List<T>> Bag,
             Guid Seed,
@@ -1181,6 +1197,8 @@ namespace UD_Modding_Toolbox
                 ExceptForToken: ExceptForToken,
                 ExceptForTokens: ExceptForTokens);
         }
+
+        [Obsolete("Cast to " + nameof(Raffle<T>) + " and use " + nameof(Raffle<T>.Draw) + " instead.")]
         public static T DrawToken<T>(
             this Dictionary<string, List<T>> Bag,
             T Token,
@@ -1225,6 +1243,7 @@ namespace UD_Modding_Toolbox
             }
             return token;
         }
+
         public static bool Contains<T>(
             this Dictionary<string, List<T>> Bag,
             T Token,
@@ -1853,34 +1872,35 @@ namespace UD_Modding_Toolbox
 
         public static List<string> GetNumberedTileVariants(this string Source)
         {
+            bool doDebug = getDoDebug(nameof(GetNumberedTileVariants));
             Debug.Entry(4,
                 $"* {typeof(Extensions).Name}."
                 + $"{nameof(GetNumberedTileVariants)}"
                 + $"(string Source: {Source})",
-                Indent: 0, Toggle: getDoDebug(nameof(GetNumberedTileVariants)));
+                Indent: 0, Toggle: doDebug);
             List<string> output = new();
             
             string[] sourcePieces = Source.Split("~");
             string pathBefore = sourcePieces[0];
             string pathAfter = sourcePieces[2];
 
-            Debug.Entry(4, $"pathBefore: {pathBefore}, pathAfter: {pathAfter}", Indent: 1, Toggle: getDoDebug(nameof(GetNumberedTileVariants)));
-            Debug.Entry(4, $"sourcePieces[1] {sourcePieces[1]}", Indent: 1, Toggle: getDoDebug(nameof(GetNumberedTileVariants)));
+            Debug.Entry(4, $"pathBefore: {pathBefore}, pathAfter: {pathAfter}", Indent: 1, Toggle: doDebug);
+            Debug.Entry(4, $"sourcePieces[1] {sourcePieces[1]}", Indent: 1, Toggle: doDebug);
             
             string[] pathRange = sourcePieces[1].Split('-');
             int first = int.Parse(pathRange[0]);
             int last = int.Parse(pathRange[1]);
 
-            Debug.Entry(4, $"first {first} - last: {last}", Indent: 1, Toggle: getDoDebug(nameof(GetNumberedTileVariants)));
+            Debug.Entry(4, $"first {first} - last: {last}", Indent: 1, Toggle: doDebug);
 
             for (int i = first; i <= last; i++)
             {
-                Debug.Entry(4, $"i: {i}", Indent: 2, Toggle: getDoDebug(nameof(GetNumberedTileVariants)));
+                Debug.Entry(4, $"i: {i}", Indent: 2, Toggle: doDebug);
 
                 int padding = Math.Max(2, last.ToString().Length);
                 string number = $"{i}".PadLeft(padding, '0');
                 string path = $"{pathBefore}{number}{pathAfter}";
-                Debug.Entry(4, $"path: {path}", Indent: 2, Toggle: getDoDebug(nameof(GetNumberedTileVariants)));
+                Debug.Entry(4, $"path: {path}", Indent: 2, Toggle: doDebug);
                 if (!output.Contains(path)) output.Add(path);
             }
 
@@ -1907,12 +1927,16 @@ namespace UD_Modding_Toolbox
         public static string Join<T>(this List<T> List, string Delimiter = ",")
             where T : IConvertible
         {
-            string output = string.Empty;
+            string output = "";
             if (!List.IsNullOrEmpty())
             {
                 foreach (T item in List)
                 {
-                    output += $"{(output == string.Empty ? "" : Delimiter)}{item}";
+                    if (!output.IsNullOrEmpty())
+                    {
+                        output += Delimiter;
+                    }
+                    output += item;
                 }
             }
             return output;
@@ -1945,92 +1969,94 @@ namespace UD_Modding_Toolbox
             return false;
         }
 
-        public static bool ContainsCI(this string String, string Value)
+        public static bool ContainsCaseInsensitive(this string String, string Value)
         {
             return String.ToLower().Contains(Value.ToLower());
         }
 
         public static bool IsGivingStewful(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Stew")
-                || NamePiece.ContainsCI("Cook");
+            return NamePiece.ContainsCaseInsensitive("Stew")
+                || NamePiece.ContainsCaseInsensitive("Cook");
         }
         public static bool IsGivingStewless(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Hanker")
-                || NamePiece.ContainsCI("Gains Seeker");
+            return NamePiece.ContainsCaseInsensitive("Hanker")
+                || NamePiece.ContainsCaseInsensitive("Gains Seeker");
         }
         public static bool IsGivingThoughtful(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Thought")
-                || NamePiece.ContainsCI("Think")
-                || NamePiece.ContainsCI("Book")
-                || NamePiece.ContainsCI("Listen")
-                || NamePiece.ContainsCI("Philosoph");
+            return NamePiece.ContainsCaseInsensitive("Thought")
+                || NamePiece.ContainsCaseInsensitive("Think")
+                || NamePiece.ContainsCaseInsensitive("Book")
+                || NamePiece.ContainsCaseInsensitive("Listen")
+                || NamePiece.ContainsCaseInsensitive("Philosoph");
         }
         public static bool IsGivingTough(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Stone")
-                || NamePiece.ContainsCI("Pillar")
-                || NamePiece.ContainsCI("Solid")
-                || NamePiece.ContainsCI("Sturdy")
-                || NamePiece.ContainsCI("Mov") // Immovable, Unmoving
-                || NamePiece.ContainsCI("Stop")
-                || NamePiece.ContainsCI("Mountain")
-                || NamePiece.ContainsCI("Thic") // Thick, Thicc
-                || NamePiece.ContainsCI("Hefty");
+            return NamePiece.ContainsCaseInsensitive("Stone")
+                || NamePiece.ContainsCaseInsensitive("Pillar")
+                || NamePiece.ContainsCaseInsensitive("Solid")
+                || NamePiece.ContainsCaseInsensitive("Sturdy")
+                || NamePiece.ContainsCaseInsensitive("Mov") // Immovable, Unmoving
+                || NamePiece.ContainsCaseInsensitive("Stop")
+                || NamePiece.ContainsCaseInsensitive("Mountain")
+                || NamePiece.ContainsCaseInsensitive("Thic") // Thick, Thicc
+                || NamePiece.ContainsCaseInsensitive("Hefty");
         }
         public static bool IsGivingStrong(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Gain")
-                || NamePiece.ContainsCI("Swole")
-                || NamePiece.ContainsCI("Mighty")
-                || NamePiece.ContainsCI("Mountain")
-                || NamePiece.ContainsCI("Slap");
+            return NamePiece.ContainsCaseInsensitive("Gain")
+                || NamePiece.ContainsCaseInsensitive("Swole")
+                || NamePiece.ContainsCaseInsensitive("Mighty")
+                || NamePiece.ContainsCaseInsensitive("Mountain")
+                || NamePiece.ContainsCaseInsensitive("Slap");
         }
         public static bool IsGivingResilient(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Waits")
-                || NamePiece.ContainsCI("Sits")
-                || NamePiece.ContainsCI("Silent")
-                || NamePiece.ContainsCI("Still")
-                || NamePiece.ContainsCI("Tall")
-                || NamePiece.ContainsCI("Mountain")
-                || NamePiece.ContainsCI("Keeps Going");
+            return NamePiece.ContainsCaseInsensitive("Waits")
+                || NamePiece.ContainsCaseInsensitive("Sits")
+                || NamePiece.ContainsCaseInsensitive("Silent")
+                || NamePiece.ContainsCaseInsensitive("Still")
+                || NamePiece.ContainsCaseInsensitive("Tall")
+                || NamePiece.ContainsCaseInsensitive("Mountain")
+                || NamePiece.ContainsCaseInsensitive("Keeps Going");
         }
         public static bool IsGivingPopular(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Altruis");
+            return NamePiece.ContainsCaseInsensitive("Altruis");
         }
         public static bool IsGivingWrassler(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Folding Chair");
+            return NamePiece.ContainsCaseInsensitive("Folding Chair");
         }
         public static bool IsGivingTrulyImmense(this string NamePiece)
         {
-            return NamePiece.ContainsCI("Belly")
-                || NamePiece.ContainsCI("Heft")
-                || NamePiece.ContainsCI("Considerable Size")
-                || NamePiece.ContainsCI("Bellows")
-                || NamePiece.ContainsCI("Rumbles")
-                || NamePiece.ContainsCI("Rotund")
-                || NamePiece.ContainsCI("Giant")
-                || NamePiece.ContainsCI("Immense")
-                || NamePiece.ContainsCI("Enormous")
-                || NamePiece.ContainsCI("Huge")
-                || NamePiece.ContainsCI("Yuge")
-                || NamePiece.ContainsCI("Somewhat Big")
-                || NamePiece.ContainsCI("Really Big");
+            return NamePiece.ContainsCaseInsensitive("Belly")
+                || NamePiece.ContainsCaseInsensitive("Heft")
+                || NamePiece.ContainsCaseInsensitive("Considerable Size")
+                || NamePiece.ContainsCaseInsensitive("Bellows")
+                || NamePiece.ContainsCaseInsensitive("Rumbles")
+                || NamePiece.ContainsCaseInsensitive("Rotund")
+                || NamePiece.ContainsCaseInsensitive("Giant")
+                || NamePiece.ContainsCaseInsensitive("Immense")
+                || NamePiece.ContainsCaseInsensitive("Enormous")
+                || NamePiece.ContainsCaseInsensitive("Huge")
+                || NamePiece.ContainsCaseInsensitive("Yuge")
+                || NamePiece.ContainsCaseInsensitive("Somewhat Big")
+                || NamePiece.ContainsCaseInsensitive("Really Big");
         }
 
         public static List<BaseSkill> AddSkills(this GameObject Creature, List<string> Skills)
         {
             List<BaseSkill> output = new();
-            foreach (var skill in Skills)
+            foreach (string skill in Skills)
             {
-                if (Creature.HasSkill(skill)) continue;
-                BaseSkill outputSkill = Creature.AddSkill(skill);
-                if (!output.Contains(outputSkill)) output.Add(outputSkill);
+                if (Creature.HasSkill(skill))
+                {
+                    continue;
+                }
+                output.TryAdd(Creature.AddSkill(skill));
             }
             return output;
         }
@@ -2121,14 +2147,14 @@ namespace UD_Modding_Toolbox
             return stringList;
         }
 
-        public static bool OverlapsWith<T>(this List<T> List, List<T> TestList)
+        public static bool OverlapsWith<T>(this List<T> List1, List<T> List2)
         {
             bool overlaps = false;
-            if (!List.IsNullOrEmpty() && !TestList.IsNullOrEmpty())
+            if (!List1.IsNullOrEmpty() && !List2.IsNullOrEmpty())
             {
-                foreach (T entry in List)
+                foreach (T item in List1)
                 {
-                    if (TestList.Contains(entry))
+                    if (List2.Contains(item))
                     {
                         overlaps = true;
                         break;
@@ -2140,7 +2166,10 @@ namespace UD_Modding_Toolbox
 
         public static Cell GetCellOppositePivotCell(this Cell Origin, Cell Pivot)
         {
-            if (Origin == null || Origin == Pivot || !Origin.GetAdjacentCells().Contains(Pivot)) return null;
+            if (Origin == null || Origin == Pivot || !Origin.GetAdjacentCells().Contains(Pivot))
+            {
+                return null;
+            }
             return Pivot.GetCellFromDirection(Origin.GetDirectionFromCell(Pivot));
         }
 
@@ -2153,6 +2182,7 @@ namespace UD_Modding_Toolbox
             // false != true    == true
             return Condition != Flip ? TICK.Color("G") : CROSS.Color("R");
         }
+
         public static string ThisManyTimes(this string @string, int Times = 1)
         {
             string output = @string;
@@ -2583,6 +2613,32 @@ namespace UD_Modding_Toolbox
                 output = output[..29];
             }
             return output + "...";
+        }
+
+        public static string ToStringWithGenerics(this Type Type)
+        {
+            if (Type == null)
+            {
+                return null;
+            }
+            List<Type> typeGenerics = new(Type.GetGenericArguments());
+            string typeString = Type.Name;
+            string genericsString = null;
+            if (!typeGenerics.IsNullOrEmpty())
+            {
+                List<string> genericsStringList = new();
+                foreach (Type genericType in typeGenerics)
+                {
+                    genericsStringList.Add(genericType.ToStringWithGenerics());
+                }
+                genericsString = genericsStringList.Join(", ");
+            }
+            if (!genericsString.IsNullOrEmpty())
+            {
+                typeString = typeString.Split('`')[0];
+                genericsString = "<" + genericsString + ">";
+            }
+            return typeString + genericsString;
         }
     }
 }

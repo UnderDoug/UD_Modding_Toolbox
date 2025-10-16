@@ -8,11 +8,11 @@ using static XRL.World.Conversations.Expression;
 namespace UD_Modding_Toolbox
 {
     /// <summary>
-    /// Represents a container from which <see cref="Entry.Token"/>s can be drawn randomly, <see cref="Entry.Weight"/>ed according to an <see cref="int"/> value stored alongside each <see cref="Entry.Token"/>.
+    /// Represents a container from which <see cref="Entry.Ticket"/>s can be drawn randomly, <see cref="Entry.Weight"/>ed according to an <see cref="int"/> value stored alongside each <see cref="Entry.Ticket"/>.
     /// </summary>
     /// <remarks>
-    /// A <see cref="Raffle{T}"/> can be thought of like a hat from which you might draw names. Each name is a <see cref="string"/> <see cref="Entry.Token"/>, and placing duplicate <see cref="Entry.Token"/>s in results in increasing the likelihood of that token being drawn.<br/><br/>
-    /// With given <see cref="string"/> <see cref="Entry.Token"/>s "cat", "dog", "bird", and "cat" again, <see cref="Draw()"/> is twice as likely to return "cat" as it is either "dog" or "bird" since "cat" has twice as much <see cref="Entry.Weight"/>s as either, but still only has a 50/50 chance overall, since it represents half the total number of <see cref="Entry.Token"/>s by <see cref="Entry.Weight"/> (4).
+    /// A <see cref="Raffle{T}"/> can be thought of like a hat from which you might draw names. Each name is a <see cref="string"/> <see cref="Entry.Ticket"/>, and placing duplicate <see cref="Entry.Ticket"/>s in results in increasing the likelihood of that <see cref="Entry.Ticket"/> being drawn.<br/><br/>
+    /// With given <see cref="string"/> <see cref="Entry.Ticket"/>s "cat", "dog", "bird", and "cat" again, <see cref="Draw()"/> is twice as likely to return "cat" as it is either "dog" or "bird" since "cat" has twice as much <see cref="Entry.Weight"/>s as either, but still only has a 50/50 chance overall, since it represents half the total number of <see cref="Entry.Ticket"/>s by <see cref="Entry.Weight"/> (4).
     /// </remarks>
     /// <typeparam name="T">Unrestricted, but reference types are less likely to run into issues I haven't anticipated.</typeparam>
     [Serializable]
@@ -42,20 +42,20 @@ namespace UD_Modding_Toolbox
         public int Version => Variant;
 
         /// <summary>
-        /// Enumerator for each <see cref="Entry.Token"/> currently capable of being returned by <see cref="Draw()"/>, as though each <see cref="Entry.Token"/> was returned by <see cref="Draw()"/> sequentially.
+        /// Enumerator for each <see cref="Entry.Ticket"/> currently capable of being returned by <see cref="Draw()"/>, as though each <see cref="Entry.Ticket"/> was returned by <see cref="Draw()"/> sequentially.
         /// </summary>
         /// <remarks>
-        /// A <see cref="Raffle{T}"/> with entries { {"cat", 2}, {"dog", 1}, {"bird", 2} } will enumerate <see cref="Entry.Token"/>s "cat", "cat", "dog", "bird", "bird".
+        /// A <see cref="Raffle{T}"/> with entries { {"cat", 2}, {"dog", 1}, {"bird", 2} } will enumerate <see cref="Entry.Ticket"/>s "cat", "cat", "dog", "bird", "bird".
         /// </remarks>
-        public TokenEnumerator GroupedActiveTokens => new(this, ActiveEntries);
+        public TicketEnumerator GroupedActiveTickets => new(this, ActiveEntries);
 
         /// <summary>
-        /// Enumerator for each <see cref="Entry.Token"/> that has already been returned by <see cref="Draw()"/>, as though drawing each <see cref="Entry.Token"/> sequentially.
+        /// Enumerator for each <see cref="Entry.Ticket"/> that has already been returned by <see cref="Draw()"/>, as though drawing each <see cref="Entry.Ticket"/> sequentially.
         /// </summary>
         /// <remarks>
-        /// A <see cref="Raffle{T}"/> with entries { {"cat", 2}, {"dog", 1}, {"bird", 2} } that has already drawn <see cref="Entry.Token"/>s "bird" and "cat" will enumerate <see cref="Entry.Token"/>s "cat", "bird" (this is the order the <see cref="Entry"/>s were added to the <see cref="Raffle{T}"/>).
+        /// A <see cref="Raffle{T}"/> with entries { {"cat", 2}, {"dog", 1}, {"bird", 2} } that has already drawn <see cref="Entry.Ticket"/>s "bird" and "cat" will enumerate <see cref="Entry.Ticket"/>s "cat", "bird" (this is the order the <see cref="Entry"/>s were added to the <see cref="Raffle{T}"/>).
         /// </remarks>
-        public TokenEnumerator GroupedDrawnTokens => new(this, DrawnEntries);
+        public TicketEnumerator GroupedDrawnTickets => new(this, DrawnEntries);
 
         protected virtual int DefaultCapacity => 4;
 
@@ -67,10 +67,10 @@ namespace UD_Modding_Toolbox
         protected string _Seed;
 
         /// <summary>
-        /// The deterministic results of a <see cref="Raffle{T}"/> can be controlled by providing a <see cref="string"/> seed to the constructor.
+        /// A string to control the deterministic results of a <see cref="Raffle{T}"/> which can be provided to the constructor.
         /// </summary>
         /// <remarks>
-        /// For a given seed, provided the contents of the <see cref="Raffle{T}"/> aren't altered between <see cref="Draw()"/> calls, the order that <see cref="Entry.Token"/>s are returned by <see cref="Draw()"/> will be the same every time.
+        /// For a given seed, provided the contents of the <see cref="Raffle{T}"/> aren't altered between <see cref="Draw()"/> calls, the order that <see cref="Entry.Ticket"/>s are returned by <see cref="Draw()"/> will be the same every time.
         /// </remarks>
         public string Seed { get; protected set; }
 
@@ -118,7 +118,7 @@ namespace UD_Modding_Toolbox
             EnsureCapacity(Source.Count);
             foreach (Entry entry in Source)
             {
-                Add(entry.Token, entry.Weight);
+                Add(entry.Ticket, entry.Weight);
             }
         }
         public Raffle(string Seed, Raffle<T> Source)
@@ -227,40 +227,40 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Checks whether any <see cref="ActiveEntries"/> have any <see cref="Entry.Token"/>s avaiable to <see cref="Draw()"/> (<see cref="Entry.Weight"/> &gt; 0), returning <see langword="true"/> if so; otherwise, returning <see langword="false"/>.
+        /// Checks whether any <see cref="ActiveEntries"/> have any <see cref="Entry.Ticket"/>s avaiable to <see cref="Draw()"/> (<see cref="Entry.Weight"/> &gt; 0), returning <see langword="true"/> if so; otherwise, returning <see langword="false"/>.
         /// </summary>
         /// <remarks>
-        /// A derived type could <see langword="override"/> this method to narrow or widen what it means for a <see cref="Raffle{T}"/> to "have <see cref="Entry.Token"/>s".
+        /// A derived type could <see langword="override"/> this method to narrow or widen what it means for a <see cref="Raffle{T}"/> to "have <see cref="Entry.Ticket"/>s".
         /// </remarks>
         /// <returns>
         /// <see langword="true"/> if the <see cref="ActiveCount"/> is greater than 0;<br/>
         /// <see langword="false"/> otherwise.
         /// </returns>
-        public virtual bool HasTokens()
+        public virtual bool HasTickets()
         {
             return ActiveCount > 0;
         }
 
         /// <summary>
-        /// Checks whether the <see cref="Raffle{T}"/> is currently in a state in which calling <see cref="Draw()"/> would successfully return a <see cref="Entry.Token"/> at least one time, returning <see langword="true"/> if so; otherwise, returning <see langword="false"/>.
+        /// Checks whether the <see cref="Raffle{T}"/> is currently in a state in which calling <see cref="Draw()"/> would successfully return a <see cref="Entry.Ticket"/> at least one time, returning <see langword="true"/> if so; otherwise, returning <see langword="false"/>.
         /// </summary>
         /// <remarks>
         /// A derived type could <see langword="override"/> this method to narrow or widen what it means for a <see cref="Raffle{T}"/> to be capable of successfully calling <see cref="Draw()"/>.
         /// </remarks>
         /// <returns>
-        /// <see langword="true"/> if <see cref="HasTokens()"/> returns <see langword="true"/>;<br/>
+        /// <see langword="true"/> if <see cref="HasTickets()"/> returns <see langword="true"/>;<br/>
         /// <see langword="false"/> otherwise.
         /// </returns>
         public virtual bool CanDraw()
         {
-            return HasTokens();
+            return HasTickets();
         }
 
-        protected static int GetWeight(Entry[] Entries, T Token)
+        protected static int GetWeight(Entry[] Entries, T Ticket)
         {
             for (int i = 0; i < Entries.Length; i++)
             {
-                if (!Equals(Entries[i], null) && Equals(Entries[i].Token, Token))
+                if (!Equals(Entries[i], null) && Equals(Entries[i].Ticket, Ticket))
                 {
                     return (int)Entries[i];
                 }
@@ -269,93 +269,93 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Retreives the <see cref="ActiveEntries"/> <see cref="Entry.Weight"/> value for the passed <see cref="Entry.Token"/>.
+        /// Retreives the <see cref="ActiveEntries"/> <see cref="Entry.Weight"/> value for the passed <see cref="Entry.Ticket"/>.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> <see cref="ActiveEntries"/> is checked for to retreive a <see cref="Entry.Weight"/> value.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> <see cref="ActiveEntries"/> is checked for to retreive a <see cref="Entry.Weight"/> value.</param>
         /// <returns>
-        /// The <see cref="Entry.Weight"/> of the supplied <paramref name="Token"/>; otherwise, <br/>
+        /// The <see cref="Entry.Weight"/> of the supplied <paramref name="Ticket"/>; otherwise, <br/>
         /// 0 if the <see cref="Raffle{T}"/> doesn't contain it at all.
         /// </returns>
-        public int GetActiveWeight(T Token)
+        public int GetActiveWeight(T Ticket)
         {
-            return GetWeight(ActiveEntries, Token); ;
+            return GetWeight(ActiveEntries, Ticket); ;
         }
 
         /// <summary>
-        /// Retreives the <see cref="DrawnEntries"/> <see cref="Entry.Weight"/> value for the passed <paramref name="Token"/>.
+        /// Retreives the <see cref="DrawnEntries"/> <see cref="Entry.Weight"/> value for the passed <paramref name="Ticket"/>.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> <see cref="DrawnEntries"/> is checked for to retreive a <see cref="Entry.Weight"/> value.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> <see cref="DrawnEntries"/> is checked for to retreive a <see cref="Entry.Weight"/> value.</param>
         /// <returns>
-        /// The <see cref="Entry.Weight"/> of the supplied <paramref name="Token"/>; otherwise, <br/>
+        /// The <see cref="Entry.Weight"/> of the supplied <paramref name="Ticket"/>; otherwise, <br/>
         /// 0 if the <see cref="Raffle{T}"/> doesn't contain it at all.
         /// </returns>
-        public int GetDrawnWeight(T Token)
+        public int GetDrawnWeight(T Ticket)
         {
-            return GetWeight(DrawnEntries, Token);
+            return GetWeight(DrawnEntries, Ticket);
         }
 
         /// <summary>
-        /// Retreives the combined <see cref="ActiveEntries"/> and <see cref="DrawEntries"/> <see cref="Entry.Weight"/> value for the passed <see cref="Entry.Token"/>.
+        /// Retreives the combined <see cref="ActiveEntries"/> and <see cref="DrawEntries"/> <see cref="Entry.Weight"/> value for the passed <see cref="Entry.Ticket"/>.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> <see cref="ActiveEntries"/> and <see cref="DrawEntries"/> are checked for to retreive a <see cref="Entry.Weight"/> value.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> <see cref="ActiveEntries"/> and <see cref="DrawEntries"/> are checked for to retreive a <see cref="Entry.Weight"/> value.</param>
         /// <returns>
-        /// The combined <see cref="Entry.Weight"/> of the supplied <paramref name="Token"/>; otherwise, <br/>
+        /// The combined <see cref="Entry.Weight"/> of the supplied <paramref name="Ticket"/>; otherwise, <br/>
         /// 0 if the <see cref="Raffle{T}"/> doesn't contain it at all.
         /// </returns>
-        public int GetTotalWeight(T Token)
+        public int GetTotalWeight(T Ticket)
         {
-            return GetActiveWeight(Token) + GetDrawnWeight(Token);
+            return GetActiveWeight(Ticket) + GetDrawnWeight(Ticket);
         }
 
         /// <summary>
-        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Token"/> would be returned by the first call of <see cref="Draw()"/>, adjusting the <see cref="Entry.Weight"/> value by <paramref name="WeightAdjust"/> for the purposes of this calculation.
+        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Ticket"/> would be returned by the first call of <see cref="Draw()"/>, adjusting the <see cref="Entry.Weight"/> value by <paramref name="WeightAdjust"/> for the purposes of this calculation.
         /// </summary>
         /// <remarks>
-        /// This method treats the <see cref="Raffle{T}"/> as though no <see cref="Entry.Token"/>s have been returned by <see cref="Draw()"/> and <see cref="DrawnCount"/> is 0.
+        /// This method treats the <see cref="Raffle{T}"/> as though no <see cref="Entry.Ticket"/>s have been returned by <see cref="Draw()"/> and <see cref="DrawnCount"/> is 0.
         /// </remarks>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/>.</param>
-        /// <param name="WeightAdjust">An amount to add to the passed <paramref name="Token"/>'s <see cref="Entry.Weight"/> before calculating its chance to be returned by <see cref="Draw()"/></param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/>.</param>
+        /// <param name="WeightAdjust">An amount to add to the passed <paramref name="Ticket"/>'s <see cref="Entry.Weight"/> before calculating its chance to be returned by <see cref="Draw()"/></param>
         /// <returns>
-        /// A value up to 1, representing the passed <paramref name="Token"/>'s chance to be returned by the first <see cref="Draw()"/> call, as though its <see cref="Entry.Weight"/> was <paramref name="WeightAdjust"/> higher.
+        /// A value up to 1, representing the passed <paramref name="Ticket"/>'s chance to be returned by the first <see cref="Draw()"/> call, as though its <see cref="Entry.Weight"/> was <paramref name="WeightAdjust"/> higher.
         /// </returns>
-        public float GetTotalChance(T Token, int WeightAdjust)
+        public float GetTotalChance(T Ticket, int WeightAdjust)
         {
-            if (Contains(Token))
+            if (Contains(Ticket))
             {
-                return (float)Math.Max(0, GetTotalWeight(Token) + WeightAdjust) / TotalCount;
+                return (float)Math.Max(0, GetTotalWeight(Ticket) + WeightAdjust) / TotalCount;
             }
             return 0;
         }
 
         /// <summary>
-        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Token"/> would be returned by the first call of <see cref="Draw()"/>.
+        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Ticket"/> would be returned by the first call of <see cref="Draw()"/>.
         /// </summary>
         /// <remarks>
-        /// This method treats the <see cref="Raffle{T}"/> as though no <see cref="Entry.Token"/>s have been returned by <see cref="Draw()"/> and <see cref="DrawnCount"/> is 0.
+        /// This method treats the <see cref="Raffle{T}"/> as though no <see cref="Entry.Ticket"/>s have been returned by <see cref="Draw()"/> and <see cref="DrawnCount"/> is 0.
         /// </remarks>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/>.</param>
         /// <returns>
-        /// A value up to 1, representing the passed <paramref name="Token"/>'s chance to be returned by the first <see cref="Draw()"/> call.
+        /// A value up to 1, representing the passed <paramref name="Ticket"/>'s chance to be returned by the first <see cref="Draw()"/> call.
         /// </returns>
-        public float GetTotalChance(T Token)
+        public float GetTotalChance(T Ticket)
         {
-            return GetTotalChance(Token, 0);
+            return GetTotalChance(Ticket, 0);
         }
 
         /// <summary>
-        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Token"/> will be the next one returned by <see cref="Draw()"/>, adjusting the <see cref="Entry.Weight"/> value by <paramref name="WeightAdjust"/> and the <see cref="ActiveCount"/> by <paramref name="CountAdjust"/> for the purposes of this calculation.
+        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Ticket"/> will be the next one returned by <see cref="Draw()"/>, adjusting the <see cref="Entry.Weight"/> value by <paramref name="WeightAdjust"/> and the <see cref="ActiveCount"/> by <paramref name="CountAdjust"/> for the purposes of this calculation.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/> after adding <paramref name="WeightAdjust"/> to it.</param>
-        /// <param name="WeightAdjust">The amount to add to the passed <paramref name="Token"/>'s <see cref="Entry.Weight"/> before calculating its chance to be returned by <see cref="Draw()"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/> after adding <paramref name="WeightAdjust"/> to it.</param>
+        /// <param name="WeightAdjust">The amount to add to the passed <paramref name="Ticket"/>'s <see cref="Entry.Weight"/> before calculating its chance to be returned by <see cref="Draw()"/>.</param>
         /// <param name="CountAdjust">
-        ///     The amount to add to <see cref="ActiveCount"/> before calculating the passed <paramref name="Token"/>'s chance to be returned by <see cref="Draw()"/><br/><br/>
+        ///     The amount to add to <see cref="ActiveCount"/> before calculating the passed <paramref name="Ticket"/>'s chance to be returned by <see cref="Draw()"/><br/><br/>
         ///     To avoid a <see cref="DivideByZeroException"/>, the value passed to this parameter shouldn't result in <see cref="ActiveCount"/> being below 1.
         /// </param>
         /// <returns>
-        /// A value up to 1, representing the passed <paramref name="Token"/>'s chance to be returned by the next <see cref="Draw()"/> call, as though its <see cref="Entry.Weight"/> was <paramref name="WeightAdjust"/> higher and the <see cref="ActiveCount"/> was <paramref name="CountAdjust"/> higher.
+        /// A value up to 1, representing the passed <paramref name="Ticket"/>'s chance to be returned by the next <see cref="Draw()"/> call, as though its <see cref="Entry.Weight"/> was <paramref name="WeightAdjust"/> higher and the <see cref="ActiveCount"/> was <paramref name="CountAdjust"/> higher.
         /// </returns>
         /// <exception cref="DivideByZeroException"><see cref="ActiveCount"/> is &lt; 1 and <paramref name="CountAdjust"/> is insufficient to bring it above 0, or <paramref name="CountAdjust"/> brings <see cref="ActiveCount"/> below 1.</exception>
-        public float GetActiveChance(T Token, int WeightAdjust, int CountAdjust)
+        public float GetActiveChance(T Ticket, int WeightAdjust, int CountAdjust)
         {
             if (ActiveCount < 1 && CountAdjust < 1)
             {
@@ -365,86 +365,86 @@ namespace UD_Modding_Toolbox
             {
                 throw new DivideByZeroException(nameof(CountAdjust) + " must not reduce " + nameof(ActiveCount) + " below 1");
             }
-            if (Contains(Token))
+            if (Contains(Ticket))
             {
-                return (float)Math.Max(0, GetActiveWeight(Token) + WeightAdjust) / ActiveCount + CountAdjust;
+                return (float)Math.Max(0, GetActiveWeight(Ticket) + WeightAdjust) / ActiveCount + CountAdjust;
             }
             return 0;
         }
 
         /// <summary>
-        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Token"/> will be the next one returned by <see cref="Draw()"/>, adjusting the <see cref="Entry.Weight"/> value by <paramref name="WeightAdjust"/> for the purposes of this calculation.
+        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Ticket"/> will be the next one returned by <see cref="Draw()"/>, adjusting the <see cref="Entry.Weight"/> value by <paramref name="WeightAdjust"/> for the purposes of this calculation.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/> after adding <paramref name="WeightAdjust"/> to it.</param>
-        /// <param name="WeightAdjust">The amount to add to the passed <paramref name="Token"/>'s <see cref="Entry.Weight"/> before calculating its chance to be returned by <see cref="Draw()"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/> after adding <paramref name="WeightAdjust"/> to it.</param>
+        /// <param name="WeightAdjust">The amount to add to the passed <paramref name="Ticket"/>'s <see cref="Entry.Weight"/> before calculating its chance to be returned by <see cref="Draw()"/>.</param>
         /// <returns>
-        /// A value up to 1, representing the passed <paramref name="Token"/>'s chance to be returned by the next <see cref="Draw()"/> call, as though its <see cref="Entry.Weight"/> was <paramref name="WeightAdjust"/> higher.
+        /// A value up to 1, representing the passed <paramref name="Ticket"/>'s chance to be returned by the next <see cref="Draw()"/> call, as though its <see cref="Entry.Weight"/> was <paramref name="WeightAdjust"/> higher.
         /// </returns>
         /// <exception cref="DivideByZeroException"><see cref="ActiveCount"/> is &lt; 1.</exception>
-        public float GetActiveChance(T Token, int WeightAdjust)
+        public float GetActiveChance(T Ticket, int WeightAdjust)
         {
-            return GetActiveChance(Token, WeightAdjust, 0);
+            return GetActiveChance(Ticket, WeightAdjust, 0);
         }
 
         /// <summary>
-        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Token"/> will be the next one returned by <see cref="Draw()"/>.
+        /// Calculates the chance (where 1 is 100%) that the passed <paramref name="Ticket"/> will be the next one returned by <see cref="Draw()"/>.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose chance to be returned by <see cref="Draw()"/> will be calculated based on its <see cref="Entry.Weight"/>.</param>
         /// <returns>
-        /// A value up to 1, representing the passed <paramref name="Token"/>'s chance to be returned by the next <see cref="Draw()"/> call.
+        /// A value up to 1, representing the passed <paramref name="Ticket"/>'s chance to be returned by the next <see cref="Draw()"/> call.
         /// </returns>
         /// <exception cref="DivideByZeroException"><see cref="ActiveCount"/> is &lt; 1.</exception>
-        public float GetActiveChance(T Token)
+        public float GetActiveChance(T Ticket)
         {
-            return GetActiveChance(Token, 0);
+            return GetActiveChance(Ticket, 0);
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Token"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/>.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Ticket"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/>.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Token"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/></returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Ticket"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/></returns>
         public IEnumerable<KeyValuePair<T,float>> GetTotalChances()
         {
-            foreach (T token in this)
+            foreach (T ticket in this)
             {
-                yield return new(token, GetTotalChance(token));
+                yield return new(ticket, GetTotalChance(ticket));
             }
         }
 
         /// <summary>
-        /// Produces a <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/>.
+        /// Produces a <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/>.
         /// </summary>
-        /// <returns>A <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/></returns>
+        /// <returns>A <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and its chance to be returned by the first <see cref="Draw()"/> call, per <see cref="GetTotalChance(T)"/></returns>
         public List<KeyValuePair<T, float>> GetTotalChancesList()
         {
             return GetTotalChances().ToList();
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Token"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/>.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Ticket"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/>.
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Token"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/></returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> containing each <see cref="Entry.Ticket"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/></returns>
         public IEnumerable<KeyValuePair<T, float>> GetActiveChances()
         {
-            foreach (T token in this)
+            foreach (T ticket in this)
             {
-                yield return new(token, GetActiveChance(token));
+                yield return new(ticket, GetActiveChance(ticket));
             }
         }
 
         /// <summary>
-        /// Produces a <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/>.
+        /// Produces a <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/>.
         /// </summary>
-        /// <returns>A <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/></returns>
+        /// <returns>A <see cref="List{KeyValuePair{T,float}}"/> of <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and its chance to be returned by the next <see cref="Draw()"/> call, per <see cref="GetActiveChance(T)"/></returns>
         public List<KeyValuePair<T, float>> GetActiveChancesList()
         {
             return GetActiveChances().ToList();
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/>. 
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/>. 
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/>.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/>.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetActiveEntries()
         {
             foreach (KeyValuePair<T, int> entry in ActiveEntries)
@@ -454,10 +454,10 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
         /// </summary>
         /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetActiveEntries(Predicate<KeyValuePair<T, int>> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetActiveEntries())
@@ -470,10 +470,10 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed the <see cref="Entry.Token"/>.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed the <see cref="Entry.Ticket"/>.
         /// </summary>
         /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed the <see cref="Entry.Token"/>.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="ActiveEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed the <see cref="Entry.Ticket"/>.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetActiveEntries(Predicate<T> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetActiveEntries())
@@ -486,9 +486,9 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/>. 
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/>. 
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/>.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/>.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries()
         {
             foreach (KeyValuePair<T, int> entry in DrawnEntries)
@@ -498,10 +498,10 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
         /// </summary>
         /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries(Predicate<KeyValuePair<T, int>> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetDrawnEntries())
@@ -514,10 +514,10 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
         /// </summary>
         /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and <see cref="Entry.Weight"/> pair in <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetDrawnEntries(Predicate<T> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetDrawnEntries())
@@ -530,9 +530,9 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/>. 
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,float}"/> for each <see cref="Entry.Ticket"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/>. 
         /// </summary>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/>.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/>.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetKeyValuePairEntries()
         {
             for (int i = 0; i < Length; i++)
@@ -542,10 +542,10 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
         /// </summary>
         /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetKeyValuePairEntries(Predicate<KeyValuePair<T, int>> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetKeyValuePairEntries())
@@ -558,10 +558,10 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding a <see langword="new"/> <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.
         /// </summary>
         /// <param name="Filter">The <see cref="Predicate{KeyValuePair{T,int}}"/> by which to filter the enumerted <see cref="KeyValuePair{T,int}"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Token"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
+        /// <returns>An <see cref="IEnumerable{KeyValuePair{T,int}}"/> of <see cref="KeyValuePair{T,int}"/> for each <see cref="Entry.Ticket"/> and combined <see cref="Entry.Weight"/> pair in both <see cref="ActiveEntries"/> &amp; <see cref="DrawnEntries"/> that <paramref name="Filter"/> returns <see langword="true"/> when passed.</returns>
         public IEnumerable<KeyValuePair<T, int>> GetKeyValuePairEntries(Predicate<T> Filter)
         {
             foreach (KeyValuePair<T, int> entry in GetKeyValuePairEntries())
@@ -574,46 +574,46 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding each <see cref="ActiveEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/>.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding each <see cref="ActiveEntries"/> <see cref="Entry.Ticket"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Ticket"/>.
         /// </summary>
-        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="Entry.Token"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{T}"/> of each <see cref="ActiveEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/></returns>
-        public IEnumerable<T> GetGroupedActiveTokens(Predicate<T> Filter = null)
+        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="Entry.Ticket"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of each <see cref="ActiveEntries"/> <see cref="Entry.Ticket"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Ticket"/></returns>
+        public IEnumerable<T> GetGroupedActiveTickets(Predicate<T> Filter = null)
         {
-            foreach (T token in GroupedActiveTokens)
+            foreach (T ticket in GroupedActiveTickets)
             {
-                if (Filter == null || Filter(token))
+                if (Filter == null || Filter(ticket))
                 {
-                    yield return token;
+                    yield return ticket;
                 }
             }
         }
 
         /// <summary>
-        /// Enumerates the <see cref="Raffle{T}"/> yielding each <see cref="DrawnEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/>.
+        /// Enumerates the <see cref="Raffle{T}"/> yielding each <see cref="DrawnEntries"/> <see cref="Entry.Ticket"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Ticket"/>.
         /// </summary>
-        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="Entry.Token"/> results.</param>
-        /// <returns>An <see cref="IEnumerable{T}"/> of each <see cref="DrawnEntries"/> <see cref="Entry.Token"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Token"/></returns>
-        public IEnumerable<T> GetGroupedDrawnTokens(Predicate<T> Filter = null)
+        /// <param name="Filter">The <see cref="Predicate{T}"/> by which to filter the enumerted <see cref="Entry.Ticket"/> results.</param>
+        /// <returns>An <see cref="IEnumerable{T}"/> of each <see cref="DrawnEntries"/> <see cref="Entry.Ticket"/> a number of times equal to its <see cref="Entry.Weight"/> where the passed <paramref name="Filter"/> is either <see langword="null"/> or returns <see langword="true"/> when passed the given <see cref="Entry.Ticket"/></returns>
+        public IEnumerable<T> GetGroupedDrawnTickets(Predicate<T> Filter = null)
         {
-            foreach (T token in GroupedDrawnTokens)
+            foreach (T ticket in GroupedDrawnTickets)
             {
-                if (Filter == null || Filter(token))
+                if (Filter == null || Filter(ticket))
                 {
-                    yield return token;
+                    yield return ticket;
                 }
             }
         }
 
         /// <summary>
-        /// Returns the next target <see cref="Entry.Weight"/> value generated by the passed <paramref name="Rnd"/>, or -1 if there are no <see cref="Entry.Token"/>s available to <see cref="Draw()"/>.
+        /// Returns the next target <see cref="Entry.Weight"/> value generated by the passed <paramref name="Rnd"/>, or -1 if there are no <see cref="Entry.Ticket"/>s available to <see cref="Draw()"/>.
         /// </summary>
         /// <param name="Rnd">The <see cref="Random"/> that will be used to generate the next target <see cref="Entry.Weight"/> value for the numerous <see cref="Draw()"/> methods.</param>
-        /// <returns>The next target <see cref="Entry.Weight"/> value generated by the passed <paramref name="Rnd"/> if there are <see cref="Entry.Token"/>s available to <see cref="Draw()"/>;<br/>
+        /// <returns>The next target <see cref="Entry.Weight"/> value generated by the passed <paramref name="Rnd"/> if there are <see cref="Entry.Ticket"/>s available to <see cref="Draw()"/>;<br/>
         /// -1 otherwise.</returns>
         protected int Next(Random Rnd)
         {
-            if (!HasTokens())
+            if (!HasTickets())
             {
                 return -1;
             }
@@ -621,9 +621,9 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Returns the next target <see cref="Entry.Weight"/> value generated by <see cref="Raffle{T}.Rnd"/>, or -1 if there are no <see cref="Entry.Token"/>s available to <see cref="Draw()"/>.
+        /// Returns the next target <see cref="Entry.Weight"/> value generated by <see cref="Raffle{T}.Rnd"/>, or -1 if there are no <see cref="Entry.Ticket"/>s available to <see cref="Draw()"/>.
         /// </summary>
-        /// <returns>The next target <see cref="Entry.Weight"/> value generated by <see cref="Raffle{T}.Rnd"/> if there are <see cref="Entry.Token"/>s available to <see cref="Draw()"/>;<br/>
+        /// <returns>The next target <see cref="Entry.Weight"/> value generated by <see cref="Raffle{T}.Rnd"/> if there are <see cref="Entry.Ticket"/>s available to <see cref="Draw()"/>;<br/>
         /// -1 otherwise.</returns>
         protected int Next()
         {
@@ -631,13 +631,13 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Accumulates each <see cref="Entry.Token"/>'s <see cref="Entry.Weight"/> from <see cref="ActiveEntries"/>, and retreives the first one where the <paramref name="TargetWeight"/> is less than the accumulated total.
+        /// Accumulates each <see cref="Entry.Ticket"/>'s <see cref="Entry.Weight"/> from <see cref="ActiveEntries"/>, and retreives the first one where the <paramref name="TargetWeight"/> is less than the accumulated total.
         /// </summary>
-        /// <param name="TargetWeight">The value used to determine when <see cref="Entry.Weight"/>s should stop being accumulated and the relevent <see cref="Entry.Token"/> returned.</param>
-        /// <returns>The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> value causes the accumulated amount to exceed the <paramref name="TargetWeight"/>.</returns>
+        /// <param name="TargetWeight">The value used to determine when <see cref="Entry.Weight"/>s should stop being accumulated and the relevent <see cref="Entry.Ticket"/> returned.</param>
+        /// <returns>The <see cref="Entry.Ticket"/> whose <see cref="Entry.Weight"/> value causes the accumulated amount to exceed the <paramref name="TargetWeight"/>.</returns>
         /// <exception cref="IndexOutOfRangeException">If the <paramref name="TargetWeight"/> is less than 0; If the <paramref name="TargetWeight"/> is less than <see cref="ActiveCount"/>.</exception>
-        /// <exception cref="InvalidOperationException">If <see cref="HasTokens()"/> returns <see langword="false"/>.</exception>
-        protected T TokenAtWeight(int TargetWeight)
+        /// <exception cref="InvalidOperationException">If <see cref="HasTickets()"/> returns <see langword="false"/>.</exception>
+        protected T TicketAtWeight(int TargetWeight)
         {
             if (TargetWeight < 0)
             {
@@ -647,9 +647,9 @@ namespace UD_Modding_Toolbox
             {
                 throw new ArgumentException(nameof(TargetWeight) + " must be less than " + nameof(ActiveCount));
             }
-            if (!HasTokens())
+            if (!HasTickets())
             {
-                throw new InvalidOperationException("Can't retrieve " + nameof(Entry.Token) + " when " + nameof(Raffle<T>) + " has no " + nameof(Entry.Token).Pluralize());
+                throw new InvalidOperationException("Can't retrieve " + nameof(Entry.Ticket) + " when " + nameof(Raffle<T>) + " has no " + nameof(Entry.Ticket).Pluralize());
             }
             int currentCombinedWeight = 0;
             for (int i = 0; i < Length; i++)
@@ -669,41 +669,41 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Attempts to retreive the next <see cref="Entry.Token"/> by supplying <see cref="Next(Random)"/> with the passed <paramref name="Rnd"/>, checking the returned value is valid, passing it to <see cref="TokenAtWeight(int)"/>, and passing the result to <paramref name="Token"/>, returning <see langword="true"/> if a value is retreived and passed.
+        /// Attempts to retreive the next <see cref="Entry.Ticket"/> by supplying <see cref="Next(Random)"/> with the passed <paramref name="Rnd"/>, checking the returned value is valid, passing it to <see cref="TicketAtWeight(int)"/>, and passing the result to <paramref name="Ticket"/>, returning <see langword="true"/> if a value is retreived and passed.
         /// </summary>
-        /// <param name="Rnd">The <see cref="Random"/> that will be used to generate the next target <see cref="Entry.Weight"/> value to be passed to <see cref="TokenAtWeight(int)"/>.</param>
-        /// <param name="Token">The <see cref="Entry.Token"/> retreived from <see cref="TokenAtWeight(int)"/>, if <see cref="Next(Random)"/> returns a valid target weight.</param>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to generate the next target <see cref="Entry.Weight"/> value to be passed to <see cref="TicketAtWeight(int)"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> retreived from <see cref="TicketAtWeight(int)"/>, if <see cref="Next(Random)"/> returns a valid target weight.</param>
         /// <returns>
-        /// <see langword="true"/> if <see cref="Next(Random)"/> returns a valid target weight for <see cref="TokenAtWeight(int)"/> to assign a value to <paramref name="Token"/>;<br/>
+        /// <see langword="true"/> if <see cref="Next(Random)"/> returns a valid target weight for <see cref="TicketAtWeight(int)"/> to assign a value to <paramref name="Ticket"/>;<br/>
         /// <see langword="false"/> otherwise.
         /// </returns>
-        protected bool NextToken(Random Rnd, out T Token)
+        protected bool NextTicket(Random Rnd, out T Ticket)
         {
-            Token = default;
+            Ticket = default;
             int targetWeight = Next(Rnd);
-            if (!HasTokens()
+            if (!HasTickets()
                 || targetWeight < 0
                 || targetWeight >= ActiveCount)
             {
                 return false;
             }
-            Token = TokenAtWeight(targetWeight);
+            Ticket = TicketAtWeight(targetWeight);
             return true;
         }
 
         /// <summary>
-        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Token"/> by the passed <paramref name="Weight"/> in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by the same amount in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
+        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Ticket"/> by the passed <paramref name="Weight"/> in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by the same amount in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> will be reduced by <paramref name="Weight"/> in <see cref="ActiveEntries"/> and increased in <see cref="DrawnEntries"/>.</param>
-        /// <param name="Weight">The amount <paramref name="Token"/>'s <see cref="Entry.Weight"/> will be reduced by in <see cref="ActiveEntries"/> and increase by in <see cref="DrawnEntries"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose <see cref="Entry.Weight"/> will be reduced by <paramref name="Weight"/> in <see cref="ActiveEntries"/> and increased in <see cref="DrawnEntries"/>.</param>
+        /// <param name="Weight">The amount <paramref name="Ticket"/>'s <see cref="Entry.Weight"/> will be reduced by in <see cref="ActiveEntries"/> and increase by in <see cref="DrawnEntries"/>.</param>
         /// <returns>
-        /// <see langword="true"/> if <paramref name="Weight"/> is greater than 0, <paramref name="Token"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
+        /// <see langword="true"/> if <paramref name="Weight"/> is greater than 0, <paramref name="Ticket"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
         /// <see langword="false"/> otherwise.
         /// </returns>
-        protected bool DrawToken(T Token, int Weight)
+        protected bool DrawTicket(T Ticket, int Weight)
         {
             if (Weight > 0
-                && IndexOf(Token) is int index
+                && IndexOf(Ticket) is int index
                 && index > -1
                 && ActiveEntries[index] > 0)
             {
@@ -718,93 +718,93 @@ namespace UD_Modding_Toolbox
             return false;
         }
         /// <summary>
-        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Token"/> by 1 in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by 1 in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
+        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Ticket"/> by 1 in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by 1 in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
         /// </summary>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> will be reduced in <see cref="ActiveEntries"/> and increased in <see cref="DrawnEntries"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose <see cref="Entry.Weight"/> will be reduced in <see cref="ActiveEntries"/> and increased in <see cref="DrawnEntries"/>.</param>
         /// <returns>
-        /// <see langword="true"/> if <paramref name="Token"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
+        /// <see langword="true"/> if <paramref name="Ticket"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
         /// <see langword="false"/> otherwise.
         /// </returns>
-        protected bool DrawToken(T Token)
+        protected bool DrawTicket(T Ticket)
         {
-            return DrawToken(Token, 1);
+            return DrawTicket(Ticket, 1);
         }
 
         /// <summary>
-        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Token"/> by its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by the same amount in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
+        /// Reduces the <see cref="Entry.Weight"/> of the passed <paramref name="Ticket"/> by its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> and increases the <see cref="Entry.Weight"/> by the same amount in <see cref="DrawnEntries"/>, returning <see langword="true"/> if the operation is successfully completed.
         /// </summary>
         /// <remarks>
-        /// Effectively removes the <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, placing it entirely in <see cref="DrawnEntries"/>, in a single operation.
+        /// Effectively removes the <see cref="Entry.Ticket"/> from <see cref="ActiveEntries"/>, placing it entirely in <see cref="DrawnEntries"/>, in a single operation.
         /// </remarks>
-        /// <param name="Token">The <see cref="Entry.Token"/> whose <see cref="Entry.Weight"/> will be transfered from <see cref="ActiveEntries"/> and into <see cref="DrawnEntries"/>.</param>
+        /// <param name="Ticket">The <see cref="Entry.Ticket"/> whose <see cref="Entry.Weight"/> will be transfered from <see cref="ActiveEntries"/> and into <see cref="DrawnEntries"/>.</param>
         /// <returns>
-        /// <see langword="true"/> if <paramref name="Token"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
+        /// <see langword="true"/> if <paramref name="Ticket"/> exists in the <see cref="Raffle{T}"/>, its <see cref="Entry.Weight"/> in <see cref="ActiveEntries"/> was greater than 0 before the method call, and the operation completes successfully;<br/>
         /// <see langword="false"/> otherwise.
         /// </returns>
-        protected bool DrawEntry(T Token)
+        protected bool DrawEntry(T Ticket)
         {
-            return DrawToken(Token, this[Token]);
+            return DrawTicket(Ticket, this[Ticket]);
         }
 
         /// <summary>
-        /// Attempts to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, using <paramref name="Rnd"/> to determine which one, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Attempts to draw a single <see cref="Entry.Ticket"/> from <see cref="ActiveEntries"/>, if any are available, using <paramref name="Rnd"/> to determine which one, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
         /// </remarks>
-        /// <param name="Rnd">The <see cref="Random"/> that will be used to determine which <see cref="Entry.Token"/> to retrieve.</param>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to determine which <see cref="Entry.Ticket"/> to retrieve.</param>
         /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
         /// <returns>
-        /// The next <see cref="Entry.Token"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
+        /// The next <see cref="Entry.Ticket"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         protected T Draw(Random Rnd, bool RefillIfEmpty)
         {
-            if (NextToken(Rnd, out T token)
-                && DrawToken(token))
+            if (NextTicket(Rnd, out T ticket)
+                && DrawTicket(ticket))
             {
-                if (RefillIfEmpty && !HasTokens())
+                if (RefillIfEmpty && !HasTickets())
                 {
                     Refill();
                 }
-                return token;
+                return ticket;
             }
             throw new InvalidOperationException("Can't " + nameof(Draw) + " from a " + nameof(Raffle<T>) + " with an " + nameof(ActiveCount) + " lower than 1");
         }
 
         /// <summary>
-        /// Attempts to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Attempts to draw a single <see cref="Entry.Ticket"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
         /// </remarks>
         /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
         /// <returns>
-        /// The next <see cref="Entry.Token"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
+        /// The next <see cref="Entry.Ticket"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         public T Draw(bool RefillIfEmpty)
         {
             return Draw(Rnd, RefillIfEmpty);
         }
 
         /// <summary>
-        /// Attempts to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Attempts to draw a single <see cref="Entry.Ticket"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
         /// </remarks>
         /// <returns>
-        /// The next <see cref="Entry.Token"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
+        /// The next <see cref="Entry.Ticket"/> in the deterministic sequence for this <see cref="Raffle{T}"/>, generated by <paramref name="Rnd"/> if one is available.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         public T Draw()
         {
             return Draw(true);
         }
 
         /// <summary>
-        /// Uses <see cref="Stat.Rnd2"/> to attempt to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Uses <see cref="Stat.Rnd2"/> to attempt to draw a single <see cref="Entry.Ticket"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
@@ -812,32 +812,32 @@ namespace UD_Modding_Toolbox
         /// </remarks>
         /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
         /// <returns>
-        /// A cosmetically random <see cref="Entry.Token"/> from those still available.
+        /// A cosmetically random <see cref="Entry.Ticket"/> from those still available.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         public T DrawCosmetic(bool RefillIfEmpty)
         {
             return Draw(Stat.Rnd2, RefillIfEmpty);
         }
 
         /// <summary>
-        /// Uses <see cref="Stat.Rnd2"/> to attempt to draw a single <see cref="Entry.Token"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>.
+        /// Uses <see cref="Stat.Rnd2"/> to attempt to draw a single <see cref="Entry.Ticket"/> from <see cref="ActiveEntries"/>, if any are available, and place it in <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
         /// </remarks>
         /// <returns>
-        /// A cosmetically random <see cref="Entry.Token"/> from those still available.
+        /// A cosmetically random <see cref="Entry.Ticket"/> from those still available.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         public T DrawCosmetic()
         {
             return DrawCosmetic(true);
         }
 
         /// <summary>
-        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <paramref name="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s from <see cref="ActiveEntries"/>, if enough are available, using <paramref name="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
@@ -846,12 +846,12 @@ namespace UD_Modding_Toolbox
         ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
         ///     This argument should be greater than 0, and not exceed <see cref="ActiveCount"/> if <paramref name="RefillIfEmpty"/> is not passed <see langword="true"/>.
         /// </param>
-        /// <param name="Rnd">The <see cref="Random"/> that will be used to determine which <see cref="Entry.Token"/>s to retrieve.</param>
+        /// <param name="Rnd">The <see cref="Random"/> that will be used to determine which <see cref="Entry.Ticket"/>s to retrieve.</param>
         /// <param name="RefillIfEmpty">
         ///     Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.<br/><br/>
         ///     This argument should be passed <see langword="true"/> if <paramref name="Number"/> exceeds <see cref="ActiveCount"/>.
         /// </param>
-        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Token"/>s.</returns>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s.</returns>
         /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         protected IEnumerable<T> DrawN(int Number, Random Rnd, bool RefillIfEmpty)
         {
@@ -870,7 +870,7 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
@@ -883,7 +883,7 @@ namespace UD_Modding_Toolbox
         ///     Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.<br/><br/>
         ///     This argument should be passed <see langword="true"/> if <paramref name="Number"/> exceeds <see cref="ActiveCount"/>.
         /// </param>
-        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Token"/>s.</returns>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s.</returns>
         /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         public IEnumerable<T> DrawN(int Number, bool RefillIfEmpty)
         {
@@ -891,7 +891,7 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Attempts to draw a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// Calling this method while <see cref="ActiveCount"/> is &lt; 1 is an invalid operation.
@@ -900,7 +900,7 @@ namespace UD_Modding_Toolbox
         ///     An amount of times to <see langword="yield"/> <see langword="return"/> <see cref="Draw(Random, bool)"/>.<br/><br/>
         ///     This argument should be greater than 0.
         /// </param>
-        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Token"/>s.</returns>
+        /// <returns>An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s.</returns>
         /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1.</exception>
         public IEnumerable<T> DrawN(int Number)
         {
@@ -908,7 +908,7 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Uses <see cref="Stat.Rnd2"/> to to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Uses <see cref="Stat.Rnd2"/> to to draw a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <paramref name="RefillIfEmpty"/> is passed <see langword="true"/> and <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
@@ -920,9 +920,9 @@ namespace UD_Modding_Toolbox
         /// </param>
         /// <param name="RefillIfEmpty">Whether or not to allow the <see cref="Raffle{T}"/> to be exhausted by this method call.</param>
         /// <returns>
-        /// An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of cosmetically random <see cref="Entry.Token"/>s.
+        /// An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of cosmetically random <see cref="Entry.Ticket"/>s.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         public IEnumerable<T> DrawNConsmetic(int Number, bool RefillIfEmpty)
         {
@@ -930,7 +930,7 @@ namespace UD_Modding_Toolbox
         }
 
         /// <summary>
-        /// Uses <see cref="Stat.Rnd2"/> to to draw a <paramref name="Number"/> of <see cref="Entry.Token"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
+        /// Uses <see cref="Stat.Rnd2"/> to to draw a <paramref name="Number"/> of <see cref="Entry.Ticket"/>s from <see cref="ActiveEntries"/>, if enough are available, using <see cref="Rnd"/> to determine which ones, and place them in <see cref="DrawnEntries"/>. If <see cref="ActiveCount"/> is reduced to 0 by this method call, the <see cref="Raffle{T}"/>'s <see cref="ActiveEntries"/> are refilled from <see cref="DrawnEntries"/>.
         /// </summary>
         /// <remarks>
         /// The result of this method call is functionally non-deterministic due to using the base-game's "<see href="https://wiki.cavesofqud.com/wiki/Modding:Random_Functions#Rnd2(),_Rnd4(),_Rnd5()">designated cosmetic</see> <see cref="Random"/>" without restoring the seed each call.<br/><br/>
@@ -941,9 +941,9 @@ namespace UD_Modding_Toolbox
         ///     This argument should be greater than 0.
         /// </param>
         /// <returns>
-        /// An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of cosmetically random <see cref="Entry.Token"/>s.
+        /// An <see cref="IEnumerable{T}"/> containing a <paramref name="Number"/> of cosmetically random <see cref="Entry.Ticket"/>s.
         /// </returns>
-        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Token"/> can't be retrieved.</exception>
+        /// <exception cref="InvalidOperationException">If <see cref="ActiveCount"/> is &lt; 1, or a <see cref="Entry.Ticket"/> can't be retrieved.</exception>
         /// <exception cref="ArgumentException">If <paramref name="Number"/> is less than 1, or <see cref="ActiveCount"/> is less than <paramref name="Number"/> while <paramref name="RefillIfEmpty"/> is <see langword="false"/>.</exception>
         public IEnumerable<T> DrawNConsmetic(int Number)
         {
@@ -952,7 +952,7 @@ namespace UD_Modding_Toolbox
 
         protected IEnumerable<T> DrawUptoN(int Number, Random Rnd, bool RefillFirst)
         {
-            if (RefillFirst && !HasTokens())
+            if (RefillFirst && !HasTickets())
             {
                 Refill();
             }
@@ -960,9 +960,9 @@ namespace UD_Modding_Toolbox
             {
                 for (int i = 0; i < Number; i++)
                 {
-                    if (TryDraw(Rnd, out T token))
+                    if (TryDraw(Rnd, out T ticket))
                     {
-                        yield return token;
+                        yield return ticket;
                     }
                     else
                     {
@@ -1045,30 +1045,30 @@ namespace UD_Modding_Toolbox
             return DrawRemaining(Stat.Rnd2);
         }
 
-        protected bool TryDraw(Random Rnd, out T Token)
+        protected bool TryDraw(Random Rnd, out T Ticket)
         {
-            Token = Draw(Rnd, false);
-            if (!Equals(Token, null) && !Equals(Token, default))
+            Ticket = Draw(Rnd, false);
+            if (!Equals(Ticket, null) && !Equals(Ticket, default))
             {
                 return true;
             }
             return false;
         }
-        public bool TryDraw(out T Token)
+        public bool TryDraw(out T Ticket)
         {
-            return TryDraw(Rnd, out Token);
+            return TryDraw(Rnd, out Ticket);
         }
 
         protected T DrawUnique(Random Rnd, bool RefillIfEmpty)
         {
-            if (NextToken(Rnd, out T token)
-                && DrawEntry(token))
+            if (NextTicket(Rnd, out T ticket)
+                && DrawEntry(ticket))
             {
-                if (RefillIfEmpty && !HasTokens())
+                if (RefillIfEmpty && !HasTickets())
                 {
                     Refill();
                 }
-                return token;
+                return ticket;
             }
             return default;
         }
@@ -1092,9 +1092,9 @@ namespace UD_Modding_Toolbox
 
         protected T Sample(Random Rnd)
         {
-            if (NextToken(Rnd, out T token))
+            if (NextTicket(Rnd, out T ticket))
             {
-                return token;
+                return ticket;
             }
             return default;
         }
@@ -1107,33 +1107,33 @@ namespace UD_Modding_Toolbox
             return Sample(Stat.Rnd2);
         }
 
-        protected bool TrySample(out T Token, Random Rnd)
+        protected bool TrySample(out T Ticket, Random Rnd)
         {
-            Token = Sample(Rnd);
-            if (!Equals(Token, null) && !Equals(Token, default))
+            Ticket = Sample(Rnd);
+            if (!Equals(Ticket, null) && !Equals(Ticket, default))
             {
                 return true;
             }
             return false;
         }
-        public bool TrySample(out T Token)
+        public bool TrySample(out T Ticket)
         {
-            return TrySample(out Token, Rnd);
+            return TrySample(out Ticket, Rnd);
         }
-        public bool TrySampleCosmetic(out T Token)
+        public bool TrySampleCosmetic(out T Ticket)
         {
-            return TrySample(out Token, Stat.Rnd2);
+            return TrySample(out Ticket, Stat.Rnd2);
         }
 
         public Raffle<T> Refill(string Seed = null)
         {
             for (int i = 0; i < Length; i++)
             {
-                T token = (T)ActiveEntries[i];
+                T ticket = (T)ActiveEntries[i];
                 int combinedWeight = (int)ActiveEntries[i] + (int)DrawnEntries[i];
 
-                ActiveEntries[i] = new(token, combinedWeight);
-                DrawnEntries[i] = new(token, 0);
+                ActiveEntries[i] = new(ticket, combinedWeight);
+                DrawnEntries[i] = new(ticket, 0);
             }
             SyncWeightTotals();
             if (!Seeded)
@@ -1157,8 +1157,8 @@ namespace UD_Modding_Toolbox
             }
             for (int i = 0; i < operand2.Length; i++)
             {
-                T token = operand2[i];
-                int weight = operand2[token];
+                T ticket = operand2[i];
+                int weight = operand2[ticket];
                 operand1.Add(operand2[i], weight);
             }
             return operand1;

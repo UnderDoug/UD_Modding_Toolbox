@@ -5,11 +5,11 @@ namespace UD_Modding_Toolbox
 {
     public partial class Raffle<T> : IDictionary<T, int>
     {
-        public int this[T Token]
+        public int this[T Ticket]
         {
             get
             {
-                int index = IndexOf(Token);
+                int index = IndexOf(Ticket);
                 if (index >= 0)
                 {
                     return (int)ActiveEntries[index];
@@ -18,14 +18,14 @@ namespace UD_Modding_Toolbox
             }
             set
             {
-                if (IndexOf(Token) is int index
+                if (IndexOf(Ticket) is int index
                     && index >= 0)
                 {
                     ActiveEntries[index].Weight = Math.Max(0, value);
                 }
                 else
                 {
-                    Add(Token, value);
+                    Add(Ticket, value);
                 }
             }
         }
@@ -33,9 +33,9 @@ namespace UD_Modding_Toolbox
         ICollection<T> IDictionary<T, int>.Keys => GetEnumerator() as ICollection<T>;
         ICollection<int> IDictionary<T, int>.Values => GetEnumerator() as ICollection<int>;
 
-        public void Add(T Token, int Weight)
+        public void Add(T Ticket, int Weight)
         {
-            if (IndexOf(Token) is int index && index >= 0)
+            if (IndexOf(Ticket) is int index && index >= 0)
             {
                 if (Weight < 0 && ActiveEntries[index].Weight <= Math.Abs(Weight))
                 {
@@ -50,16 +50,16 @@ namespace UD_Modding_Toolbox
             {
                 index = Length++;
                 EnsureCapacity(Length);
-                ActiveEntries[index] = new(Token, Math.Max(0, Weight));
-                DrawnEntries[index] = new(Token, 0);
+                ActiveEntries[index] = new(Ticket, Math.Max(0, Weight));
+                DrawnEntries[index] = new(Ticket, 0);
             }
             SyncWeightTotals();
             Variant++;
         }
 
-        public bool ContainsKey(T Token)
+        public bool ContainsKey(T Ticket)
         {
-            return Contains(Token);
+            return Contains(Ticket);
         }
 
         public void CopyTo(KeyValuePair<T, int>[] Array, int Index)
@@ -67,26 +67,26 @@ namespace UD_Modding_Toolbox
             System.Array.Copy(ActiveEntries, 0, Array, Index, Length);
         }
 
-        public bool TryGetValue(T Token, out int Weight)
+        public bool TryGetValue(T Ticket, out int Weight)
         {
             Weight = 0;
             bool anyWeight = false;
-            if (TryGetActiveValue(Token, out int activeWeight))
+            if (TryGetActiveValue(Ticket, out int activeWeight))
             {
                 Weight += activeWeight;
                 anyWeight =  true;
             }
-            if (TryGetDrawnValue(Token, out int drawnWeight))
+            if (TryGetDrawnValue(Ticket, out int drawnWeight))
             {
                 Weight += drawnWeight;
                 anyWeight = true;
             }
             return anyWeight;
         }
-        public bool TryGetActiveValue(T Token, out int Weight)
+        public bool TryGetActiveValue(T Ticket, out int Weight)
         {
             Weight = 0;
-            int index = IndexOf(Token);
+            int index = IndexOf(Ticket);
             if (index > -1)
             {
                 Weight = (int)ActiveEntries[index];
@@ -94,10 +94,10 @@ namespace UD_Modding_Toolbox
             }
             return false;
         }
-        public bool TryGetDrawnValue(T Token, out int Weight)
+        public bool TryGetDrawnValue(T Ticket, out int Weight)
         {
             Weight = 0;
-            int index = IndexOf(Token);
+            int index = IndexOf(Ticket);
             if (index > -1)
             {
                 Weight = (int)DrawnEntries[index];

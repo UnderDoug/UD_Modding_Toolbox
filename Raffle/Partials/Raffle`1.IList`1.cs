@@ -16,12 +16,12 @@ namespace UD_Modding_Toolbox
             {
                 if (Index < 0 || Index >= Length)
                 {
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(Index), "Parameter must be less than the " + nameof(Count) + " of the collection and must not be less than 0.");
                 }
                 if (!Equals(value, default) && !Equals(value, null))
                 {
-                    ActiveEntries[Index].Token = value;
-                    DrawnEntries[Index].Token = value;
+                    ActiveEntries[Index].Ticket = value;
+                    DrawnEntries[Index].Ticket = value;
                     Variant++;
                 }
                 else
@@ -33,32 +33,28 @@ namespace UD_Modding_Toolbox
 
         public bool IsReadOnly => false;
 
-        public void Add(T Token)
+        public void Add(T Ticket)
         {
-            Add(Token, 1);
+            Add(Ticket, 1);
         }
 
-        public bool Contains(T Token)
+        public bool Contains(T Ticket)
         {
-            int indent = Debug.LastIndent;
-            Debug.Entry(4, nameof(Contains), Indent: indent + 1, Toggle: doDebug);
-            int index = IndexOf(Token);
-            Debug.LastIndent = indent;
-            return index > -1;
+            return IndexOf(Ticket) > -1;
         }
-        public bool ActiveContains(T Token)
+        public bool ActiveContains(T Ticket)
         {
-            return IndexOf(Token) is int index
+            return IndexOf(Ticket) is int index
                 && index > -1
                 && ActiveEntries[index] > 0;
         }
-        public bool DrawnContains(T Token)
+        public bool DrawnContains(T Ticket)
         {
             if (DrawnEntries.Length > 0)
             {
                 foreach (Entry drawnEntry in ActiveEntries)
                 {
-                    if (Equals(drawnEntry, Token) && drawnEntry > 0)
+                    if (Equals(drawnEntry, Ticket) && drawnEntry > 0)
                     {
                         return true;
                     }
@@ -69,25 +65,25 @@ namespace UD_Modding_Toolbox
 
         public void CopyTo(T[] Array, int Index)
         {
-            List<T> activeTokens = new();
+            List<T> activeTickets = new();
             for (int i = 0; i < Length; i++)
             {
                 if (ActiveEntries[i] > 0)
                 {
-                    activeTokens.Add(ActiveEntries[i]);
+                    activeTickets.Add(ActiveEntries[i]);
                 }
             }
-            System.Array.Copy(activeTokens.ToArray(), 0, Array, Index, activeTokens.Count);
+            System.Array.Copy(activeTickets.ToArray(), 0, Array, Index, activeTickets.Count);
         }
 
-        public int IndexOf(T Token)
+        public int IndexOf(T Ticket)
         {
             int indent = Debug.LastIndent;
             Debug.Entry(4, nameof(IndexOf), Indent: indent + 1, Toggle: doDebug);
             for (int i = 0; i < Length; i++)
             {
                 Debug.LoopItem(4, i.ToString(), Indent: indent + 2, Toggle: doDebug);
-                if (Equals(ActiveEntries[i].Token, Token))
+                if (Equals(ActiveEntries[i].Ticket, Ticket))
                 {
                     Debug.LastIndent = indent;
                     return i;
@@ -97,18 +93,18 @@ namespace UD_Modding_Toolbox
             return -1;
         }
 
-        void IList<T>.Insert(int Index, T Token)
+        void IList<T>.Insert(int Index, T Ticket)
         {
             throw new NotImplementedException(
-                "The order of the " + nameof(Entry.Token) + " in a " + nameof(Raffle<T>) + " is inconsequential." +
+                "The order of the " + nameof(Entry.Ticket).Pluralize() + " in a " + nameof(Raffle<T>) + " is inconsequential." +
                 "Consider a Dictionary<" + typeof(T).Name + ", int> or List<" + typeof(T).Name + ">.");
         }
 
-        public bool Remove(T Token)
+        public bool Remove(T Ticket)
         {
-            if (Contains(Token))
+            if (Contains(Ticket))
             {
-                RemoveAt(IndexOf(Token));
+                RemoveAt(IndexOf(Ticket));
                 return true;
             }
             return false;
@@ -137,7 +133,7 @@ namespace UD_Modding_Toolbox
             Variant++;
         }
 
-        public static implicit operator Raffle<T>(List<T> List)
+        public static explicit operator Raffle<T>(List<T> List)
         {
             if (List == null)
             {
@@ -150,7 +146,7 @@ namespace UD_Modding_Toolbox
             }
             return raffle;
         }
-        public static implicit operator List<T>(Raffle<T> Raffle)
+        public static explicit operator List<T>(Raffle<T> Raffle)
         {
             if (Raffle == null)
             {

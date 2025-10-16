@@ -10,7 +10,7 @@ namespace UD_Modding_Toolbox
         , IEnumerable<KeyValuePair<T, int>>
     {
         [Serializable]
-        public class TokenEnumerator : IEnumerable<T>
+        public class TicketEnumerator : IEnumerable<T>
         {
             [Serializable]
             public struct Enumerator
@@ -98,7 +98,7 @@ namespace UD_Modding_Toolbox
 
             protected Entry[] Entries;
 
-            public TokenEnumerator(Raffle<T> Raffle, Entry[] Entries)
+            public TicketEnumerator(Raffle<T> Raffle, Entry[] Entries)
             {
                 this.Raffle = Raffle;
                 this.Entries = new Entry[Entries.Length];
@@ -134,7 +134,7 @@ namespace UD_Modding_Toolbox
 
             private int Index;
 
-            public readonly Entry Current => new(Raffle.ActiveEntries[Index].Token, Raffle.ActiveEntries[Index].Weight);
+            public readonly Entry Current => new(Raffle.ActiveEntries[Index].Ticket, Raffle.ActiveEntries[Index].Weight);
 
             readonly T IEnumerator<T>.Current => Current;
 
@@ -142,9 +142,9 @@ namespace UD_Modding_Toolbox
 
             readonly object IEnumerator.Current => Current;
 
-            readonly DictionaryEntry IDictionaryEnumerator.Entry => new(Current.Token, Current.Weight);
+            readonly DictionaryEntry IDictionaryEnumerator.Entry => new(Current.Ticket, Current.Weight);
 
-            readonly object IDictionaryEnumerator.Key => Current.Token;
+            readonly object IDictionaryEnumerator.Key => Current.Ticket;
 
             readonly object IDictionaryEnumerator.Value => Current.Weight;
 

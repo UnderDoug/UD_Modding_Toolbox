@@ -21,14 +21,14 @@ namespace UD_Modding_Toolbox
             , IComparable<int>
         {
             [NonSerialized]
-            public T Token;
+            public T Ticket;
 
             [NonSerialized]
             public int Weight;
 
-            public Entry(T Token, int Weight)
+            public Entry(T Ticket, int Weight)
             {
-                this.Token = Token;
+                this.Ticket = Ticket;
                 this.Weight = Math.Max(0, Weight);
             }
 
@@ -39,18 +39,18 @@ namespace UD_Modding_Toolbox
 
             public override string ToString()
             {
-                return (Token.ExtendedToString() ?? "Token") + ":" + Weight;
+                return (Ticket.ExtendedToString() ?? nameof(Ticket)) + ":" + Weight;
             }
 
-            public void Deconstruct(out T Token, out int Weight)
+            public void Deconstruct(out T Ticket, out int Weight)
             {
-                Token = (T)this;
+                Ticket = (T)this;
                 Weight = (int)this;
             }
 
-            public void Deconstruct(out T Token)
+            public void Deconstruct(out T Ticket)
             {
-                Token = (T)this;
+                Ticket = (T)this;
             }
 
             public void Deconstruct(out int Weight)
@@ -60,13 +60,13 @@ namespace UD_Modding_Toolbox
 
             public void Write(SerializationWriter Writer)
             {
-                Writer.WriteObject(Token);
+                Writer.WriteObject(Ticket);
                 Writer.WriteOptimized(Weight);
             }
 
             public void Read(SerializationReader Reader)
             {
-                Token = (T)Reader.ReadObject();
+                Ticket = (T)Reader.ReadObject();
                 Weight = Reader.ReadOptimizedInt32();
             }
 
@@ -85,9 +85,9 @@ namespace UD_Modding_Toolbox
                 {
                     return Equals(parsedString);
                 }
-                if (obj is T token)
+                if (obj is T ticket)
                 {
-                    return Equals(token);
+                    return Equals(ticket);
                 }
                 return base.Equals(obj);
             }
@@ -101,7 +101,7 @@ namespace UD_Modding_Toolbox
             }
             public bool Equals(T other)
             {
-                return Equals(Token, other);
+                return Equals(Ticket, other);
             }
             public bool Equals(int other)
             {
@@ -110,9 +110,9 @@ namespace UD_Modding_Toolbox
 
             public override int GetHashCode()
             {
-                int token = Token.GetHashCode();
+                int ticket = Ticket.GetHashCode();
                 int weight = Weight.GetHashCode();
-                return token ^ weight;
+                return ticket ^ weight;
             }
 
             public static bool operator ==(Entry operand1, int operand2) => (int)operand1 == operand2;
@@ -140,9 +140,9 @@ namespace UD_Modding_Toolbox
                 {
                     return CompareTo(parsedString);
                 }
-                if (obj is T token)
+                if (obj is T ticket)
                 {
-                    return CompareTo(token);
+                    return CompareTo(ticket);
                 }
                 return 0;
             }
@@ -168,15 +168,15 @@ namespace UD_Modding_Toolbox
             public static bool operator >=(int operand1, Entry operand2) => operand1 >= (int)operand2;
 
             // Entry to/from KeyValuePair<T, int>
-            public static implicit operator KeyValuePair<T, int>(Entry Entry) => new(Entry.Token, Entry.Weight);
+            public static implicit operator KeyValuePair<T, int>(Entry Entry) => new(Entry.Ticket, Entry.Weight);
             public static implicit operator Entry(KeyValuePair<T, int> Entry) => new(Entry.Key, Entry.Value);
 
             // T/int from Entry
-            public static implicit operator T(Entry Entry) => Entry.Token;
+            public static implicit operator T(Entry Entry) => Entry.Ticket;
             public static explicit operator int(Entry Entry) => Entry.Weight;
 
             // Entry from T/int
-            public static implicit operator Entry(T Token) => new(Token, 1);
+            public static implicit operator Entry(T Ticket) => new(Ticket, 1);
 
             // Entry +/- int
             public static Entry operator +(Entry operand1, int operand2) => new(operand1, (int)operand1 + operand2);
@@ -187,7 +187,7 @@ namespace UD_Modding_Toolbox
             public static Entry operator ++(Entry operand1) => operand1 + 1;
             public static Entry operator --(Entry operand1) => operand1 - 1;
 
-            // Token +/- Entry
+            // Ticket +/- Entry
             public static Entry operator +(Entry operand1, T operand2)
             {
                 if (Equals((T)operand1, operand2))

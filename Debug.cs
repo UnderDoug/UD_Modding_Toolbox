@@ -67,27 +67,27 @@ namespace UD_Modding_Toolbox
             // NBSP  \u00A0
             // Space \u0020
             string space = "\u0020";
-            string indent = "";
-            for (int i = 0; i < Spaces * factor; i++)
-            {
-                indent += space;
-            }
+            string indent = indent = space.ThisManyTimes(Spaces * factor);
             LastIndent = Spaces;
             string output = indent + Text;
             Log(output);
             if (IncludeInMessage)
+            {
                 Message(output);
+            }
         }
 
         public static void Divider(int Verbosity = 0, string String = null, int Count = 60, int Indent = 0, bool Toggle = true)
         {
-            string output = "";
-            if (String == null) String = "\u003D"; // =
-            else String = String[..1];
-            for (int i = 0; i < Count; i++)
+            if (String == null)
             {
-                output += String;
+                String = "\u003D"; // =
             }
+            else
+            {
+                String = String[..1];
+            }
+            string output = String.ThisManyTimes(Count);
             Entry(Verbosity, output, Indent, Toggle: Toggle);
         }
 
@@ -202,7 +202,7 @@ namespace UD_Modding_Toolbox
                     ? Math.Round(Raffle.GetTotalChance(entry) * 100f, 2).ToString() + "%"
                     : "";
                 string chanceText = ShowChance ? chance + ", " : "";
-                string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceText + entry.Token.ExtendedToString();
+                string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceText + entry.Ticket.ExtendedToString();
                 LoopItem(Verbosity, message, Good: wasPicked, Indent: Indent + 1, Toggle: Toggle);
             }
             LastIndent = Indent;
