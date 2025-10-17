@@ -12,6 +12,7 @@ using XRL.Wish;
 using XRL.World;
 using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
+using XRL.World.Tinkering;
 using static UD_Modding_Toolbox.Const;
 using Debug = UD_Modding_Toolbox.Debug;
 using Options = UD_Modding_Toolbox.Options;
@@ -190,20 +191,99 @@ namespace UD_Modding_Toolbox
             string context = Context == null ? "" : $"{Context}:";
             Entry(Verbosity, $"Vomit: {Source} {context}", Indent, Toggle: Toggle);
 
-            bool noneDrawn = Drawn.Equals(default);
-            bool noneSampled = Sampled.Equals(default);
-            T picked = !noneDrawn ? Drawn : (!noneSampled ? Sampled : default);
-            bool nonePicked = (noneDrawn && noneSampled) || picked.Equals(default);
+            bool noneDrawn = Equals(Drawn, (T)default);
+            bool noneSampled = Equals(Sampled, (T)default);
+
+            T picked = default;
+            if (!noneDrawn)
+            {
+                picked = Drawn;
+            }
+            else
+            if (!noneSampled)
+            {
+                picked = Sampled;
+            }
+            bool nonePicked = Equals(picked, (T)default);
             foreach (Raffle<T>.Entry entry in Raffle)
             {
-                bool? wasPicked = nonePicked ? null : entry.Equals(picked);
+                bool? wasPicked = null;
+                if (!nonePicked)
+                {
+                    wasPicked = entry.Equals((T)picked);
+                }
                 bool wasDrawn = !noneDrawn && entry.Equals(picked);
                 int weightAdjust = wasDrawn ? 1 : 0;
-                string chance = ShowChance
-                    ? Math.Round(Raffle.GetTotalChance(entry) * 100f, 2).ToString() + "%"
-                    : "";
-                string chanceText = ShowChance ? chance + ", " : "";
-                string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceText + entry.Ticket.ExtendedToString();
+                string chanceString = null;
+                if (ShowChance)
+                {
+                    if ((Raffle.GetTotalChance(entry) * 100f) is float chance)
+                    {
+                        chanceString += Math.Round(chance, 2).ToString();
+                    }
+                    else
+                    {
+                        chanceString += 0.0f.ToString();
+                    }
+                    chanceString += "%, ";
+                }
+                string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceString + entry.Ticket.ExtendedToString();
+                LoopItem(Verbosity, message, Good: wasPicked, Indent: Indent + 1, Toggle: Toggle);
+            }
+            LastIndent = Indent;
+            return Raffle;
+        }
+        public static Raffle<char> VomitBits(
+            this Raffle<char> Raffle,
+            int Verbosity,
+            string Source,
+            string Context = null,
+            bool ShowChance = false,
+            char Drawn = (char)default,
+            char Sampled = (char)default,
+            int Indent = 0,
+            bool Toggle = true)
+        {
+            string context = Context == null ? "" : (Context + ":");
+            Entry(Verbosity, nameof(VomitBits) + ": " + Source + " " + context, Indent, Toggle: Toggle);
+
+            bool noneDrawn = Equals(Drawn, (char)default);
+            bool noneSampled = Equals(Sampled, (char)default);
+
+            char picked = (char)default;
+            if (!noneDrawn)
+            {
+                picked = Drawn;
+            }
+            else
+            if (!noneSampled)
+            {
+                picked = Sampled;
+            }
+            bool nonePicked = Equals(picked, (char)default);
+            foreach (Raffle<char>.Entry entry in Raffle)
+            {
+                bool? wasPicked = null;
+                if (!nonePicked)
+                {
+                    wasPicked = entry.Equals(picked);
+                }
+                bool wasDrawn = !noneDrawn && entry.Equals((char)picked);
+                int weightAdjust = wasDrawn ? 1 : 0;
+                string chanceString = null;
+                if (ShowChance)
+                {
+                    if ((Raffle.GetTotalChance(entry) * 100f) is float chance)
+                    {
+                        chanceString = Math.Round(chance, 2).ToString();
+                    }
+                    else
+                    {
+                        chanceString = 0.0f.ToString();
+                    }
+                    chanceString += "%, ";
+                }
+                string message = BitType.TranslateBit(entry.Ticket) + "] " + (entry.Weight + weightAdjust).ToString() + ", " + chanceString;
                 LoopItem(Verbosity, message, Good: wasPicked, Indent: Indent + 1, Toggle: Toggle);
             }
             LastIndent = Indent;

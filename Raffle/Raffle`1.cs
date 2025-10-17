@@ -1121,10 +1121,14 @@ namespace UD_Modding_Toolbox
 
         protected bool TrySample(out T Ticket, Random Rnd)
         {
-            Ticket = Sample(Rnd);
-            if (!Equals(Ticket, null) && !Equals(Ticket, default))
+            Ticket = (T)default;
+            if (HasTickets())
             {
-                return true;
+                Ticket = Sample(Rnd);
+                if (!Equals(Ticket, null) && !Equals(Ticket, (T)default))
+                {
+                    return true;
+                }
             }
             return false;
         }
@@ -1135,6 +1139,38 @@ namespace UD_Modding_Toolbox
         public bool TrySampleCosmetic(out T Ticket)
         {
             return TrySample(out Ticket, Stat.Rnd2);
+        }
+
+        public IEnumerable<T> SampleUptoNCosmetic(int Number, bool RefillFirst)
+        {
+            if (RefillFirst && !HasTickets())
+            {
+                Refill();
+            }
+            if (Number > 0)
+            {
+                for (int i = 0; i < Number; i++)
+                {
+                    if (TrySampleCosmetic(out T ticket))
+                    {
+                        yield return ticket;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(
+                    paramName: nameof(Number),
+                    message: "Paramater must be greater than zero");
+            }
+        }
+        public IEnumerable<T> SampleUptoNCosmetic(int Number)
+        {
+            return SampleUptoNCosmetic(Number, true);
         }
 
         public Raffle<T> Refill(string Seed = null)
