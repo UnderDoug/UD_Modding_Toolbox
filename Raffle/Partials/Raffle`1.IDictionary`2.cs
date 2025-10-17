@@ -52,9 +52,9 @@ namespace UD_Modding_Toolbox
                 EnsureCapacity(Length);
                 ActiveEntries[index] = new(Ticket, Math.Max(0, Weight));
                 DrawnEntries[index] = new(Ticket, 0);
+                Variant++;
             }
             SyncWeightTotals();
-            Variant++;
         }
 
         public bool ContainsKey(T Ticket)

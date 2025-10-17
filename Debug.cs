@@ -190,13 +190,14 @@ namespace UD_Modding_Toolbox
             string context = Context == null ? "" : $"{Context}:";
             Entry(Verbosity, $"Vomit: {Source} {context}", Indent, Toggle: Toggle);
 
-            bool noneDrawn = Equals(Drawn, default);
-            T picked = !Equals(Drawn, default) ? Drawn : Sampled;
-            bool nonePicked = Equals(picked, default);
+            bool noneDrawn = Drawn.Equals(default);
+            bool noneSampled = Sampled.Equals(default);
+            T picked = !noneDrawn ? Drawn : (!noneSampled ? Sampled : default);
+            bool nonePicked = (noneDrawn && noneSampled) || picked.Equals(default);
             foreach (Raffle<T>.Entry entry in Raffle)
             {
-                bool? wasPicked = nonePicked ? null : entry.Equals(picked, false);
-                bool wasDrawn = !noneDrawn && entry.Equals(picked, false);
+                bool? wasPicked = nonePicked ? null : entry.Equals(picked);
+                bool wasDrawn = !noneDrawn && entry.Equals(picked);
                 int weightAdjust = wasDrawn ? 1 : 0;
                 string chance = ShowChance
                     ? Math.Round(Raffle.GetTotalChance(entry) * 100f, 2).ToString() + "%"

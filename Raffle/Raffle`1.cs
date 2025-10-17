@@ -150,6 +150,14 @@ namespace UD_Modding_Toolbox
             : this(Seed, (Raffle<T>)Source)
         {
         }
+        public Raffle(IEnumerable<T> Source)
+            : this(Source.ToList())
+        {
+        }
+        public Raffle(string Seed, IEnumerable<T> Source)
+            : this(Seed, Source.ToList())
+        {
+        }
 
         public void EnsureCapacity(int Capacity)
         {
@@ -1047,10 +1055,14 @@ namespace UD_Modding_Toolbox
 
         protected bool TryDraw(Random Rnd, out T Ticket)
         {
-            Ticket = Draw(Rnd, false);
-            if (!Equals(Ticket, null) && !Equals(Ticket, default))
+            Ticket = (T)default;
+            if (CanDraw())
             {
-                return true;
+                Ticket = Draw(Rnd, false);
+                if (!Equals(Ticket, null) && !Equals(Ticket, default))
+                {
+                    return true;
+                }
             }
             return false;
         }

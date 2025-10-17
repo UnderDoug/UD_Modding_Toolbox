@@ -2185,6 +2185,10 @@ namespace UD_Modding_Toolbox
 
         public static string ThisManyTimes(this string @string, int Times = 1)
         {
+            if (Times < 1)
+            {
+                return null;
+            }
             string output = @string;
 
             for (int i = 0; i < Times; i++)
@@ -2193,6 +2197,10 @@ namespace UD_Modding_Toolbox
             }
 
             return output;
+        }
+        public static string ThisManyTimes(this char @char, int Times = 1)
+        {
+            return @char.ToString().ThisManyTimes(Times);
         }
 
         public static string PickDirectionS(this GameObject who, string Label = null, bool NullIfSame = false)
