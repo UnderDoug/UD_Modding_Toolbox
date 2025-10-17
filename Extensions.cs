@@ -2189,7 +2189,7 @@ namespace UD_Modding_Toolbox
             {
                 return null;
             }
-            string output = @string;
+            string output = "";
 
             for (int i = 0; i < Times; i++)
             {
