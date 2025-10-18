@@ -57,6 +57,30 @@ namespace UD_Modding_Toolbox
             SyncWeightTotals();
         }
 
+        public void AddRange(Raffle<T> Raffle)
+        {
+            foreach (Entry entry in Raffle)
+            {
+                Add((T)entry, (int)entry);
+            }
+        }
+        public void AddRange(IEnumerable<KeyValuePair<T, int>> Entries)
+        {
+            AddRange((Raffle<T>)Entries);
+        }
+        public void AddRange(Dictionary<T, int> Entries)
+        {
+            AddRange((IEnumerable<KeyValuePair<T, int>>)Entries);
+        }
+
+        public void AddRange(IEnumerable<T> Tickets)
+        {
+            foreach (T ticket in Tickets)
+            {
+                Add(ticket);
+            }
+        }
+
         public bool ContainsKey(T Ticket)
         {
             return Contains(Ticket);
