@@ -159,6 +159,10 @@ namespace UD_Modding_Toolbox
         {
         }
 
+        /// <summary>
+        /// Resizes the <see cref="Raffle{T}"/> if <see cref="Size"/> is less than <paramref name="Capacity"/>.
+        /// </summary>
+        /// <param name="Capacity">The minimum number of <see cref="Entry"/> items that the <see cref="Raffle{T}"/> should be capable of containing.</param>
         public void EnsureCapacity(int Capacity)
         {
             if (Size < Capacity)
