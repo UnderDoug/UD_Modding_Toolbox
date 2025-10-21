@@ -1,4 +1,5 @@
 ﻿using ConsoleLib.Console;
+using HarmonyLib;
 using HistoryKit;
 using Kobold;
 using System;
@@ -124,22 +125,28 @@ namespace UD_Modding_Toolbox
             }
         }
 
-        // see https://stackoverflow.com/questions/299515/reflection-to-identify-extension-methods
-        /*
-        public static IEnumerable<MethodInfo> GetExtensionMethods(Assembly Assembly, Type ExtendedType, Predicate<MethodInfo> Filter = null)
+        public static bool MigratePartFieldFromBlueprint<TPart, TField>(
+            TPart Part,
+            ref TField Field,
+            string FieldName,
+            GameObjectBlueprint Blueprint)
+            where TPart : IPart
         {
-            return from type in Assembly.GetTypes()
-                   where type.IsSealed && !type.IsGenericType && !type.IsNested
-                       from method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                       where method.IsDefined(typeof(ExtensionAttribute), false)
-                       where ExtendedType.IsGenericType && ExtendedType.IsTypeDefinition
-                           ? method.GetParameters()[0].ParameterType.IsGenericType
-                               && method.GetParameters()[0].ParameterType.GetGenericTypeDefinition() == ExtendedType
-                           : method.GetParameters()[0].ParameterType == ExtendedType
-                       where Filter == null || Filter(method)
-                   select method;
+            string partName = Part.GetType().Name;
+            if (Blueprint.TryGetPartParameter(partName, FieldName, out TField result))
+            {
+                Field = result;
+                return true;
+            }
+            if (Activator.CreateInstance(Part.GetType()) is TPart newPart
+                && new Traverse(newPart) is Traverse traverse
+                && traverse.Field<TField>(FieldName) is TField constructorValue)
+            {
+                Field = constructorValue;
+                return true;
+            }
+            return false;
         }
-        */
 
         [VariableReplacer]
         public static string nbsp(DelegateContext Context)
