@@ -22,6 +22,16 @@ namespace UD_Modding_Toolbox
     [HasWishCommand]
     public static class Debug
     {
+        [Serializable]
+        public enum Vebosity : int
+        {
+            Critical = 0,
+            Show = 1,
+            Verbose = 2,
+            Very = 3,
+            Max = 4,
+        }
+
         private static int VerbosityOption => Options.DebugVerbosity;
         // Verbosity translates in roughly the following way:
         // 0 : Critical. Use sparingly, if at all, as they show up without the option. Move these to 1 when pushing to main.
@@ -33,6 +43,19 @@ namespace UD_Modding_Toolbox
         private static bool IncludeInMessage => Options.DebugIncludeInMessage;
 
         public static int LastIndent = 0;
+
+        public static void ResetIndent()
+        {
+            LastIndent = 0;
+        }
+        public static void GetIndent(out int Indent)
+        {
+            Indent = LastIndent;
+        }
+        public static void SetIndent(int Indent)
+        {
+            LastIndent = Indent;
+        }
 
         private static void Message(string Text)
         {
@@ -183,6 +206,7 @@ namespace UD_Modding_Toolbox
             string Source,
             string Context = null,
             bool ShowChance = false,
+            bool Short = false,
             T Drawn = default,
             T Sampled = default,
             int Indent = 0,
@@ -190,6 +214,12 @@ namespace UD_Modding_Toolbox
         {
             string context = Context == null ? "" : $"{Context}:";
             Entry(Verbosity, $"Vomit: {Source} {context}", Indent, Toggle: Toggle);
+
+            if (Short && Raffle.ActiveCount < 1)
+            {
+                CheckNah(Verbosity, "empty", Indent: Indent + 1, Toggle: Toggle);
+                return Raffle;
+            }
 
             bool noneDrawn = Equals(Drawn, (T)default);
             bool noneSampled = Equals(Sampled, (T)default);
@@ -239,6 +269,7 @@ namespace UD_Modding_Toolbox
             string Source,
             string Context = null,
             bool ShowChance = false,
+            bool Short = false,
             char Drawn = (char)default,
             char Sampled = (char)default,
             int Indent = 0,
@@ -246,6 +277,12 @@ namespace UD_Modding_Toolbox
         {
             string context = Context == null ? "" : (Context + ":");
             Entry(Verbosity, nameof(VomitBits) + ": " + Source + " " + context, Indent, Toggle: Toggle);
+
+            if (Short && Raffle.ActiveCount < 1)
+            {
+                CheckNah(Verbosity, "empty", Indent: Indent + 1, Toggle: Toggle);
+                return Raffle;
+            }
 
             bool noneDrawn = Equals(Drawn, (char)default);
             bool noneSampled = Equals(Sampled, (char)default);
@@ -290,7 +327,13 @@ namespace UD_Modding_Toolbox
             return Raffle;
         }
 
-        public static MeleeWeapon Vomit(this MeleeWeapon MeleeWeapon, int Verbosity, string Title = null, List<string> Categories = null, int Indent = 0, bool Toggle = true)
+        public static MeleeWeapon Vomit(
+            this MeleeWeapon MeleeWeapon,
+            int Verbosity,
+            string Title = null,
+            List<string> Categories = null,
+            int Indent = 0,
+            bool Toggle = true)
         {
             int indent = Indent;
             Vomit(Verbosity, MeleeWeapon.ParentObject.DebugName, Title, Indent, Toggle);

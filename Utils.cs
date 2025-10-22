@@ -1,20 +1,20 @@
 ﻿using ConsoleLib.Console;
-using HarmonyLib;
-using HistoryKit;
-using Kobold;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+
+using HarmonyLib;
+using HistoryKit;
+using Kobold;
+
 using XRL;
-using XRL.Core;
-using XRL.Language;
-using XRL.Rules;
 using XRL.UI;
+using XRL.Rules;
+using XRL.Language;
 using XRL.World;
 using XRL.World.Text.Attributes;
 using XRL.World.Text.Delegates;
+
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Options;
 
