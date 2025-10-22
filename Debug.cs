@@ -217,7 +217,7 @@ namespace UD_Modding_Toolbox
                 string chanceString = null;
                 if (ShowChance)
                 {
-                    if ((Raffle.GetTotalChance(entry) * 100f) is float chance)
+                    if (Raffle.ActiveCount > 0 && (Raffle.GetTotalChance(entry) * 100f) is float chance)
                     {
                         chanceString += Math.Round(chance, 2).ToString();
                     }
@@ -273,7 +273,7 @@ namespace UD_Modding_Toolbox
                 string chanceString = null;
                 if (ShowChance)
                 {
-                    if ((Raffle.GetTotalChance(entry) * 100f) is float chance)
+                    if (Raffle.ActiveCount > 0 && (Raffle.GetTotalChance(entry) * 100f) is float chance)
                     {
                         chanceString = Math.Round(chance, 2).ToString();
                     }
