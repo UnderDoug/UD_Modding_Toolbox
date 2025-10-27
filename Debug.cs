@@ -48,6 +48,11 @@ namespace UD_Modding_Toolbox
         {
             LastIndent = 0;
         }
+        public static void ResetIndent(out int Indent)
+        {
+            ResetIndent();
+            GetIndent(out Indent);
+        }
         public static void GetIndent(out int Indent)
         {
             Indent = LastIndent;

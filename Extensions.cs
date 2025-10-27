@@ -88,6 +88,11 @@ namespace UD_Modding_Toolbox
             return true;
         }
 
+        public static string ConvertCase(this string Text, TextCase Case = TextCase.Default)
+        {
+            return Utils.ConvertToCase(Text, Case);
+        }
+
         public static Raffle<T> ToRaffle<T>(this ICollection<T> Collection)
         {
             Raffle<T> raffle = new();

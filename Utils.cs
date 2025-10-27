@@ -125,6 +125,27 @@ namespace UD_Modding_Toolbox
             }
         }
 
+        public enum TextCase : int
+        {
+            Default = 0,
+            Lower = 1,
+            Capital = 2,
+            Title = 3,
+            Upper = 4,
+        }
+
+        public static string ConvertToCase(string Text, TextCase Case = TextCase.Default)
+        {
+            return Case switch
+            {
+                TextCase.Lower => Text.ToLower(),
+                TextCase.Capital => Text.Capitalize(),
+                TextCase.Title => Grammar.MakeTitleCase(Text),
+                TextCase.Upper => Text.ToUpper(),
+                _ => Text,
+            };
+        }
+
         public static bool MigratePartFieldFromBlueprint<TPart, TField>(
             TPart Part,
             ref TField Field,
