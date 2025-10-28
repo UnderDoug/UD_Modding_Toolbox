@@ -169,32 +169,6 @@ namespace UD_Modding_Toolbox
             return false;
         }
 
-        [VariableReplacer]
-        public static string nbsp(DelegateContext Context)
-        {
-            string nbsp = "\xFF";
-            string output = nbsp;
-            if (!Context.Parameters.IsNullOrEmpty() && int.TryParse(Context.Parameters[0], out int count))
-            {
-                for (int i = 1; i < count; i++)
-                {
-                    output += nbsp;
-                }
-            }
-            return output;
-        }
-
-        [VariableReplacer]
-        public static string ud_spice(DelegateContext Context)
-        {
-            string output = "";
-            if (!Context.Parameters.IsNullOrEmpty())
-            {
-                output = HistoricStringExpander.ExpandString($"<spice.{Context.Parameters[0]}>").StartReplace().ToString();
-            }
-            return output;
-        }
-
         public static bool CoinToss()
         {
             return Stat.RandomCosmetic(0, 99) % 2 == 0;
