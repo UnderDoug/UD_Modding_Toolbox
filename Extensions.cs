@@ -93,6 +93,16 @@ namespace UD_Modding_Toolbox
             return Utils.ConvertToCase(Text, Case);
         }
 
+        public static bool IsWidget(this GameObject Object)
+        {
+            return Object.GetBlueprint().InheritsFrom("Widget");
+        }
+
+        public static bool HasWidget(this Cell Cell)
+        {
+            return Utils.HasWidget(Cell);
+        }
+
         public static Raffle<T> ToRaffle<T>(this ICollection<T> Collection)
         {
             Raffle<T> raffle = new();

@@ -146,6 +146,11 @@ namespace UD_Modding_Toolbox
             };
         }
 
+        public static bool HasWidget(Cell Cell)
+        {
+            return Cell.HasObject(GO => GO.IsWidget());
+        }
+
         public static bool MigratePartFieldFromBlueprint<TPart, TField>(
             TPart Part,
             ref TField Field,
