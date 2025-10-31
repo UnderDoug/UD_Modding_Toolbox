@@ -807,9 +807,16 @@ namespace UD_Modding_Toolbox
         public static Cell HighlightColor(this Cell Cell, string TileColor, string DetailColor, string BackgroundColor = "k", int Priority = 0, bool Solid = false)
         {
             if (!The.Game.HasBooleanGameState(DEBUG_HIGHLIGHT_CELLS))
+            {
                 The.Game.SetBooleanGameState(DEBUG_HIGHLIGHT_CELLS, Options.DebugVerbosity > 3);
-            if (Cell.IsEmpty() && Cell.GetFirstVisibleObject() == null && Cell.GetHighestRenderLayerObject() == null)
+            }
+
+            if (Cell.IsEmpty()
+                && Cell.GetFirstVisibleObject() == null
+                && Cell.GetHighestRenderLayerObject() == null)
+            {
                 Cell.AddObject("Cell Highlighter");
+            }
 
             GameObject gameObject = null;
             foreach (GameObject Object in Cell.GetObjects())

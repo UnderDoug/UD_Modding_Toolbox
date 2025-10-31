@@ -19,22 +19,23 @@ namespace XRL.World.Parts
 
         public int HighlightPriority;
 
-        public bool DoHighlight => Options.DebugVerbosity > 3 && (The.Game?.GetBooleanGameState(DEBUG_HIGHLIGHT_CELLS)).GetValueOrDefault();
+        public bool DoHighlight;
+        public bool CheckDoHighlight => Options.DebugVerbosity > 3 && (The.Game?.GetBooleanGameState(DEBUG_HIGHLIGHT_CELLS)).GetValueOrDefault();
 
         public UD_CellHighlighter()
         {
+            DoHighlight = true;
             BackgroundColor = "k";
             HighlightPriority = 0;
         }
 
         public override bool Render(RenderEvent E)
         {
-            bool doHighlight = true;
             if ((XRLCore.FrameTimer.ElapsedMilliseconds & 0x7F) == 0L)
             {
-                doHighlight = DoHighlight;
+                DoHighlight = CheckDoHighlight;
             }
-            if (doHighlight)
+            if (DoHighlight)
             {
                 if (ParentObject.InheritsFrom("Cell Highlighter")
                     && ParentObject.Render is Render render)

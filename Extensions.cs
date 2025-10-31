@@ -1266,7 +1266,6 @@ namespace UD_Modding_Toolbox
             string InPocket = null)
             where T : class
         {
-            bool haveToken = false;
             Key = null;
             if (!Bag.IsNullOrEmpty())
             {
@@ -1282,13 +1281,12 @@ namespace UD_Modding_Toolbox
                         if (token == Token)
                         {
                             Key = key;
-                            haveToken = true;
-                            break;
+                            return true;
                         }
                     }
                 }
             }
-            return haveToken;
+            return false;
         }
         public static bool Contains<T>(this Dictionary<string, List<T>> Bag, T Token, string InPocket = null)
             where T : class
