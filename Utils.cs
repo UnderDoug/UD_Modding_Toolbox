@@ -17,6 +17,7 @@ using XRL.World.Text.Delegates;
 
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Options;
+using XRL.World.Parts;
 
 namespace UD_Modding_Toolbox
 {
@@ -148,7 +149,7 @@ namespace UD_Modding_Toolbox
 
         public static bool HasWidget(Cell Cell)
         {
-            return Cell.HasObject(GO => GO.IsWidget());
+            return Cell.HasObject(GO => GO.IsWidget() && !GO.HasPart<UD_CellHighlighter>());
         }
 
         public static bool MigratePartFieldFromBlueprint<TPart, TField>(

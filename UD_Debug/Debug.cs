@@ -19,6 +19,7 @@ using UD_Modding_Toolbox;
 using static UD_Modding_Toolbox.Const;
 using Debug = UD_Modding_Toolbox.Debug;
 using Options = UD_Modding_Toolbox.Options;
+using ConsoleLib.Console;
 
 namespace UD_Modding_Toolbox
 {
@@ -804,61 +805,112 @@ namespace UD_Modding_Toolbox
                 @object.RemovePart(highlighter);
             }
         }
-        public static Cell HighlightColor(this Cell Cell, string TileColor, string DetailColor, string BackgroundColor = "k", int Priority = 0, bool Solid = false)
+        public static Cell HighlightColor(
+            this Cell Cell,
+            string TileColor,
+            string DetailColor,
+            string BackgroundColor = "k",
+            UnityEngine.Color CharForeground = default,
+            UnityEngine.Color CharDetail = default,
+            UnityEngine.Color CharTileColor = default,
+            int Priority = 0,
+            bool Solid = false)
         {
             if (!The.Game.HasBooleanGameState(DEBUG_HIGHLIGHT_CELLS))
             {
                 The.Game.SetBooleanGameState(DEBUG_HIGHLIGHT_CELLS, Options.DebugVerbosity > 3);
             }
 
-            if (Cell.IsEmpty()
-                && Cell.GetFirstVisibleObject() == null
-                && Cell.GetHighestRenderLayerObject() == null)
+            if (GameObject.CreateUnmodified("UD_Cell_Highlighter") is GameObject cellHighlighter)
             {
-                Cell.AddObject("Cell Highlighter");
-            }
+                Cell.AddObject(cellHighlighter);
+                UD_CellHighlighter highlighter = cellHighlighter.RequirePart<UD_CellHighlighter>();
+                if (Priority >= highlighter.HighlightPriority)
+                {
+                    highlighter.HighlightPriority = Priority;
 
-            GameObject gameObject = null;
-            foreach (GameObject Object in Cell.GetObjects())
-            {
-                gameObject ??= Object;
-                if (Object.Render.RenderLayer >= gameObject.Render.RenderLayer)
-                    gameObject = Object;
-            }
-            gameObject = Cell.GetHighestRenderLayerObject();
-            UD_CellHighlighter highlighter = gameObject.RequirePart<UD_CellHighlighter>();
-            if (Priority >= highlighter.HighlightPriority)
-            {
-                highlighter.HighlightPriority = Priority;
-                highlighter.TileColor = $"&{(!Solid ? TileColor : DetailColor)}";
-                highlighter.DetailColor = $"{(!Solid ? DetailColor : BackgroundColor)}";
-                highlighter.BackgroundColor = $"^{(!Solid ? BackgroundColor : TileColor)}";
+                    highlighter.TileColor = $"&{(!Solid ? TileColor : DetailColor)}";
+                    highlighter.DetailColor = $"{(!Solid ? DetailColor : BackgroundColor)}";
+                    highlighter.BackgroundColor = $"^{(!Solid ? BackgroundColor : TileColor)}";
+
+                    highlighter.CharTileColor = !Solid ? CharTileColor : CharForeground;
+                    highlighter.CharForeground = !Solid ? CharForeground : CharDetail;
+                    highlighter.CharDetail = !Solid ? CharDetail : CharTileColor;
+                }
             }
             return Cell;
         }
         public static Cell HighlightRed(this Cell Cell, int Priority = 0, bool Solid = false)
         {
-            return Cell.HighlightColor(TileColor: "r", DetailColor: "R", BackgroundColor: "k", Priority, Solid);
+            return Cell.HighlightColor(
+                TileColor: "r",
+                DetailColor: "R",
+                BackgroundColor: "k",
+                CharForeground: The.Color.r,
+                CharDetail: The.Color.R,
+                CharTileColor: The.Color.k,
+                Priority: Priority,
+                Solid: Solid);
         }
         public static Cell HighlightGreen(this Cell Cell, int Priority = 0, bool Solid = false)
         {
-            return Cell.HighlightColor(TileColor: "g", DetailColor: "G", BackgroundColor: "k", Priority, Solid);
+            return Cell.HighlightColor(
+                TileColor: "g",
+                DetailColor: "G",
+                BackgroundColor: "k",
+                CharForeground: The.Color.g,
+                CharDetail: The.Color.G,
+                CharTileColor: The.Color.k,
+                Priority: Priority,
+                Solid: Solid);
         }
         public static Cell HighlightYellow(this Cell Cell, int Priority = 0, bool Solid = false)
         {
-            return Cell.HighlightColor(TileColor: "w", DetailColor: "W", BackgroundColor: "k", Priority, Solid);
+            return Cell.HighlightColor(
+                TileColor: "w",
+                DetailColor: "W",
+                BackgroundColor: "k",
+                CharForeground: The.Color.w,
+                CharDetail: The.Color.W,
+                CharTileColor: The.Color.k,
+                Priority: Priority,
+                Solid: Solid);
         }
         public static Cell HighlightPurple(this Cell Cell, int Priority = 0, bool Solid = false)
         {
-            return Cell.HighlightColor(TileColor: "m", DetailColor: "M", BackgroundColor: "k", Priority, Solid);
+            return Cell.HighlightColor(
+                TileColor: "m",
+                DetailColor: "M",
+                BackgroundColor: "k",
+                CharForeground: The.Color.m,
+                CharDetail: The.Color.M,
+                CharTileColor: The.Color.k,
+                Priority: Priority,
+                Solid: Solid);
         }
         public static Cell HighlightBlue(this Cell Cell, int Priority = 0, bool Solid = false)
         {
-            return Cell.HighlightColor(TileColor: "b", DetailColor: "B", BackgroundColor: "k", Priority, Solid);
+            return Cell.HighlightColor(
+                TileColor: "b",
+                DetailColor: "B",
+                BackgroundColor: "k",
+                CharForeground: The.Color.b,
+                CharDetail: The.Color.B,
+                CharTileColor: The.Color.k,
+                Priority: Priority,
+                Solid: Solid);
         }
         public static Cell HighlightCyan(this Cell Cell, int Priority = 0, bool Solid = false)
         {
-            return Cell.HighlightColor(TileColor: "c", DetailColor: "C", BackgroundColor: "k", Priority, Solid);
+            return Cell.HighlightColor(
+                TileColor: "c",
+                DetailColor: "C",
+                BackgroundColor: "k",
+                CharForeground: The.Color.c,
+                CharDetail: The.Color.C,
+                CharTileColor: The.Color.k,
+                Priority: Priority,
+                Solid: Solid);
         }
     }
 }

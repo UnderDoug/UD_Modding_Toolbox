@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<objects>
+
+  <!-- 
+      
+      "Fixes"
+      
+   -->
+  <object Name="Widget" Load="Merge">
+    <tag Name="HideInNearbyItemsList" />
+    <tag Name="HideCon" />
+    <tag Name="NoTwiddle" />
+    <tag Name="NoPassByMessage" />
+  </object>
+  
+  <!-- 
+      
+      Zone mutators, Tile mutators, Multi-tile presets, Quest triggers, UI widgets
+      
+   -->
+  <object Name="UD_Cell_Highlighter" Inherits="Widget">
+    <part Name="Render" DisplayName="[Cell Highlighter]"
+          RenderString="*" RenderLayer="10"
+          Tile="terrain/sw_ground_dots1.png"
+          ColorString="&amp;y" DetailColor="K" Visible="true" />
+    <part Name="Physics" Weight="0" />
+  </object>
+  
+</objects>
