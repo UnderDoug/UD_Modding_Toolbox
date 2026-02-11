@@ -315,48 +315,6 @@ namespace UD_Modding_Toolbox
             return output;
         }
 
-        // Ripped wholesale from ModGigantic.
-        public static string GetProcessedItem(List<string> item, bool second, List<List<string>> items, GameObject obj)
-        {
-            if (item[0] == "")
-            {
-                if (second && item == items[0])
-                {
-                    return obj.It + " " + item[1];
-                }
-                return item[1];
-            }
-            if (item[0] == null)
-            {
-                if (second && item == items[0])
-                {
-                    return obj.Itis + " " + item[1];
-                }
-                if (item != items[0])
-                {
-                    bool flag = true;
-                    foreach (List<string> item2 in items)
-                    {
-                        if (item2[0] != null)
-                        {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    if (flag)
-                    {
-                        return item[1];
-                    }
-                }
-                return obj.GetVerb("are", PrependSpace: false) + " " + item[1];
-            }
-            if (second && item == items[0])
-            {
-                return obj.It + obj.GetVerb(item[0]) + " " + item[1];
-            }
-            return obj.GetVerb(item[0], PrependSpace: false) + " " + item[1];
-        } //!-- public static string GetProcessedItem(List<string> item, bool second, List<List<string>> items, GameObject obj)
-
         public static GameObjectBlueprint GetGameObjectBlueprint(string Blueprint)
         {
             GameObjectFactory.Factory.Blueprints.TryGetValue(Blueprint, out GameObjectBlueprint GameObjectBlueprint);
