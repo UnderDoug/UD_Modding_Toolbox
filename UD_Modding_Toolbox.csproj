@@ -6,14 +6,12 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <BaseIntermediateOutputPath>.dotnet\obj\</BaseIntermediateOutputPath>
     <BaseOutputPath>.dotnet\bin\</BaseOutputPath>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="obj\**" />
     <EmbeddedResource Remove="obj\**" />
     <None Remove="obj\**" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Mods.csproj" />
-  </ItemGroup>
-  <Import Project="../Mods/Mods.csproj" />
+  <Import Project="..\Mods.csproj" />
 </Project>
