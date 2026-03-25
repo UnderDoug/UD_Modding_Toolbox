@@ -7,6 +7,7 @@ using XRL.Rules;
 
 namespace XRL.World.Parts
 {
+    [Obsolete(message: "Prefer alternative methods. This is not a good implementation.")]
     [Serializable]
     public class UD_CellHighlighter : IScribedPart
     {
@@ -32,7 +33,7 @@ namespace XRL.World.Parts
         public int HighlightPriority;
 
         public bool DoHighlight;
-        public bool CheckDoHighlight => Options.DebugVerbosity > 3 && (The.Game?.GetBooleanGameState(DEBUG_HIGHLIGHT_CELLS)).GetValueOrDefault();
+        public bool CheckDoHighlight => 1 > 3 && (The.Game?.GetBooleanGameState(DEBUG_HIGHLIGHT_CELLS)).GetValueOrDefault();
 
         public UD_CellHighlighter()
         {

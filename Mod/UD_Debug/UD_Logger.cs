@@ -1,12 +1,12 @@
 ﻿using HarmonyLib;
-using NAudio.SoundFont;
-using Qud.API;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using UD_Modding_Toolbox;
+
+using Qud.API;
+
 using XRL;
 using XRL.Core;
 using XRL.Wish;
@@ -14,15 +14,20 @@ using XRL.World;
 using XRL.World.Parts;
 using XRL.World.Parts.Mutation;
 using XRL.World.Tinkering;
+
+using UD_Modding_Toolbox;
+
 using static UD_Modding_Toolbox.Const;
-using Debug = UD_Modding_Toolbox.Debug;
+using Debug = UD_Modding_Toolbox.Logging.Debug;
 using Options = UD_Modding_Toolbox.Options;
+using UD_Modding_Toolbox.Logging;
 
 namespace UD_Modding_Toolbox
 {
     [HasWishCommand]
     public class UD_Logger
     {
+        /*
         [Serializable]
         public enum Verbosity : int
         {
@@ -37,43 +42,26 @@ namespace UD_Modding_Toolbox
 
         protected ModInfo Mod;
 
-        protected Type OptionClass;
+        public Func<bool> EnableOption { get; protected set; }
 
-        protected string _VerbosityOption;
-        public int VerbosityOption => GetVerbosityOption();
-
-        protected string _IncludeInMessageOption;
-        public bool IncludeInMessage => GetIncludeInMessageOption();
-
-        protected int LastIndent;
-
-        public int IndentFactor;
+        protected Indent LastIndent;
 
         protected UD_Logger()
         {
-            Mod = null;
-
-            OptionClass = null;
-
-            _VerbosityOption = null;
-            _IncludeInMessageOption = null;
-
-            LastIndent = 0;
-
             IndentFactor = 4;
         }
 
-        public UD_Logger(ModInfo ThisMod, Type OptionClass, string VerbosityOptionField, string IncludeInMessageOptionField, int IndentFactor = DEFAULT_INDENT_FACTOR)
+        public UD_Logger(
+            ModInfo ThisMod,
+            Func<bool> EnableOption,
+            int IndentFactor = DEFAULT_INDENT_FACTOR)
             : this()
         {
             Mod = ThisMod;
 
-            this.OptionClass = OptionClass;
+            this.EnableOption = EnableOption;
 
-            _VerbosityOption = VerbosityOptionField;
-            _IncludeInMessageOption = IncludeInMessageOptionField;
-
-            this.IndentFactor = DEFAULT_INDENT_FACTOR;
+            this.IndentFactor = IndentFactor;
         }
 
         protected int GetVerbosityOption()
@@ -88,7 +76,7 @@ namespace UD_Modding_Toolbox
                     return optionField.GetValue<int>();
                 }
             }
-            return Options.DebugVerbosity;
+            return 1;
         }
 
         protected bool GetIncludeInMessageOption()
@@ -103,7 +91,7 @@ namespace UD_Modding_Toolbox
                     return optionField.GetValue<bool>();
                 }
             }
-            return Options.DebugIncludeInMessage;
+            return false;
         }
 
         public void ResetIndent()
@@ -153,7 +141,7 @@ namespace UD_Modding_Toolbox
 
         public void Indent(Verbosity Verbosity, string Text, int Spaces = 0, bool Toggle = true)
         {
-            if ((int)Verbosity > VerbosityOption || !Toggle)
+            if ((int)Verbosity > EnableOption || !Toggle)
             {
                 return;
             }
@@ -242,5 +230,6 @@ namespace UD_Modding_Toolbox
             string context = Context == null ? "" : $"{Context}:";
             Entry(Verbosity, $"% Vomit: {Source} {context}", Indent, Toggle: Toggle);
         }
+        */
     }
 }

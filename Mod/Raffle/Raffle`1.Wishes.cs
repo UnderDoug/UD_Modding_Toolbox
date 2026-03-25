@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
+using UD_Modding_Toolbox.Logging;
+
 using XRL;
 using XRL.Wish;
 using XRL.World;
@@ -15,7 +17,7 @@ namespace UD_Modding_Toolbox
         [WishCommand("UD raffle test")]
         public static void RaffleTest_WishHandler()
         {
-            int indent = Debug.LastIndent;
+            using var indent = new Indent();
             Raffle<string> creatures = new()
             {
                 { "Glowcrow", 3 },
@@ -47,14 +49,14 @@ namespace UD_Modding_Toolbox
             Raffle<string> dictionaryConversionTest = null;
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " assignment from dictionary test");
-                Debug.Entry(4, nameof(dictionaryTest), Indent: 1);
+                Debug.Log(4, nameof(Raffle<string>) + " assignment from dictionary test");
+                Debug.Log(4, nameof(dictionaryTest), Indent: 1);
                 foreach ((string key, int value) in dictionaryTest)
                 {
                     Debug.LoopItem(4, nameof(key) + ": " + key + ", " + nameof(value) + ": " + value, Indent: 2);
                 }
                 dictionaryConversionTest = dictionaryTest;
-                Debug.Entry(4, nameof(dictionaryConversionTest), Indent: 1);
+                Debug.Log(4, nameof(dictionaryConversionTest), Indent: 1);
                 foreach ((string ticket, int weight) in dictionaryConversionTest)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
@@ -67,19 +69,19 @@ namespace UD_Modding_Toolbox
             Raffle<string> raffleAdditionTest =  null;
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " & " + nameof(Raffle<string>) + " addition test");
-                Debug.Entry(4, nameof(hat), Indent: 1);
+                Debug.Log(4, nameof(Raffle<string>) + " & " + nameof(Raffle<string>) + " addition test");
+                Debug.Log(4, nameof(hat), Indent: 1);
                 foreach ((string ticket, int weight) in hat)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
                 }
-                Debug.Entry(4, nameof(dictionaryConversionTest), Indent: 1);
+                Debug.Log(4, nameof(dictionaryConversionTest), Indent: 1);
                 foreach ((string ticket, int weight) in dictionaryConversionTest)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
                 }
                 raffleAdditionTest = hat + dictionaryConversionTest;
-                Debug.Entry(4, nameof(raffleAdditionTest), Indent: 1);
+                Debug.Log(4, nameof(raffleAdditionTest), Indent: 1);
                 foreach ((string ticket, int weight) in raffleAdditionTest)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
@@ -92,19 +94,19 @@ namespace UD_Modding_Toolbox
             Raffle<string> raffleDictionaryAdditionTest = null;
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " & dictionary addition test");
+                Debug.Log(4, nameof(Raffle<string>) + " & dictionary addition test");
                 raffleDictionaryAdditionTest = raffleAdditionTest + dictionaryTest;
-                Debug.Entry(4, nameof(dictionaryTest), Indent: 1);
+                Debug.Log(4, nameof(dictionaryTest), Indent: 1);
                 foreach ((string ticket, int weight) in dictionaryTest)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
                 }
-                Debug.Entry(4, nameof(raffleAdditionTest), Indent: 1);
+                Debug.Log(4, nameof(raffleAdditionTest), Indent: 1);
                 foreach ((string ticket, int weight) in raffleAdditionTest)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
                 }
-                Debug.Entry(4, nameof(raffleDictionaryAdditionTest), Indent: 1);
+                Debug.Log(4, nameof(raffleDictionaryAdditionTest), Indent: 1);
                 foreach ((string ticket, int weight) in raffleDictionaryAdditionTest)
                 {
                     Debug.LoopItem(4, nameof(ticket) + ": " + ticket + ", " + nameof(weight) + ": " + weight, Indent: 2);
@@ -117,7 +119,7 @@ namespace UD_Modding_Toolbox
             Raffle<string> raffleAssignmentTest = null;
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " array assignment test");
+                Debug.Log(4, nameof(Raffle<string>) + " array assignment test");
                 raffleAssignmentTest = new()
                 {
                     { "first", 1 },
@@ -137,10 +139,10 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(creatures) + "." + nameof(creatures.CanDraw) + " test");
+                Debug.Log(4, nameof(creatures) + "." + nameof(creatures.CanDraw) + " test");
                 int counter = 0;
                 int startingActiveCount = creatures.ActiveCount;
-                Debug.Entry(4, nameof(creatures) + "." + nameof(creatures.CanDraw) + " test", Indent: 1);
+                Debug.Log(4, nameof(creatures) + "." + nameof(creatures.CanDraw) + " test", Indent: 1);
                 creatures.Vomit(4, nameof(RaffleWishes), "before loop", Indent: 2);
                 while (creatures.CanDraw() && counter < startingActiveCount + 5)
                 {
@@ -168,7 +170,7 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(hat) + "." + nameof(hat.CanDraw) + " test");
+                Debug.Log(4, nameof(hat) + "." + nameof(hat.CanDraw) + " test");
                 int counter = 0;
                 while (hat.CanDraw() && hat.Draw(false) is string draw)
                 {
@@ -196,7 +198,7 @@ namespace UD_Modding_Toolbox
             {
                 int counter = 0;
                 int n = 10;
-                Debug.Entry(4, nameof(hat) + "." + nameof(hat.DrawN) + "(" + n + ") test");
+                Debug.Log(4, nameof(hat) + "." + nameof(hat.DrawN) + "(" + n + ") test");
                 foreach (string draw in hat.DrawN(n))
                 {
                     Debug.LoopItem(4, counter.ToString(), draw, Indent: 1);
@@ -217,8 +219,8 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(bag) + "." + nameof(bag.DrawAll) + " seeded test");
-                Debug.Entry(4, "First...", Indent: 1);
+                Debug.Log(4, nameof(bag) + "." + nameof(bag.DrawAll) + " seeded test");
+                Debug.Log(4, "First...", Indent: 1);
                 int counter = 0;
                 foreach (string draw in bag.DrawAll(true))
                 {
@@ -231,7 +233,7 @@ namespace UD_Modding_Toolbox
 
                 try
                 {
-                    Debug.Entry(4, "Second (true)...", Indent: 1);
+                    Debug.Log(4, "Second (true)...", Indent: 1);
                     counter = 0;
                     foreach (string draw in bag.DrawAll(true))
                     {
@@ -250,7 +252,7 @@ namespace UD_Modding_Toolbox
                 try
                 {
                     bag.Refill();
-                    Debug.Entry(4, "Third (manual refill)...", Indent: 1);
+                    Debug.Log(4, "Third (manual refill)...", Indent: 1);
                     counter = 0;
                     foreach (string draw in bag.DrawAll(true))
                     {
@@ -268,7 +270,7 @@ namespace UD_Modding_Toolbox
 
                 try
                 {
-                    Debug.Entry(4, "Fourth (no refill)...", Indent: 1);
+                    Debug.Log(4, "Fourth (no refill)...", Indent: 1);
                     counter = 0;
                     foreach (string draw in bag.DrawAll(false))
                     {
@@ -304,8 +306,8 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(hat) + " unseeded " + nameof(hat.Sample) + " & " + nameof(hat.Shake) + " test");
-                Debug.Entry(4, "First...", Indent: 1);
+                Debug.Log(4, nameof(hat) + " unseeded " + nameof(hat.Sample) + " & " + nameof(hat.Shake) + " test");
+                Debug.Log(4, "First...", Indent: 1);
                 int counter = 0;
                 foreach (string draw in hat.DrawN(5, true))
                 {
@@ -315,15 +317,15 @@ namespace UD_Modding_Toolbox
                         throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
                     }
                 }
-                Debug.Entry(4, "Sample1", hat.Sample(), Indent: 2);
-                Debug.Entry(4, "Sample2", hat.Sample(), Indent: 2);
-                Debug.Entry(4, "Shake...", Indent: 2);
+                Debug.Log(4, "Sample1", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Sample2", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Shake...", Indent: 2);
                 hat.Shake();
-                Debug.Entry(4, "Sample3", hat.Sample(), Indent: 2);
-                Debug.Entry(4, "Sample4", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Sample3", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Sample4", hat.Sample(), Indent: 2);
 
                 hat.Refill();
-                Debug.Entry(4, "Second...", Indent: 1);
+                Debug.Log(4, "Second...", Indent: 1);
                 counter = 0;
                 foreach (string draw in hat.DrawN(5))
                 {
@@ -333,12 +335,12 @@ namespace UD_Modding_Toolbox
                         throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
                     }
                 }
-                Debug.Entry(4, "Sample1", hat.Sample(), Indent: 2);
-                Debug.Entry(4, "Sample2", hat.Sample(), Indent: 2);
-                Debug.Entry(4, "Shake...", Indent: 2);
+                Debug.Log(4, "Sample1", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Sample2", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Shake...", Indent: 2);
                 hat.Shake();
-                Debug.Entry(4, "Sample3", hat.Sample(), Indent: 2);
-                Debug.Entry(4, "Sample4", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Sample3", hat.Sample(), Indent: 2);
+                Debug.Log(4, "Sample4", hat.Sample(), Indent: 2);
             }
             catch (Exception x)
             {
@@ -351,8 +353,8 @@ namespace UD_Modding_Toolbox
             }
             try
             {
-                Debug.Entry(4, nameof(Raffle<string>) + " seeded " + nameof(bag.GroupedActiveTickets) + " test");
-                Debug.Entry(4, "First...", Indent: 1);
+                Debug.Log(4, nameof(Raffle<string>) + " seeded " + nameof(bag.GroupedActiveTickets) + " test");
+                Debug.Log(4, "First...", Indent: 1);
                 int counter = 0;
                 foreach (string ticket in bag.GroupedActiveTickets)
                 {
@@ -363,11 +365,11 @@ namespace UD_Modding_Toolbox
                     }
                 }
 
-                Debug.Entry(4, nameof(bag.DrawAll) + "...", Indent: 1);
+                Debug.Log(4, nameof(bag.DrawAll) + "...", Indent: 1);
                 bag.DrawAll(true);
 
-                Debug.Entry(4, "Second...", Indent: 1);
-                Debug.Entry(4, nameof(bag.GroupedActiveTickets), "should be full", Indent: 2);
+                Debug.Log(4, "Second...", Indent: 1);
+                Debug.Log(4, nameof(bag.GroupedActiveTickets), "should be full", Indent: 2);
                 counter = 0;
                 foreach (string ticket in bag.GroupedActiveTickets)
                 {
@@ -377,7 +379,7 @@ namespace UD_Modding_Toolbox
                         throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
                     }
                 }
-                Debug.Entry(4, nameof(bag.GroupedDrawnTickets), "should be empty", Indent: 2);
+                Debug.Log(4, nameof(bag.GroupedDrawnTickets), "should be empty", Indent: 2);
                 counter = 0;
                 foreach (string ticket in bag.GroupedDrawnTickets)
                 {
@@ -387,11 +389,11 @@ namespace UD_Modding_Toolbox
                         throw new NotFiniteNumberException("Runaway foreach halted by " + nameof(counter) + " exceeding " + (counter - 1));
                     }
                 }
-                Debug.Entry(4, nameof(bag.Refill) + "...", Indent: 1);
+                Debug.Log(4, nameof(bag.Refill) + "...", Indent: 1);
                 bag.Refill();
 
-                Debug.Entry(4, "Third...", Indent: 1);
-                Debug.Entry(4, nameof(bag.GroupedActiveTickets), "should be full", Indent: 2);
+                Debug.Log(4, "Third...", Indent: 1);
+                Debug.Log(4, nameof(bag.GroupedActiveTickets), "should be full", Indent: 2);
                 counter = 0;
                 foreach (string ticket in bag.GroupedActiveTickets)
                 {

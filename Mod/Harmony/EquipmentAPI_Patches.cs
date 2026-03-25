@@ -7,6 +7,8 @@ using Qud.API;
 
 using XRL.World;
 
+using UD_Modding_Toolbox.Logging;
+
 using static UD_Modding_Toolbox.Utils;
 
 namespace UD_Modding_Toolbox.Harmony

@@ -5,6 +5,11 @@ namespace UD_Modding_Toolbox
     public static class Const
     {
         public const string MOD_ID = "UD_Modding_Toolbox";
+        public const string MOD_PREFIX = MOD_ID + "_";
+        public const string MOD_PREFIX_SHORT = "UD_MT_";
+
+        public const string GAME_MOD_EXCEPTION = "game_mod_exception";
+
         public const string HNPS_GIGANTISMPLUS_MOD_ID = "gigantism_Plus";
         public const string UD_BLINK_MUTATION_MOD_ID = "UD_Blink_Mutation";
 

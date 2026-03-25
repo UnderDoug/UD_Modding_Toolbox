@@ -9,6 +9,8 @@ using XRL.Rules;
 using XRL.World;
 using XRL.World.Loaders;
 
+using UD_Modding_Toolbox.Logging;
+
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Utils;
 
@@ -163,14 +165,19 @@ namespace UD_Modding_Toolbox.Harmony
         {
             try
             {
-                bool doDebug = true;
-                Debug.Entry(4, nameof(ProcessBakedXML_MutationEntry), MutationNodeKey, Indent: 0, Toggle: doDebug);
+                using var indent = new Indent();
+                Debug.LogCaller(indent,
+                    ArgPairs: new Debug.ArgPair[]
+                    {
+                        Debug.Arg(MutationNodeKey),
+                    });
+
                 if (MutationFactory.GetMutationEntryByName(MutationNodeKey) is MutationEntry mutationEntry)
                     MutationNodeKey = mutationEntry?.Class ?? MutationNodeKey;
             }
             catch (Exception x)
             {
-                MetricsManager.LogException($"{ThisMod.ID} - {nameof(UDMT_GameObjectFactory_Patches)}.{nameof(ProcessBakedXML_MutationEntry)}", x, "game_mod_exception");
+                Error(x);
             }
             return MutationNodeKey;
         }

@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Linq;
-using System.Reflection.Emit;
 
 using HarmonyLib;
 
-using Qud.API;
-
 using XRL;
-using XRL.Core;
 using XRL.Wish;
 using XRL.World;
 using XRL.World.Parts;
@@ -17,425 +17,555 @@ using XRL.World.Tinkering;
 
 using UD_Modding_Toolbox;
 using static UD_Modding_Toolbox.Const;
-using Debug = UD_Modding_Toolbox.Debug;
-using Options = UD_Modding_Toolbox.Options;
+using Debug = UD_Modding_Toolbox.Logging.Debug;
+using static UD_Modding_Toolbox.Options;
+using static UD_Modding_Toolbox.Utils;
 using ConsoleLib.Console;
+using System.Reflection.Emit;
 
-namespace UD_Modding_Toolbox
+namespace UD_Modding_Toolbox.Logging
 {
     [HasWishCommand]
     public static class Debug
     {
-        private static int VerbosityOption => Options.DebugVerbosity;
-        private static bool IncludeInMessage => Options.DebugIncludeInMessage;
-
-        public static UD_Logger Logger = new(
-            ThisMod: Utils.ThisMod,
-            OptionClass: typeof(Options),
-            VerbosityOptionField: nameof(Options.DebugVerbosity),
-            IncludeInMessageOptionField: nameof(Options.DebugIncludeInMessage));
-
-        private static int _LastIndent = 0;
-
-        // [Obsolete(
-        //     "Prefer " + nameof(Debug) + "." + nameof(GetIndent) + " or " + 
-        //     nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.GetIndent) + 
-        //     "; this property will persist for a while (into 2026).")]
-        public static int LastIndent
-        {
-            get
-            {
-                Logger.GetIndent(out _LastIndent);
-                return _LastIndent;
-            }
-            set
-            {
-                _LastIndent = value;
-                Logger.SetIndent(value);
-            }
-        }
-
-        public static void ResetIndent()
-        {
-            Logger.ResetIndent();
-        }
-        public static void ResetIndent(out int Indent)
-        {
-            Logger.ResetIndent(out Indent);
-        }
-        public static void GetIndent(out int Indent)
-        {
-            Logger.GetIndent(out Indent);
-        }
-        public static void SetIndent(int Indent)
-        {
-            Logger.SetIndent(Indent);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Entry) + "; this method will persist for a while (into 2026).")]
-        public static void Entry(int Verbosity, string Text, int Indent = 0, bool Toggle = true)
-        {
-            Entry((UD_Logger.Verbosity)Verbosity, Text, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Entry) + "; this method will persist for a while (into 2026).")]
-        public static void Entry(UD_Logger.Verbosity Verbosity, string Text, int Indent = 0, bool Toggle = true)
-        {
-            Logger.Entry(Verbosity, Text, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Entry) + "; this method will persist for a while (into 2026).")]
-        public static void Entry(string Text, int Indent = 0, bool Toggle = true)
-        {
-            Logger.Entry(Text, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Entry) + "; this method will persist for a while (into 2026).")]
-        public static void Entry(int Verbosity, string Label, string Text, int Indent = 0, bool Toggle = true)
-        {
-            Entry((UD_Logger.Verbosity)Verbosity, Label, Text, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Entry) + "; this method will persist for a while (into 2026).")]
-        public static void Entry(UD_Logger.Verbosity Verbosity, string Label, string Text, int Indent = 0, bool Toggle = true)
-        {
-            string output = Label + ": " + Text;
-            Logger.Entry(Verbosity, output, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Divider) + "; this method will persist for a while (into 2026).")]
-        public static void Divider(int Verbosity = 0, string String = null, int Count = 60, int Indent = 0, bool Toggle = true)
-        {
-            Divider((UD_Logger.Verbosity)Verbosity, String, Count, Indent, Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Divider) + "; this method will persist for a while (into 2026).")]
-        public static void Divider(UD_Logger.Verbosity Verbosity = 0, string String = null, int Count = 60, int Indent = 0, bool Toggle = true)
-        {
-            Logger.Divider(Verbosity, String, Count, Indent, Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Header) + "; this method will persist for a while (into 2026).")]
-        public static void Header(int Verbosity, string ClassName, string MethodName, bool Toggle = true)
-        {
-            Header((UD_Logger.Verbosity)Verbosity, ClassName, MethodName, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Header) + "; this method will persist for a while (into 2026).")]
-        public static void Header(UD_Logger.Verbosity Verbosity, string ClassName, string MethodName, bool Toggle = true)
-        {
-            Logger.Header(Verbosity, ClassName, MethodName, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Footer) + "; this method will persist for a while (into 2026).")]
-        public static void Footer(int Verbosity, string ClassName, string MethodName, bool Toggle = true)
-        {
-            Footer((UD_Logger.Verbosity)Verbosity, ClassName, MethodName, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Footer) + "; this method will persist for a while (into 2026).")]
-        public static void Footer(UD_Logger.Verbosity Verbosity, string ClassName, string MethodName, bool Toggle = true)
-        {
-            Logger.Footer(Verbosity, ClassName, MethodName, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.DiveIn) + "; this method will persist for a while (into 2026).")]
-        public static void DiveIn(int Verbosity, string Text, int Indent = 0, bool Toggle = true)
-        {
-            DiveIn((UD_Logger.Verbosity)Verbosity, Text, Indent, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.DiveIn) + "; this method will persist for a while (into 2026).")]
-        public static void DiveIn(UD_Logger.Verbosity Verbosity, string Text, int Indent = 0, bool Toggle = true)
-        {
-            Logger.DiveIn(Verbosity, Text, Indent, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.DiveOut) + "; this method will persist for a while (into 2026).")]
-        public static void DiveOut(int Verbosity, string Text, int Indent = 0, bool Toggle = true)
-        {
-            DiveOut((UD_Logger.Verbosity)Verbosity, Text, Indent, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.DiveOut) + "; this method will persist for a while (into 2026).")]
-        public static void DiveOut(UD_Logger.Verbosity Verbosity, string Text, int Indent = 0, bool Toggle = true)
-        {
-            Logger.DiveOut(Verbosity, Text, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Warn) + "; this method will persist for a while (into 2026).")]
-        public static void Warn(int Verbosity, string ClassName, string MethodName, string Issue = null, int Indent = 0)
-        {
-            Warn((UD_Logger.Verbosity)Verbosity, ClassName, MethodName, Issue, Indent);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Warn) + "; this method will persist for a while (into 2026).")]
-        public static void Warn(UD_Logger.Verbosity Verbosity, string ClassName, string MethodName, string Issue = null, int Indent = 0)
-        {
-            Logger.Warn(Verbosity, ClassName, MethodName, Issue, Indent);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.LoopItem) + "; this method will persist for a while (into 2026).")]
-        public static void LoopItem(int Verbosity, string Label, string Text = "", int Indent = 0, bool? Good = null, bool Toggle = true)
-        {
-            LoopItem((UD_Logger.Verbosity)Verbosity, Label, Text, Indent, Good, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.LoopItem) + "; this method will persist for a while (into 2026).")]
-        public static void LoopItem(UD_Logger.Verbosity Verbosity, string Label, string Text = "", int Indent = 0, bool? Good = null, bool Toggle = true)
-        {
-            Logger.LoopItem(Verbosity, Label, Text, Indent, Good, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.CheckYeh) + "; this method will persist for a while (into 2026).")]
-        public static void CheckYeh(int Verbosity, string Label, string Text = "", int Indent = 0, bool? Good = true, bool Toggle = true)
-        {
-            CheckYeh((UD_Logger.Verbosity)Verbosity, Label, Text, Indent, Good, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.CheckYeh) + "; this method will persist for a while (into 2026).")]
-        public static void CheckYeh(UD_Logger.Verbosity Verbosity, string Label, string Text = "", int Indent = 0, bool? Good = true, bool Toggle = true)
-        {
-            Logger.CheckYeh(Verbosity, Label, Text, Indent, Good, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.CheckNah) + "; this method will persist for a while (into 2026).")]
-        public static void CheckNah(int Verbosity, string Label, string Text = "", int Indent = 0, bool? Good = false, bool Toggle = true)
-        {
-            CheckNah((UD_Logger.Verbosity)Verbosity, Label, Text, Indent, Good, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.CheckNah) + "; this method will persist for a while (into 2026).")]
-        public static void CheckNah(UD_Logger.Verbosity Verbosity, string Label, string Text = "", int Indent = 0, bool? Good = false, bool Toggle = true)
-        {
-            Logger.CheckNah(Verbosity, Label, Text, Indent, Good, Toggle: Toggle);
-        }
-
-        // Class Specific Debugs
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.CheckNah) + "; this method will persist for a while (into 2026).")]
-        public static void Vomit(int Verbosity, string Source, string Context = null, int Indent = 0, bool Toggle = true)
-        {
-            Vomit((UD_Logger.Verbosity)Verbosity, Source, Context, Indent, Toggle: Toggle);
-        }
-        // [Obsolete("Prefer " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.CheckNah) + "; this method will persist for a while (into 2026).")]
-        public static void Vomit(UD_Logger.Verbosity Verbosity, string Source, string Context = null, int Indent = 0, bool Toggle = true)
-        {
-            Logger.Vomit(Verbosity, Source, Context, Indent, Toggle: Toggle);
-        }
-
-        // [Obsolete("Prefer version using " + nameof(UD_Modding_Toolbox.UD_Logger) + "." + nameof(UD_Modding_Toolbox.UD_Logger.Verbosity) + "; this method will persist for a while (into 2026).")]
-        public static Raffle<T> Vomit<T>(
-            this Raffle<T> Raffle,
-            int Verbosity,
-            string Source,
-            string Context = null,
-            bool ShowChance = false,
-            bool Short = false,
-            T Drawn = default,
-            T Sampled = default,
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            return Vomit(Raffle, (UD_Logger.Verbosity)Verbosity, Source, Context, ShowChance, Short, Drawn, Sampled, Indent, Toggle: Toggle);
-        }
-        public static Raffle<T> Vomit<T>(
-            this Raffle<T> Raffle,
-            UD_Logger.Verbosity Verbosity,
-            string Source,
-            string Context = null,
-            bool ShowChance = false,
-            bool Short = false,
-            T Drawn = default,
-            T Sampled = default,
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            string context = Context == null ? "" : $"{Context}:";
-            Logger.Entry(Verbosity, $"Vomit: {Source} {context}", Indent, Toggle: Toggle);
-
-            if (Short && Raffle.ActiveCount < 1)
-            {
-                Logger.CheckNah(Verbosity, "empty", Indent: Indent + 1, Toggle: Toggle);
-                return Raffle;
-            }
-
-            bool noneDrawn = Equals(Drawn, (T)default);
-            bool noneSampled = Equals(Sampled, (T)default);
-
-            T picked = default;
-            if (!noneDrawn)
-            {
-                picked = Drawn;
-            }
-            else
-            if (!noneSampled)
-            {
-                picked = Sampled;
-            }
-            bool nonePicked = Equals(picked, (T)default);
-            foreach (Raffle<T>.Entry entry in Raffle)
-            {
-                bool? wasPicked = null;
-                if (!nonePicked)
+        #region Debug Registration
+        [UD_DebugRegistry]
+        public static void doDebugRegistry(DebugMethodRegistry Registry)
+            => Registry.RegisterEachTrue(
+                Type: typeof(UD_Modding_Toolbox.Logging.Debug),
+                Methods: new string[]
                 {
-                    wasPicked = entry.Equals((T)picked);
-                }
-                bool wasDrawn = !noneDrawn && entry.Equals(picked);
-                int weightAdjust = wasDrawn ? 1 : 0;
-                string chanceString = null;
-                if (ShowChance)
-                {
-                    if (Raffle.ActiveCount > 0 && (Raffle.GetTotalChance(entry) * 100f) is float chance)
-                    {
-                        chanceString += Math.Round(chance, 2).ToString();
-                    }
-                    else
-                    {
-                        chanceString += 0.0f.ToString();
-                    }
-                    chanceString += "%, ";
-                }
-                string message = (entry.Weight + weightAdjust).ToString() + ", " + chanceString + entry.Ticket.ExtendedToString();
-                Logger.LoopItem(Verbosity, message, Good: wasPicked, Indent: Indent + 1, Toggle: Toggle);
-            }
-            Logger.SetIndent(Indent);
-            return Raffle;
-        }
-        public static Raffle<char> VomitBits(
-            this Raffle<char> Raffle,
-            int Verbosity,
-            string Source,
-            string Context = null,
-            bool ShowChance = false,
-            bool Short = false,
-            char Drawn = (char)default,
-            char Sampled = (char)default,
-            int Indent = 0,
-            bool Toggle = true)
+                    nameof(LogCritical),
+                });
+        #endregion
+
+        public static bool SilenceLogging = false;
+
+        public static void SetSilenceLogging(bool Value)
         {
-            string context = Context == null ? "" : (Context + ":");
-            Entry(Verbosity, nameof(VomitBits) + ": " + Source + " " + context, Indent, Toggle: Toggle);
+            SilenceLogging = Value;
+        }
+        public static bool GetSilenceLogging()
+            => SilenceLogging;
 
-            if (Short && Raffle.ActiveCount < 1)
-            {
-                CheckNah(Verbosity, "empty", Indent: Indent + 1, Toggle: Toggle);
-                return Raffle;
-            }
-
-            bool noneDrawn = Equals(Drawn, (char)default);
-            bool noneSampled = Equals(Sampled, (char)default);
-
-            char picked = (char)default;
-            if (!noneDrawn)
-            {
-                picked = Drawn;
-            }
-            else
-            if (!noneSampled)
-            {
-                picked = Sampled;
-            }
-            bool nonePicked = Equals(picked, (char)default);
-            foreach (Raffle<char>.Entry entry in Raffle)
-            {
-                bool? wasPicked = null;
-                if (!nonePicked)
-                {
-                    wasPicked = entry.Equals(picked);
-                }
-                bool wasDrawn = !noneDrawn && entry.Equals((char)picked);
-                int weightAdjust = wasDrawn ? 1 : 0;
-                string chanceString = null;
-                if (ShowChance)
-                {
-                    if (Raffle.ActiveCount > 0 && (Raffle.GetTotalChance(entry) * 100f) is float chance)
-                    {
-                        chanceString = Math.Round(chance, 2).ToString();
-                    }
-                    else
-                    {
-                        chanceString = 0.0f.ToString();
-                    }
-                    chanceString += "%, ";
-                }
-                string message = BitType.TranslateBit(entry.Ticket) + "] " + (entry.Weight + weightAdjust).ToString() + ", " + chanceString;
-                LoopItem(Verbosity, message, Good: wasPicked, Indent: Indent + 1, Toggle: Toggle);
-            }
-            LastIndent = Indent;
-            return Raffle;
+        public static void ToggleLogging()
+        {
+            SetSilenceLogging(!SilenceLogging);
         }
 
-        public static MeleeWeapon Vomit(
-            this MeleeWeapon MeleeWeapon,
-            int Verbosity,
-            string Title = null,
-            List<string> Categories = null,
-            int Indent = 0,
-            bool Toggle = true)
+        public static DebugMethodRegistry DoDebugRegistry => DebugMethodRegistry.Instance;
+
+        public static bool DoDebugSetting
+            => (EnableLogging is true)
+            && !SilenceLogging
+            ;
+
+        public static List<Type> DebugTypes = new()
         {
-            int indent = Indent;
-            Vomit(Verbosity, MeleeWeapon.ParentObject.DebugName, Title, Indent, Toggle);
-            List<string> @default = new()
-            {
-                "Damage",
-                "Combat",
-                "Render",
-                "etc"
-            };
-            Categories ??= @default;
-            indent++;
-            foreach (string category in Categories)
-            {
-                if (@default.Contains(category)) Entry(Verbosity, $"{category}", indent, Toggle: Toggle);
-                indent++;
-                switch (category)
+            typeof(UD_Modding_Toolbox.Logging.Debug),
+            typeof(UD_Modding_Toolbox.Logging.Debug.ArgPair),
+            typeof(UD_Modding_Toolbox.Logging.Indent),
+            typeof(UD_Modding_Toolbox.Logging.DebugMethodRegistry),
+            typeof(UD_Modding_Toolbox.Logging.MethodRegistryEntry),
+        };
+
+        public static string CallerString(Type CallingType, MethodBase CallingMethod)
+            => CallingType.Name + "." + CallingMethod.Name;
+
+        public static string CallerSignatureString(Type CallingType, MethodBase CallingMethod)
+            => CallerString(CallingType, CallingMethod) +
+            "(" +
+            CallingMethod
+                ?.GetParameters()
+                ?.Aggregate("", delegate (string a, ParameterInfo n)
                 {
-                    case "Damage":
-                        LoopItem(Verbosity, "BaseDamage", $"{MeleeWeapon.BaseDamage}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "MaxStrengthBonus", $"{MeleeWeapon.MaxStrengthBonus}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "HitBonus", $"{MeleeWeapon.HitBonus}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "PenBonus", $"{MeleeWeapon.PenBonus}", indent, Toggle: Toggle);
-                        break;
-                    case "Combat":
-                        LoopItem(Verbosity, "Stat", $"{MeleeWeapon.Stat}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "Skill", $"{MeleeWeapon.Skill}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "Slot", $"{MeleeWeapon.Slot}", indent, Toggle: Toggle);
-                        break;
-                    case "Render":
-                        Render Render = MeleeWeapon.ParentObject.Render;
-                        LoopItem(Verbosity, "DisplayName", $"{Render.DisplayName}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "Tile", $"{Render.Tile}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "ColorString", $"{Render.ColorString}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "DetailColor", $"{Render.DetailColor}", indent, Toggle: Toggle);
-                        break;
-                    case "etc":
-                        LoopItem(Verbosity, "Ego", $"{MeleeWeapon.Ego}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "IsEquippedOnPrimary", $"{MeleeWeapon.IsEquippedOnPrimary()}", indent, Toggle: Toggle);
-                        LoopItem(Verbosity, "IsImprovisedWeapon", $"{MeleeWeapon.IsImprovisedWeapon()}", indent, Toggle: Toggle);
-                        break;
-                }
-                indent--;
-            }
-            return MeleeWeapon;
+                    string paramType = n?.ParameterType?.Name ?? "null??";
+                    return !a.IsNullOrEmpty()
+                        ? a + ", " + paramType
+                        : a + paramType;
+                }) +
+            ")";
+
+        [ModSensitiveStaticCache(CreateEmptyInstance = true)]
+        private static Dictionary<UD_Logger, Stack<Indent>> LoggerIndents = new();
+
+        [ModSensitiveStaticCache(CreateEmptyInstance = true)]
+        private static Stack<Indent> Indents = new();
+
+        public static Indent LastIndent
+            => Indents.TryPeek(out Indent peek)
+            ? peek
+            : ResetIndent();
+
+        public static Indent GetNewIndent(int Offset)
+            => new(Offset);
+
+        public static Indent GetNewIndent()
+            => GetNewIndent(0);
+
+        public static bool HaveIndents()
+            => !Indents.IsNullOrEmpty();
+
+        public static void PushToIndents(Indent Indent)
+            => Indents.Push(Indent);
+
+        [GameBasedCacheInit]
+        [ModSensitiveCacheInit]
+        public static Indent ResetIndent()
+        {
+            Indents ??= new();
+            Indents.Clear();
+            return GetNewIndent();
         }
 
-        public static bool WasEventHandlerRegistered<H, E>(this XRLGame Game, bool Toggle = true)
-            where H : IEventHandler
-            where E : MinEvent, new()
+        public static Indent DiscardIndent()
         {
-            bool flag = false;
-            E e = new();
-            if (Game != null && Game.RegisteredEvents.ContainsKey(e.ID))
+            if (!Indents.TryPop(out _))
+                ResetIndent();
+
+            return LastIndent;
+        }
+        public static bool HasIndent(Indent Indent)
+            => Indents.Contains(Indent);
+
+        public static string CallingTypeAndMethodNames(bool AppendSpace = false, bool TrimModPrefix = true, bool ConvertGenerics = false)
+        {
+            if (TryGetCallingTypeAndMethod(out Type declaringType, out MethodBase methodBase))
             {
-                Entry(2, $"Registered", $"{typeof(H).Name} ({typeof(E).Name}.ID: {e.ID})", Indent: 2, Toggle: Toggle);
-                flag = true;
+                string declaringTypeName = ConvertGenerics
+                    ? declaringType.ToStringWithGenerics()
+                    : declaringType.Name;
+
+                if (TrimModPrefix)
+                    declaringTypeName = declaringTypeName.Replace(ThisMod.ID + "_", "");
+
+                return CallChain(declaringTypeName, methodBase.Name) + (AppendSpace ? " " : "");
             }
-            else if (Game != null)
+            return null;
+        }
+        public static string CallingMethodName(bool AppendSpace = false)
+        {
+            if (TryGetCallingTypeAndMethod(out _, out MethodBase methodBase))
             {
-                Entry(2, $"Failed to register {typeof(H).Name} ({typeof(E).Name}.ID: {e.ID})", Indent: 2, Toggle: Toggle);
+                return methodBase.Name + (AppendSpace ? " " : "");
+            }
+            return null;
+        }
+
+        private static bool IsDebugFrame(this StackFrame Frame)
+            => DebugTypes?.Any(t => t == Frame?.GetMethod()?.DeclaringType) is true;
+
+        private static bool IsNonDebugFrame(this StackFrame Frame)
+            => !Frame.IsDebugFrame();
+
+        private static bool TryGetCallingTypeAndMethod(
+            this StackFrame Frame,
+            out Type CallingType,
+            out MethodBase CallingMethod)
+            => (CallingType = (CallingMethod = Frame?.GetMethod())?.DeclaringType) != null;
+
+        public static bool TryGetCallingTypeAndMethod(out Type CallingType, out MethodBase CallingMethod)
+        {
+            CallingType = null;
+            CallingMethod = null;
+            try
+            {
+                return new StackTrace()
+                        ?.GetFrames()
+                        ?.FirstOrDefault(IsNonDebugFrame)
+                        ?.TryGetCallingTypeAndMethod(out CallingType, out CallingMethod)
+                    ?? false;
+            }
+            catch (Exception x)
+            {
+                MetricsManager.LogException(nameof(TryGetCallingTypeAndMethod), x, GAME_MOD_EXCEPTION);
+            }
+            return false;
+        }
+
+        public static Indent LogCritical<T>(string Label, T Value, Indent Indent = null)
+        {
+            Indent ??= LastIndent;
+            string output = Label;
+            if (Value != null &&
+                !Value.ToString().IsNullOrEmpty())
+                output += ": " + Value;
+
+            UnityEngine.Debug.Log(Indent.ToString() + output);
+            return Indent;
+        }
+        public static Indent LogCritical(string Message, Indent Indent = null)
+            => LogCritical(Message, (string)null, Indent);
+
+        public static Indent Log<T>(
+            string Label,
+            T Value,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = ""
+            )
+        {
+            if (!DebugMethodRegistry.GetDoDebug(CallingMethod))
+                return Indent;
+
+            return LogCritical(Label, Value, Indent);
+        }
+
+        public static Indent Log(
+            string Message,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = ""
+            )
+            => Log(Message, (string)null, Indent, CallingMethod);
+
+        public readonly struct ArgPair
+        {
+            public static ArgPair Empty = default;
+
+            private readonly string Name;
+            private readonly object Value;
+            public ArgPair(string Name, object Value)
+            {
+                this.Name = Name;
+                this.Value = Value;
+            }
+
+            public override readonly string ToString()
+                => Name.IsNullOrEmpty()
+                ? Value?.ToString()
+                : Name + ": " + Value?.ToString();
+
+            public Indent Log(Indent Indent, [CallerMemberName] string CallingMethod = "")
+                => Debug.Log(Name, Value, Indent ?? LastIndent, CallingMethod);
+            public Indent Log([CallerMemberName] string CallingMethod = "")
+                => Log(null, CallingMethod);
+            public Indent Log(int Offset, [CallerMemberName] string CallingMethod = "")
+                => Log(LastIndent[Offset], CallingMethod);
+
+            public override bool Equals(object obj)
+                => (obj is ArgPair argPairObj
+                    && Equals(argPairObj))
+                || base.Equals(obj);
+
+            public bool Equals(ArgPair Other)
+            {
+                if (Name != Other.Name)
+                {
+                    return false;
+                }
+                if ((Value != null) != (Other.Value != null))
+                {
+                    return false;
+                }
+                return Value == Other.Value;
+            }
+
+            public override int GetHashCode()
+                => (Name?.GetHashCode() ?? 0) ^ (Value?.GetHashCode() ?? 0);
+
+            public static bool operator ==(ArgPair Operand1, ArgPair Operand2)
+                => Operand1.Equals(Operand2);
+            public static bool operator !=(ArgPair Operand1, ArgPair Operand2)
+                => !(Operand1 == Operand2);
+        }
+
+        public static ArgPair Arg(string Name, object Value)
+            => new(Name, Value);
+
+        public static ArgPair Arg(object Value)
+            => Arg(null, Value);
+
+        public static Indent LogCaller(
+            string MessageAfter,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "",
+            params ArgPair[] ArgPairs)
+        {
+            if (!DebugMethodRegistry.GetDoDebug(CallingMethod))
+                return Indent;
+
+            string output = "";
+            if (!ArgPairs.IsNullOrEmpty())
+            {
+                List<string> joinableArgs = ArgPairs.ToList()
+                    ?.Where(ap => ap != ArgPair.Empty)
+                    ?.ToList()
+                    ?.ConvertAll(ap => ap.ToString())
+                    ?.ToList();
+                if (!joinableArgs.IsNullOrEmpty())
+                {
+                    output += "(" + joinableArgs?.SafeJoin() + ")";
+                }
+            }
+            if (!MessageAfter.IsNullOrEmpty())
+            {
+                output += " " + MessageAfter;
+            }
+            return Log(CallingTypeAndMethodNames(ConvertGenerics: true) + output, Indent, CallingMethod);
+        }
+        public static Indent LogCaller(
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "",
+            params ArgPair[] ArgPairs)
+            => LogCaller(null, Indent, CallingMethod, ArgPairs);
+
+        public static Indent LogMethod(
+            string MessageAfter,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "",
+            params ArgPair[] ArgPairs)
+        {
+            if (!DebugMethodRegistry.GetDoDebug(CallingMethod))
+            {
+                return Indent;
+            }
+            string output = "";
+            if (!ArgPairs.IsNullOrEmpty())
+            {
+                List<string> joinableArgs = ArgPairs.ToList()
+                    ?.Where(ap => ap != ArgPair.Empty)
+                    ?.ToList()
+                    ?.ConvertAll(ap => ap.ToString())
+                    ?.ToList();
+                if (!joinableArgs.IsNullOrEmpty())
+                {
+                    output += "(" + joinableArgs?.SafeJoin() + ")";
+                }
+            }
+            if (!MessageAfter.IsNullOrEmpty())
+            {
+                output += " " + MessageAfter;
+            }
+            return Log(CallingMethod + output, Indent, CallingMethod);
+        }
+        public static Indent LogMethod(
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "",
+            params ArgPair[] ArgPairs)
+            => LogMethod(null, Indent, CallingMethod, ArgPairs);
+
+        public static Indent LogArgs(
+            string MessageBefore,
+            string MessageAfter,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "",
+            params ArgPair[] ArgPairs)
+        {
+            string output = "";
+            if (!MessageBefore.IsNullOrEmpty())
+            {
+                output += MessageBefore;
+            }
+            if (!ArgPairs.IsNullOrEmpty())
+            {
+                List<string> joinableArgs = ArgPairs.ToList()
+                    ?.Where(ap => ap != ArgPair.Empty)
+                    ?.ToList()
+                    ?.ConvertAll(ap => ap.ToString())
+                    ?.ToList();
+                if (!joinableArgs.IsNullOrEmpty())
+                {
+                    output += joinableArgs?.SafeJoin();
+                }
+            }
+            if (!MessageAfter.IsNullOrEmpty())
+            {
+                output += MessageAfter;
+            }
+            return Log(output, Indent, CallingMethod);
+        }
+
+        public static Indent LogArgs(
+            string MessageBefore,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "",
+            params ArgPair[] ArgPairs)
+            => LogArgs(MessageBefore, null, Indent, CallingMethod, ArgPairs);
+
+        public static Indent YehNah(
+            string Message,
+            object Value,
+            bool? Good = null,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+        {
+            string append;
+            if (Good != null)
+            {
+                if (!Good.GetValueOrDefault())
+                {
+                    append = AppendCross("");
+                }
+                else
+                {
+                    append = AppendTick("");
+                }
             }
             else
             {
-                Entry(2, $"The.Game null, couldn't register {typeof(H).Name} ({typeof(E).Name}.ID: {e.ID})", Indent: 2, Toggle: Toggle);
+                append = "[-] ";
             }
-            return flag;
+            return Log(append + Message, Value, Indent, CallingMethod);
         }
-        public static bool WasModEventHandlerRegistered<H, E>(this XRLGame Game, bool Toggle = true)
-            where H : IEventHandler, IModEventHandler<E>
-            where E : MinEvent, new()
+        public static Indent YehNah(
+            string Message,
+            bool? Good = null,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+            => YehNah(Message, null, Good, Indent, CallingMethod);
+
+        public static Indent CheckYeh(
+            string Message,
+            object Value,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+            => YehNah(Message, Value, true, Indent, CallingMethod);
+
+        public static Indent CheckYeh(
+            string Message,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+            => YehNah(Message, null, true, Indent, CallingMethod);
+
+        public static Indent CheckNah(
+            string Message,
+            object Value,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+            => YehNah(Message, Value, false, Indent, CallingMethod);
+
+        public static Indent CheckNah(
+            string Message,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+            => YehNah(Message, null, false, Indent, CallingMethod);
+
+        private static string SafeInvoke<T>(this Func<string, string> PostProc, Func<T, string> Proc, T Element, string NoArg)
         {
-            return Game.WasEventHandlerRegistered<H, E>(Toggle: Toggle);
+            string proc = Proc?.Invoke(Element) ?? Element?.ToString() ?? NoArg;
+            if (PostProc != null)
+                proc = PostProc(proc);
+            return proc;
+        }
+        public static Indent Loggregrate<T>(
+            IEnumerable<T> Source,
+            Func<T, string> Proc = null,
+            string Empty = null,
+            Func<string, string> PostProc = null,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = ""
+            )
+            => Source.IsNullOrEmpty()
+            ? Log(PostProc?.Invoke(Empty) ?? Empty, Indent: Indent, CallingMethod)
+            : Source.Aggregate(
+                seed: Indent,
+                func: (a, n) => Log(PostProc.SafeInvoke(Proc, n, "NO_ELEMENT"), Indent: a, CallingMethod));
+
+        public static Indent LogTime(
+            string Message,
+            Stopwatch StopWatch,
+            bool Stop = false,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+        {
+            if (Stop)
+                StopWatch.Stop();
+            return Log(
+                Label: Message ?? StopWatch.Elapsed.ValueUnits(),
+                Value: !Message.IsNullOrEmpty() ? StopWatch.Elapsed.ValueUnits() : null,
+                Indent: Indent,
+                CallingMethod: CallingMethod);
+        }
+
+        public static Indent LogTimeStop(
+            string Message,
+            Stopwatch StopWatch,
+            Indent Indent = null,
+            [CallerMemberName] string CallingMethod = "")
+            => LogTime(Message, StopWatch, true, Indent, CallingMethod);
+
+        public static void MetricsManager_LogCallingModError(object Message)
+        {
+            if (!TryGetFirstCallingModNot(ThisMod, out ModInfo callingMod))
+                callingMod = ThisMod;
+
+            MetricsManager.LogModError(callingMod, Message);
+        }
+
+        #region Extensions
+
+        public static string GenericsString(this Type[] GenericTypes)
+            => !GenericTypes.IsNullOrEmpty()
+            ? "<" +
+                GenericTypes
+                    ?.Select(t => t.ToStringWithGenerics())
+                    ?.Aggregate("", CommaSpaceDelimitedAggregator) +
+                ">"
+            : null;
+
+        public static string ParamsString(this ParameterInfo[] ParamTypes)
+            => "(" +
+                ParamTypes
+                    ?.Select(p => p.ParameterType.ToStringWithGenerics())
+                    ?.Aggregate("", CommaSpaceDelimitedAggregator) +
+                ")";
+
+        public static string MethodSignature<T>(this T MethodBase, bool IndicateNull = false)
+            where T : MethodBase
+        {
+            if (MethodBase is null)
+                return IndicateNull
+                    ? "NULL_METHOD"
+                    : null;
+
+            string genericsString = null;
+            if (!MethodBase.IsConstructor
+                && !MethodBase.Name.StartsWith("get_")
+                && !MethodBase.Name.StartsWith("set_")
+                && MethodBase.IsGenericMethod)
+                genericsString = MethodBase.GetGenericArguments().GenericsString();
+
+            return MethodBase.Name +
+                genericsString +
+                MethodBase.GetParameters().ParamsString();
+        }
+
+        public static bool SuperficiallyEquivalent<Tx, Ty>(this Tx X, Ty Y)
+            where Tx : MethodBase
+            where Ty : MethodBase
+            => X?.Name == Y?.Name
+            && Equals(X?.DeclaringType, Y?.DeclaringType)
+            && Equals(X?.DeclaringType?.Assembly, Y?.DeclaringType?.Assembly);
+
+        public static bool MatchingGenerics<Tx, Ty>(this Tx X, Ty Y)
+            where Tx : MethodBase
+            where Ty : MethodBase
+        {
+            if (EitherNull(X, Y, out bool areEqual))
+                return areEqual;
+
+            if (X.ContainsGenericParameters != Y.ContainsGenericParameters)
+                return false;
+
+            if (X.IsConstructor || Y.IsConstructor)
+                return X.IsConstructor == Y.IsConstructor;
+
+            Type[] xGenerics = X.GetGenericArguments();
+            Type[] yGenerics = Y.GetGenericArguments();
+
+            return xGenerics.ElementsMatch(yGenerics);
+        }
+
+        public static bool MatchingParams<Tx, Ty>(this Tx X, Ty Y)
+            where Tx : MethodBase
+            where Ty : MethodBase
+        {
+            if (EitherNull(X, Y, out bool areEqual))
+                return areEqual;
+
+            Type[] xParams = X.GetParameters()?.Select(p => p.ParameterType)?.ToArray();
+            Type[] yParams = Y.GetParameters()?.Select(p => p.ParameterType)?.ToArray();
+
+            return xParams.ElementsMatch(yParams);
         }
 
         public static CodeInstruction Vomit(
@@ -585,7 +715,7 @@ namespace UD_Modding_Toolbox
                 }
                 while (CodeMatcher.Advance(1).IsValid);
                 CodeMatcher.Start();
-                
+
                 int counterPadding = Math.Max(4, (CodeMatcher.Instructions().Count + 1).ToString().Length);
                 do
                 {
@@ -593,7 +723,7 @@ namespace UD_Modding_Toolbox
                     if (CodeMatcher.Instruction is CodeInstruction ci)
                     {
                         ci.Vomit(
-                            Pos: counter, 
+                            Pos: counter,
                             PosPadding: counterPadding,
                             LabelInstructions: labelInstructions,
                             HaveILGen: haveILGen,
@@ -629,288 +759,13 @@ namespace UD_Modding_Toolbox
             return CodeMatcher;
         }
 
-        public static string Vomit(this string @string, int Verbosity, string Label = "", bool LoopItem = false, bool? Good = null, int Indent = 0, bool Toggle = true)
-        {
-            string Output = Label != "" ? $"{Label}: {@string}" : @string;
-            if (LoopItem) Debug.LoopItem(Verbosity, Output, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Output, Indent: Indent, Toggle: Toggle);
-            return @string;
-        }
-        public static int Vomit(this int @int, int Verbosity, string Label = "", bool LoopItem = false, bool? Good = null, int Indent = 0, bool Toggle = true)
-        {
-            string Output = Label != "" ? $"{Label}: {@int}" : $"{@int}";
-            if (LoopItem) Debug.LoopItem(Verbosity, Output, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Output, Indent: Indent, Toggle: Toggle);
-            return @int;
-        }
-        public static bool Vomit(this bool @bool, int Verbosity, string Label = "", bool LoopItem = false, bool? Good = null, int Indent = 0, bool Toggle = true)
-        {
-            string Output = Label != "" ? $"{Label}: {@bool}" : $"{@bool}";
-            if (LoopItem) Debug.LoopItem(Verbosity, Output, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Output, Indent: Indent, Toggle: Toggle);
-            return @bool;
-        }
-        public static List<T> Vomit<T>(
-            this List<T> List,
-            int Verbosity,
-            string Label = "",
-            bool LoopItem = false,
-            bool? Good = null,
-            string DivAfter = "",
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            string Output = Label != "" ? $"{Label}: {nameof(List)}" : $"{nameof(List)}";
-            if (LoopItem) Debug.LoopItem(Verbosity, Output, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Output, Indent: Indent, Toggle: Toggle);
-            foreach (T item in List)
-            {
-                if (LoopItem) Debug.LoopItem(Verbosity, item.ToString(), Good: Good, Indent: Indent + 1, Toggle: Toggle);
-                else Entry(Verbosity, item.ToString(), Indent: Indent + 1, Toggle: Toggle);
-            }
-            if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
-            return List;
-        }
-        public static List<object> Vomit(
-            this List<object> List,
-            int Verbosity,
-            string Label,
-            bool LoopItem = false,
-            bool? Good = null,
-            string DivAfter = "",
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
-            foreach (object item in List)
-            {
-                if (LoopItem) Debug.LoopItem(Verbosity, $"{item}", Good: Good, Indent: Indent + 1, Toggle: Toggle);
-                else Entry(Verbosity, $"{item}", Indent: Indent + 1, Toggle: Toggle);
-            }
-            if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
-            return List;
-        }
-        public static List<MutationEntry> Vomit(
-            this List<MutationEntry> List,
-            int Verbosity,
-            string Label,
-            bool LoopItem = false,
-            bool? Good = null,
-            string DivAfter = "",
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
-            foreach (MutationEntry item in List)
-            {
-                if (LoopItem) Debug.LoopItem(Verbosity, $"{item.Mutation.Name}", Good: Good, Indent: Indent + 1, Toggle: Toggle);
-                else Entry(Verbosity, $"{item.Mutation.Name}", Indent: Indent + 1, Toggle: Toggle);
-            }
-            if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
-            return List;
-        }
-        public static List<MutationCategory> Vomit(
-            this List<MutationCategory> List,
-            int Verbosity,
-            string Label,
-            bool LoopItem = false,
-            bool? Good = null,
-            string DivAfter = "",
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
-            foreach (MutationCategory item in List)
-            {
-                if (LoopItem) Debug.LoopItem(Verbosity, $"{item.Name}", Good: Good, Indent: Indent + 1, Toggle: Toggle);
-                else Entry(Verbosity, $"{item.Name}", Indent: Indent + 1, Toggle: Toggle);
-            }
-            if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
-            return List;
-        }
-        public static List<GameObject> Vomit(
-            this List<GameObject> List,
-            int Verbosity,
-            string Label,
-            bool LoopItem = false,
-            bool? Good = null,
-            string DivAfter = "",
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
-            foreach (GameObject item in List)
-            {
-                if (LoopItem) Debug.LoopItem(Verbosity, $"{item.DebugName}", Good: Good, Indent: Indent + 1, Toggle: Toggle);
-                else Entry(Verbosity, $"{item.DebugName}", Indent: Indent + 1, Toggle: Toggle);
-            }
-            if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
-            return List;
-        }
-        public static List<BaseMutation> Vomit(
-            this List<BaseMutation> List,
-            int Verbosity,
-            string Label,
-            bool LoopItem = false,
-            bool? Good = null,
-            string DivAfter = "",
-            int Indent = 0,
-            bool Toggle = true)
-        {
-            if (LoopItem) Debug.LoopItem(Verbosity, Label, Good: Good, Indent: Indent, Toggle: Toggle);
-            else Entry(Verbosity, Label, Indent: Indent, Toggle: Toggle);
-            foreach (BaseMutation item in List)
-            {
-                if (LoopItem) Debug.LoopItem(Verbosity, $"{item.GetMutationClass()}", Good: Good, Indent: Indent + 1, Toggle: Toggle);
-                else Entry(Verbosity, $"{item.GetMutationClass()}", Indent: Indent + 1, Toggle: Toggle);
-            }
-            if (DivAfter != "") Divider(4, DivAfter, 25, Indent: Indent + 1, Toggle: Toggle);
-            return List;
-        }
 
-        public static void InheritanceTree(GameObject Object, bool Toggle = true)
-        {
-            GameObjectBlueprint objectBlueprint = Object.GetBlueprint();
+        #endregion
 
-            Entry(4, $"objectBlueprint: {objectBlueprint.Name}", Indent: 0, Toggle: Toggle);
-            GameObjectBlueprint shallowParent = objectBlueprint.ShallowParent;
-            while (shallowParent != null)
-            {
-                Entry(4, $"shallowParent: {shallowParent.Name}", Indent: 0, Toggle: Toggle);
-                shallowParent = shallowParent.ShallowParent;
-            }
-        }
-
-        [WishCommand]
-        public static void ToggleCellHighlighting()
-        {
-            The.Game.SetBooleanGameState(DEBUG_HIGHLIGHT_CELLS, !The.Game.GetBooleanGameState(DEBUG_HIGHLIGHT_CELLS));
-        }
-        [WishCommand]
-        public static void debug_ToggleCH()
-        {
-            ToggleCellHighlighting();
-        }
-
-        [WishCommand]
-        public static void RemoveCellHighlighting()
-        {
-            foreach (GameObject @object in The.ActiveZone.GetObjects())
-            {
-                UD_CellHighlighter highlighter = @object.RequirePart<UD_CellHighlighter>();
-                @object.RemovePart(highlighter);
-            }
-        }
-        public static Cell HighlightColor(
-            this Cell Cell,
-            string TileColor,
-            string DetailColor,
-            string BackgroundColor = "k",
-            UnityEngine.Color CharForeground = default,
-            UnityEngine.Color CharDetail = default,
-            UnityEngine.Color CharTileColor = default,
-            int Priority = 0,
-            bool Solid = false)
-        {
-            if (!The.Game.HasBooleanGameState(DEBUG_HIGHLIGHT_CELLS))
-            {
-                The.Game.SetBooleanGameState(DEBUG_HIGHLIGHT_CELLS, Options.DebugVerbosity > 3);
-            }
-
-            if (GameObject.CreateUnmodified("UD_Cell_Highlighter") is GameObject cellHighlighter)
-            {
-                Cell.AddObject(cellHighlighter);
-                UD_CellHighlighter highlighter = cellHighlighter.RequirePart<UD_CellHighlighter>();
-                if (Priority >= highlighter.HighlightPriority)
-                {
-                    highlighter.HighlightPriority = Priority;
-
-                    highlighter.TileColor = $"&{(!Solid ? TileColor : DetailColor)}";
-                    highlighter.DetailColor = $"{(!Solid ? DetailColor : BackgroundColor)}";
-                    highlighter.BackgroundColor = $"^{(!Solid ? BackgroundColor : TileColor)}";
-
-                    highlighter.CharTileColor = !Solid ? CharTileColor : CharForeground;
-                    highlighter.CharForeground = !Solid ? CharForeground : CharDetail;
-                    highlighter.CharDetail = !Solid ? CharDetail : CharTileColor;
-                }
-            }
-            return Cell;
-        }
-        public static Cell HighlightRed(this Cell Cell, int Priority = 0, bool Solid = false)
-        {
-            return Cell.HighlightColor(
-                TileColor: "r",
-                DetailColor: "R",
-                BackgroundColor: "k",
-                CharForeground: The.Color.r,
-                CharDetail: The.Color.R,
-                CharTileColor: The.Color.k,
-                Priority: Priority,
-                Solid: Solid);
-        }
-        public static Cell HighlightGreen(this Cell Cell, int Priority = 0, bool Solid = false)
-        {
-            return Cell.HighlightColor(
-                TileColor: "g",
-                DetailColor: "G",
-                BackgroundColor: "k",
-                CharForeground: The.Color.g,
-                CharDetail: The.Color.G,
-                CharTileColor: The.Color.k,
-                Priority: Priority,
-                Solid: Solid);
-        }
-        public static Cell HighlightYellow(this Cell Cell, int Priority = 0, bool Solid = false)
-        {
-            return Cell.HighlightColor(
-                TileColor: "w",
-                DetailColor: "W",
-                BackgroundColor: "k",
-                CharForeground: The.Color.w,
-                CharDetail: The.Color.W,
-                CharTileColor: The.Color.k,
-                Priority: Priority,
-                Solid: Solid);
-        }
-        public static Cell HighlightPurple(this Cell Cell, int Priority = 0, bool Solid = false)
-        {
-            return Cell.HighlightColor(
-                TileColor: "m",
-                DetailColor: "M",
-                BackgroundColor: "k",
-                CharForeground: The.Color.m,
-                CharDetail: The.Color.M,
-                CharTileColor: The.Color.k,
-                Priority: Priority,
-                Solid: Solid);
-        }
-        public static Cell HighlightBlue(this Cell Cell, int Priority = 0, bool Solid = false)
-        {
-            return Cell.HighlightColor(
-                TileColor: "b",
-                DetailColor: "B",
-                BackgroundColor: "k",
-                CharForeground: The.Color.b,
-                CharDetail: The.Color.B,
-                CharTileColor: The.Color.k,
-                Priority: Priority,
-                Solid: Solid);
-        }
-        public static Cell HighlightCyan(this Cell Cell, int Priority = 0, bool Solid = false)
-        {
-            return Cell.HighlightColor(
-                TileColor: "c",
-                DetailColor: "C",
-                BackgroundColor: "k",
-                CharForeground: The.Color.c,
-                CharDetail: The.Color.C,
-                CharTileColor: The.Color.k,
-                Priority: Priority,
-                Solid: Solid);
-        }
+        /*
+         * 
+         * Wishes!
+         * 
+         */
     }
 }

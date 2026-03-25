@@ -1,23 +1,34 @@
-﻿using ConsoleLib.Console;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using System.Text;
+
+using ConsoleLib.Console;
 
 using HarmonyLib;
 using HistoryKit;
 using Kobold;
 
 using XRL;
-using XRL.UI;
-using XRL.Rules;
 using XRL.Language;
+using XRL.Rules;
+using XRL.UI;
 using XRL.World;
+using XRL.World.Anatomy;
+using XRL.World.Parts;
 using XRL.World.Text.Attributes;
 using XRL.World.Text.Delegates;
 
+using UD_Modding_Toolbox.Logging;
+
+using Debug = UD_Modding_Toolbox.Logging.Debug;
+
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Options;
-using XRL.World.Parts;
+using XRL.Collections;
 
 namespace UD_Modding_Toolbox
 {
@@ -25,17 +36,18 @@ namespace UD_Modding_Toolbox
     [HasVariableReplacer]
     public static class Utils
     {
-        private static bool doDebug => true;
-        private static bool getDoDebug (string MethodName)
-        {
-            if (MethodName == nameof(TryGetTilePath))
-                return false;
-
-            if (MethodName == nameof(Rumble))
-                return false;
-
-            return doDebug;
-        }
+        #region Debug Registration
+        [UD_DebugRegistry]
+        public static void Extension_DebugRegistry(DebugMethodRegistry Registry)
+            => Registry.RegisterEach(
+                Type: typeof(UD_Modding_Toolbox.Utils),
+                MethodNameValues: new Dictionary<string, bool>
+                {
+                    { nameof(GetTilePath), false},
+                    { nameof(TryGetTilePath), false},
+                    { nameof(Rumble), false},
+                });
+        #endregion
 
         public static ModInfo ThisMod => ModManager.GetMod(MOD_ID);
 
@@ -146,6 +158,18 @@ namespace UD_Modding_Toolbox
                 _ => Text,
             };
         }
+        public static void Error(object Message)
+            => ThisMod.Error(Message);
+
+        public static void Warn(object Message)
+            => ThisMod.Warn(Message);
+
+
+        public static string CallChain(params string[] Strings)
+            => Strings
+                ?.Aggregate(
+                    seed: "",
+                    func: (a, n) => a + (!a.IsNullOrEmpty() && !n.IsNullOrEmpty() ? "." : null) + n);
 
         public static bool HasWidget(Cell Cell)
         {
@@ -182,23 +206,24 @@ namespace UD_Modding_Toolbox
 
         public static bool RegisterGameLevelEventHandlers()
         {
-            Debug.Entry(1, $"Registering XRLGame Event Handlers...", Indent: 1);
-            bool flag = The.Game != null;
-            if (flag)
-            {
+            using var indent = new Indent(1);
+            Debug.LogCaller(indent);
 
+            bool gameAssigned = The.Game != null;
+            if (gameAssigned)
+            {
                 // ExampleHandler.Register();
             }
             else
             {
-                Debug.Entry(2, $"The.Game is null, unable to register any events.", Indent: 2);
+                Debug.Log($"Unable to register any events", "The.Game is null", Indent: indent[1]);
             }
-            Debug.LoopItem(1, $"Event Handler Registration Finished", Indent: 1, Good: flag);
-            return flag;
+            Debug.YehNah($"Event Handler Registration Finished", Good: gameAssigned, Indent: indent[0]);
+            return gameAssigned;
         }
 
         [ModSensitiveStaticCache(CreateEmptyInstance = true)]
-        private static Dictionary<string, string> _TilePathCache = new();
+        private static StringMap<string> TilePathCache = new();
         private static readonly List<string> TileSubfolders = new()
         {
             "",
@@ -217,87 +242,68 @@ namespace UD_Modding_Toolbox
             "Widgets",
         };
         public static string BuildCustomTilePath(string DisplayName)
-        {
-            return Grammar.MakeTitleCase(ColorUtility.StripFormatting(DisplayName)).Replace(" ", "");
-        }
-        public static bool TryGetTilePath(string TileName, out string TilePath, bool IsWholePath = false)
-        {
-            Debug.Entry(3, $"@ Utils.TryGetTilePath(string TileName: {TileName}, out string TilePath)", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
+            => Grammar.MakeTitleCase(ColorUtility.StripFormatting(DisplayName)).Replace(" ", "")
+            ;
 
-            bool wasFound = false;
-            bool inCache;
-            Debug.Entry(4, $"? if (_TilePathCache.TryGetValue(TileName, out TilePath))", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-            if (inCache = !_TilePathCache.TryGetValue(TileName, out TilePath))
+        public static string GetTilePath(string TileName, bool IsWholePath = false)
+        {
+            using var indent = new Indent(1);
+            Debug.LogCaller(indent,
+                ArgPairs: new Debug.ArgPair[]
+                {
+                    Debug.Arg(TileName),
+                    Debug.Arg(nameof(IsWholePath), IsWholePath),
+                });
+
+            TilePathCache ??= new();
+            if (!TilePathCache.ContainsKey(TileName))
             {
-                Debug.Entry(4, $"_TilePathCache does not contain {TileName}", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                Debug.Entry(4, $"x if (_TilePathCache.TryGetValue(TileName, out TilePath)) ?//", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-
-                Debug.Entry(4, $"Attempting to add \"{TileName}\" to _TilePathCache", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                if (!wasFound && !_TilePathCache.TryAdd(TileName, TilePath))
-                    Debug.Entry(3, $"!! Adding \"{TileName}\" to _TilePathCache failed", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-
+                TilePathCache[TileName] = "";
                 if (IsWholePath)
                 {
+                    Debug.Log("No cached value, searching for whole path...", Indent: indent[1]);
                     if (SpriteManager.HasTextureInfo(TileName))
                     {
-                        TilePath = TileName;
-                        _TilePathCache[TileName] = TileName;
-                        Debug.CheckYeh(4, $"Tile: \"{TileName}\", Added entry to _TilePathCache", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
+                        TilePathCache[TileName] = TileName;
+                        Debug.CheckYeh($"\"{TileName}\" is a valid tile path!", Indent: indent[2]);
                     }
                     else
-                    {
-                        Debug.CheckNah(4, $"Tile: \"{TileName}\"", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                    }
+                        Debug.CheckNah($"\"{TileName}\" is not a valid tile path.", Indent: indent[2]);
                 }
                 else
                 {
-                    Debug.Entry(4, $"Listing subfolders", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                    Debug.Entry(4, $"> foreach (string subfolder  in TileSubfolders)", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                    foreach (string subfolder in TileSubfolders)
-                    {
-                        Debug.LoopItem(4, $" \"{subfolder}\"", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                    }
-                    Debug.Entry(4, $"x foreach (string subfolder  in TileSubfolders) >//", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
+                    Debug.Log("No cached value, searching the following subfolders:", Indent: indent[1]);
+                    Debug.Loggregrate(
+                        Source: TileSubfolders,
+                        Proc: n => n,
+                        Empty: "none",
+                        PostProc: s => $"::\"{s}\"",
+                        Indent: indent[2]);
 
-                    Debug.Entry(4, $"> foreach (string subfolder in TileSubfolders)", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                    Debug.Divider(3, "-", Count: 25, Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
                     foreach (string subfolder in TileSubfolders)
                     {
                         string path = subfolder;
-                        if (path != "") path += "/";
+
+                        if (path != "")
+                            path += "/";
+
                         path += TileName;
+
                         if (SpriteManager.HasTextureInfo(path))
                         {
-                            TilePath = path;
-                            _TilePathCache[TileName] = TilePath;
-                            Debug.CheckYeh(4, $"Tile: \"{path}\", Added entry to _TilePathCache", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
+                            TilePathCache[TileName] = path;
+                            Debug.CheckYeh($"\"{path}\" is a valid tile path!", Indent: indent[2]);
                         }
                         else
-                        {
-                            Debug.CheckNah(4, $"Tile: \"{path}\"", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                        }
+                            Debug.CheckNah($"\"{path}\" is not a valid tile path.", Indent: indent[2]);
                     }
-                    Debug.Divider(3, "-", Count: 25, Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-                    Debug.Entry(4, $"x foreach (string subfolder in TileSubfolders) >//", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
                 }
             }
-            else
-            {
-                Debug.Entry(3, $"_TilePathCache contains {TileName}", TilePath ?? "null", Indent: 3, Toggle: getDoDebug(nameof(TryGetTilePath)));
-            }
-            string foundLocation = 
-                inCache 
-                ? "_TilePathCache" 
-                : IsWholePath 
-                    ? "files" 
-                    : "supplied subfolders";
-
-            Debug.Entry(3, $"Tile \"{TileName}\" {(TilePath == null ? "not" : "was")} found in {foundLocation}", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-
-            wasFound = TilePath != null;
-            Debug.Entry(3, $"x Utils.TryGetTilePath(string TileName: {TileName}, out string TilePath) @//", Indent: 2, Toggle: getDoDebug(nameof(TryGetTilePath)));
-            return wasFound;
+            return TilePathCache[TileName];
         }
+
+        public static bool TryGetTilePath(string TileName, out string TilePath, bool IsWholePath = false)
+            => !(TilePath = GetTilePath(TileName, IsWholePath)).IsNullOrEmpty();
 
         public static string WeaponDamageString(int DieSize, int DieCount, int Bonus)
         {
@@ -336,9 +342,8 @@ namespace UD_Modding_Toolbox
             return andList.Replace(";;", ",");
         }
         public static string Quote(string @string)
-        {
-            return $"\"{@string ?? "null"}\"";
-        }
+            => $"\"{@string ?? "null"}\""
+            ;
 
         public static BookInfo GetBook(string BookName)
         {
@@ -350,13 +355,17 @@ namespace UD_Modding_Toolbox
         {
             float duration = Math.Min(DurationMax, Cause * DurationFactor);
             CombatJuice.cameraShake(duration, Async: Async);
-            Debug.Entry(4, 
-                $"* {nameof(Rumble)}:"
-                + $" Duration ({duration}),"
-                + $" Cause ({Cause}),"
-                + $" DurationFactor ({DurationFactor}), "
-                + $"DurationMax({DurationMax})", 
-                Toggle: getDoDebug(nameof(Rumble)));
+
+            using var indent = new Indent(1);
+            Debug.LogCaller(indent,
+                ArgPairs: new Debug.ArgPair[]
+                {
+                    Debug.Arg(nameof(duration), duration),
+                    Debug.Arg(nameof(Cause), Cause),
+                    Debug.Arg(nameof(DurationFactor), DurationFactor),
+                    Debug.Arg(nameof(DurationMax), DurationMax),
+                });
+
             return duration;
         }
         public static float Rumble(double Cause, float DurationFactor = 1.0f, float DurationMax = 1.0f, bool Async = true)
@@ -452,5 +461,141 @@ namespace UD_Modding_Toolbox
         {
             return Math.Max(0, The.CurrentTurn.SubtractModulo(Calendar.TurnsPerYear));
         }
+
+        public static ModInfo GetFirstCallingModNot(ModInfo ThisMod)
+        {
+            try
+            {
+                Dictionary<Assembly, ModInfo> modAssemblies = ModManager.ActiveMods
+                    ?.Where(mi => mi != ThisMod && mi.Assembly != null)
+                    ?.ToDictionary(mi => mi.Assembly, mi => mi);
+
+                if (modAssemblies.IsNullOrEmpty())
+                {
+                    return null;
+                }
+                StackTrace stackTrace = new();
+                for (int i = 0; i < 12 && stackTrace?.GetFrame(i) is StackFrame stackFrameI; i++)
+                {
+                    if (stackFrameI?.GetMethod() is MethodBase methodBase
+                        && methodBase.DeclaringType is Type declaringType
+                        && modAssemblies.ContainsKey(declaringType.Assembly))
+                    {
+                        return modAssemblies[declaringType.Assembly];
+                    }
+                }
+            }
+            catch (Exception x)
+            {
+                MetricsManager.LogException(nameof(GetFirstCallingModNot), x, GAME_MOD_EXCEPTION);
+            }
+            return null;
+        }
+
+        public static bool TryGetFirstCallingModNot([NotNullWhen(true)] ModInfo ThisMod, out ModInfo FirstCallingMod)
+            => (FirstCallingMod = GetFirstCallingModNot(ThisMod)) != null
+            ;
+
+        public static string AppendTick(string String, bool AppendSpace = true)
+            => String + "[" + Const.TICK + "]" + (AppendSpace ? " " : "")
+            ;
+
+        public static string AppendCross(string String, bool AppendSpace = true)
+            => String + "[" + Const.CROSS + "]" + (AppendSpace ? " " : "")
+            ;
+
+        public static string AppendYehNah(string String, bool Yeh, bool AppendSpace = true)
+            => Yeh
+            ? AppendTick(String, AppendSpace)
+            : AppendCross(String, AppendSpace)
+            ;
+
+        public static string YehNah(bool? Yeh = null)
+            => "[" + (Yeh == null ? "-" : (Yeh.GetValueOrDefault() ? Const.TICK : Const.CROSS)) + "]"
+            ;
+
+        public static string DelimitedAggregator<T>(string Accumulator, T Next, string Delimiter)
+            => Accumulator + (!Accumulator.IsNullOrEmpty() ? Delimiter : null) + Next
+            ;
+
+        public static string CommaDelimitedAggregator<T>(string Accumulator, T Next)
+            => DelimitedAggregator(Accumulator, Next, ",")
+            ;
+
+        public static string CommaSpaceDelimitedAggregator<T>(string Accumulator, T Next)
+            => DelimitedAggregator(Accumulator, Next, ", ")
+            ;
+
+        public static string NewLineDelimitedAggregator<T>(string Accumulator, T Next)
+            => DelimitedAggregator(Accumulator, Next, "\n")
+            ;
+
+        public static bool EitherNull<Tx, Ty>(
+            [NotNullWhen(false)] Tx X,
+            [NotNullWhen(false)] Ty Y,
+            out bool AreEqual)
+        {
+            AreEqual = (X is null) == (Y is null);
+            return X is null
+                || Y is null;
+        }
+
+        public static bool EitherNull<Tx, Ty>(
+            [NotNullWhen(false)] Tx X,
+            [NotNullWhen(false)] Ty Y,
+            out int Comparison)
+        {
+            Comparison = 0;
+
+            bool xNull = X is null;
+            bool yNull = Y is null;
+
+            if (!xNull
+                && !yNull)
+                return false;
+
+            if (!xNull
+                && yNull)
+                Comparison = 1;
+
+            if (xNull
+                && !yNull)
+                Comparison = -1;
+
+            return true;
+        }
+
+        public static bool EitherNullOrEmpty<Tx, Ty>(
+            [NotNullWhen(false)] Tx[] X,
+            [NotNullWhen(false)] Ty[] Y,
+            out bool AreEqual)
+        {
+            if (EitherNull(X, Y, out AreEqual))
+                return AreEqual;
+
+            AreEqual = (X.Length > 0) == (Y.Length > 0);
+            return X.Length > 0
+                || Y.Length > 0;
+        }
+
+        public static string GetTile(GameObjectBlueprint Blueprint)
+            => Blueprint.GetPartParameter<string>(nameof(Render), nameof(Render.Tile))
+            ;
+
+        public static string GetAnatomyName(GameObjectBlueprint Blueprint)
+            => Blueprint.GetPartParameter<string>(nameof(Body), nameof(Body.Anatomy))
+            ;
+
+        public static Anatomy GetAnatomy(GameObjectBlueprint Blueprint)
+            => Anatomies.GetAnatomyOrFail(GetAnatomyName(Blueprint))
+            ;
+
+        public static string NewlineAggregator<T>(string Accumulator, T Next)
+            => Accumulator + (!Accumulator.IsNullOrEmpty() ? '\n' : null) + Next;
+
+        public static StringBuilder AggregateNewline<T>(StringBuilder Accumulator, T Next)
+            => Accumulator
+                .Append(!Accumulator.IsNullOrEmpty() ? '\n' : null)
+                .Append(Next);
     }
 }

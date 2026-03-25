@@ -79,7 +79,7 @@ namespace UD_Modding_Toolbox
         public int IndexOf(T Ticket)
         {
             int indent = Debug.LastIndent;
-            Debug.Entry(4, nameof(IndexOf), Indent: indent + 1, Toggle: doDebug);
+            Debug.Log(4, nameof(IndexOf), Indent: indent + 1, Toggle: doDebug);
             for (int i = 0; i < Length; i++)
             {
                 Debug.LoopItem(4, i.ToString(), Indent: indent + 2, Toggle: doDebug);

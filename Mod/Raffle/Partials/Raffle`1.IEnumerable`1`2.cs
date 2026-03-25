@@ -57,7 +57,7 @@ namespace UD_Modding_Toolbox
                     }
                     int indent = Debug.LastIndent;
                     bool doDebug = false;
-                    Debug.Entry(4,
+                    Debug.Log(4,
                         nameof(MoveNext) + ", " +
                         nameof(Index) + ": " + Index + ", " +
                         nameof(Weight) + ": " + Weight,

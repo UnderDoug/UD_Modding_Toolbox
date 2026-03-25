@@ -25,6 +25,8 @@ using XRL.World.Capabilities;
 using XRL.CharacterBuilds;
 using XRL.CharacterBuilds.Qud;
 
+using UD_Modding_Toolbox.Logging;
+
 using static UD_Modding_Toolbox.Const;
 using static UD_Modding_Toolbox.Utils;
 
@@ -32,42 +34,163 @@ namespace UD_Modding_Toolbox
 {
     public static class Extensions
     {
-        private static bool doDebug => true;
-        private static bool getDoDebug(string MethodName)
+        #region Debug Registration
+        [UD_DebugRegistry]
+        public static void Extension_DebugRegistry(DebugMethodRegistry Registry)
+            => Registry.RegisterEach(
+                Type: typeof(UD_Modding_Toolbox.Extensions),
+                MethodNameValues: new Dictionary<string, bool>
+                {
+                    { nameof(CheckEquipmentSlots), false},
+                    { nameof(PullInsideFromEdges), false},
+                    { nameof(PullInsideFromEdge), false},
+                    { nameof(GetNumberedTileVariants), false},
+                    { nameof(GetMovementsPerTurn), false},
+                    { nameof(DrawSeededToken), false},
+                });
+        #endregion
+
+        public static string SplitCamelCase(this string String)
+            => !String.Contains(" ")
+            ? Regex.Replace(
+                input: Regex.Replace(
+                    input: String,
+                    pattern: @"(\P{Ll})(\P{Ll}\p{Ll})",
+                    replacement: "$1 $2"),
+                pattern: @"(\p{Ll})(\P{Ll})",
+                replacement: "$1 $2")
+            : String
+            ;
+
+        public static string Join(this string Accumulator, string Next, string Delimiter = ", ")
+            => Accumulator + (!Accumulator.IsNullOrEmpty() ? Delimiter : null) + Next;
+
+        public static string Join(this IEnumerable<string> Strings, string Delimiter = ", ")
+            => Strings?.Aggregate("", (a, n) => a?.Join(n, Delimiter));
+
+        public static string GenericsString(this IEnumerable<Type> Types, bool Short = false)
+            => !Types.IsNullOrEmpty()
+            ? "<" +
+                Types
+                    .ToList()
+                    .ConvertAll(t => t.ToStringWithGenerics(Short))
+                    .Join("," + (!Short ? " " : null)) +
+                ">"
+            : null;
+
+        public static string ToStringWithGenerics(this Type Type, bool Short = false)
         {
-            if (MethodName == nameof(CheckEquipmentSlots))
-                return false;
+            if (Type == null)
+                return null;
 
-            if (MethodName == nameof(TagIsIncludedOrNotExcluded))
-                return false;
+            if (Type.GetGenericArguments() is not IEnumerable<Type> typeGenerics)
+                return !Short
+                    ? Type.Name
+                    : Type.Name.Acronymize();
 
-            if (MethodName == nameof(MakeIncludeExclude))
-                return false;
+            string name = Type.Name.Split('`')[0];
 
-            if (MethodName == nameof(PullInsideFromEdges))
-                return false;
+            if (Short)
+                name = name.Acronymize();
 
-            if (MethodName == nameof(PullInsideFromEdge))
-                return false;
-
-            if (MethodName == nameof(GetNumberedTileVariants))
-                return false;
-
-            if (MethodName == nameof(GetMovementsPerTurn))
-                return false;
-
-            if (MethodName == nameof(DrawSeededToken))
-                return false;
-
-            return doDebug;
+            return name + typeGenerics.GenericsString(Short);
         }
 
-        public static bool InheritsFrom(this Type T, Type Type, bool IncludeSelf = true)
+        public static string TypeStringWithGenerics<T>(this T Object, bool Short = false)
+            => (Object?.GetType() ?? typeof(T))?.ToStringWithGenerics(Short);
+
+        public static string Acronymize(this string String)
         {
-            return (IncludeSelf && T == Type)
-                || Type.IsSubclassOf(T)
-                || T.IsAssignableFrom(Type)
-                || T.YieldInheritedTypes().Contains(Type);
+            if (String.IsNullOrEmpty()
+                || String.ToLower() == String
+                || String.ToUpper() == String)
+                return String;
+
+            return String.Aggregate("", (a, n) => a + (char.IsLetter(n) && char.IsUpper(n) ? n : null));
+        }
+
+        public static bool None<T>([NotNullWhen(true)] this IEnumerable<T> Enumberable, Predicate<T> Where)
+            => !Enumberable.Any(Where?.ToFunc());
+
+        public static Func<T, bool> ToFunc<T>(this Predicate<T> Filter, bool ThrowIfNull = false)
+        {
+            if (Filter == null && ThrowIfNull)
+                throw new ArgumentNullException(
+                    paramName: nameof(Filter),
+                    message: "cannot be null if " + nameof(ThrowIfNull) + " is set to " + ThrowIfNull.ToString());
+
+            return Input => Filter == null || Filter(Input);
+        }
+
+        public static bool InheritsFrom(
+            [NotNullWhen(true)] this Type Type,
+            [NotNullWhen(true)] Type OtherType,
+            bool IncludeSelf = true)
+            => Type != null
+            && OtherType != null
+            && ((IncludeSelf
+                    && Type == OtherType)
+                || OtherType.IsSubclassOf(Type)
+                || Type.IsAssignableFrom(OtherType)
+                || (Type.YieldInheritedTypes().ToList() is List<Type> inheritedTypes
+                    && inheritedTypes.Contains(OtherType)));
+
+        public static string SafeJoin<T>(this IEnumerable<T> Enumerable, string Delimiter = ", ")
+            => (Enumerable != null
+                && Enumerable.Count() > 0)
+            ? Enumerable.Aggregate(
+                seed: "",
+                func: (a, n) => a + (!a.IsNullOrEmpty() ? Delimiter : null) + n.ToString())
+            : null;
+
+        public static string ValueUnits(this TimeSpan Duration)
+        {
+            string durationUnit = "minute";
+            double durationValue = Duration.TotalMinutes;
+            if (Duration.TotalMinutes < 1)
+            {
+                durationUnit = "second";
+                durationValue = Duration.TotalSeconds;
+            }
+            if (Duration.TotalSeconds < 1)
+            {
+                durationUnit = "millisecond";
+                durationValue = Duration.TotalMilliseconds;
+            }
+            if (Duration.TotalMilliseconds < 1)
+            {
+                durationUnit = "microsecond";
+                durationValue = Duration.TotalMilliseconds / 1000;
+            }
+            return durationValue.Things(durationUnit);
+        }
+
+        public static string Signed(this float Float)
+            => (Float < 0
+                ? null
+                : "+") +
+            Float
+            ;
+
+        public static bool ElementsMatch<Tx, Ty>(this Tx[] X, Ty[] Y)
+        {
+            if (EitherNullOrEmpty(X, Y, out bool areEqual))
+                return areEqual;
+
+            if (X.Length != Y.Length)
+                return false;
+
+            for (int i = 0; i < X.Length; i++)
+            {
+                Tx x = X[i];
+                Ty y = Y[i];
+                if ((!EitherNull(x, y, out bool iAreEqual)
+                        && !x.Equals(y))
+                    || iAreEqual)
+                    return false;
+            }
+
+            return true;
         }
 
         public static bool IsNullOrZero([NotNullWhen(false)] this int? value)
@@ -420,21 +543,26 @@ namespace UD_Modding_Toolbox
 
         public static void CheckEquipmentSlots(this GameObject Actor)
         {
-            Debug.Entry(3, $"* {nameof(CheckEquipmentSlots)}(this GameObject Actor: {Actor.DebugName})", Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
-            Body Body = Actor?.Body;
-            if (Body != null)
-            {
-                List<GameObject> list = Event.NewGameObjectList();
-                Debug.Entry(3, "> foreach (BodyPart bodyPart in Actor.LoopParts())", Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
-                foreach (BodyPart bodyPart in Body.LoopParts())
+            using var indent = new Indent(1);
+            Debug.LogMethod(indent,
+                ArgPairs: new Debug.ArgPair[]
                 {
-                    Debug.Entry(3, "bodyPart", $"{bodyPart.Description} [{bodyPart.ID}:{bodyPart.Name}]", Indent: 1, Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
-                    GameObject equipped = bodyPart.Equipped;
-                    if (equipped != null && !list.Contains(equipped))
+                    Debug.Arg(Actor?.DebugName ?? "NO_ACTOR"),
+                });
+
+            if (Actor?.Body is Body body)
+            {
+                List<GameObject> alreadyChecked = Event.NewGameObjectList();
+                foreach (BodyPart bodyPart in body.LoopParts())
+                {
+
+                    if (bodyPart.Equipped is GameObject equipped
+                        && !alreadyChecked.Contains(equipped))
                     {
-                        Debug.LoopItem(3, "equipped", $"[{equipped.ID}:{equipped.ShortDisplayName}]", Indent: 2, Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
-                        list.Add(equipped);
-                        int partCountEquippedOn = Body.GetPartCountEquippedOn(equipped);
+                        Debug.CheckYeh(bodyPart.DebugName(), equipped?.DebugName ?? "MISSING_EQUIPPED", Indent: indent[1]);
+
+                        alreadyChecked.Add(equipped);
+                        int partCountEquippedOn = body.GetPartCountEquippedOn(equipped);
                         int slotsRequiredFor = equipped.GetSlotsRequiredFor(Actor, bodyPart.Type, true);
                         if (partCountEquippedOn != slotsRequiredFor 
                             && bodyPart.TryUnequip(true, true, false, false) 
@@ -444,14 +572,12 @@ namespace UD_Modding_Toolbox
                             bodyPart.Equip(equipped, new int?(0), true, false, false, true);
                         }
                     }
+                    else
+                        Debug.CheckNah(bodyPart.DebugName(), "No Equipped", Indent: indent[1]);
                 }
-                Debug.Entry(3, "x foreach (BodyPart bodyPart in Actor.LoopParts()) >//", Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
             }
             else
-            {
-                Debug.Entry(4, $"no body on which to perform check, aborting ", Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
-            }
-            Debug.Entry(3, $"x {nameof(CheckEquipmentSlots)}(this GameObject Actor: {Actor.DebugName}) *//", Toggle: getDoDebug(nameof(CheckEquipmentSlots)));
+                Debug.CheckNah($"No body on which to perform check", Indent: indent[1]);
         }
 
         public static IPart RequirePart(this GameObject Object, IPart Part, bool DoRegistration = true, bool Creation = false)
@@ -973,10 +1099,10 @@ namespace UD_Modding_Toolbox
             }
             return output;
         }
+
         public static bool IsEndOfSection(this OpCode OpCode)
-        {
-            string ciOpcode = OpCode.ToString();
-            return ciOpcode.StartsWith("pop")
+            => OpCode.ToString() is string ciOpcode
+            && (ciOpcode.StartsWith("pop")
                 || ciOpcode.StartsWith("br")
                 || ciOpcode.StartsWith("be")
                 || ciOpcode.StartsWith("bg")
@@ -984,39 +1110,39 @@ namespace UD_Modding_Toolbox
                 || ciOpcode.StartsWith("leave")
                 || ciOpcode.StartsWith("ret")
                 || ciOpcode.StartsWith("st")
-                || ciOpcode.StartsWith("throw");
-        }
+                || ciOpcode.StartsWith("throw"))
+            ;
 
         public static LocalBuilder GetLocalAtIndex(this MethodBase MethodBase, int Index)
-        {
-            return MethodBase.GetMethodBody().LocalVariables[Index] as LocalBuilder;
-        }
+            => MethodBase.GetMethodBody().LocalVariables[Index] as LocalBuilder
+            ;
 
         [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this List<T> Bag,
             T ExceptForToken = default,
-            List<T> ExceptForTokens = null)
-        {
-            return Bag.DrawSeededToken(
+            List<T> ExceptForTokens = null
+            )
+            => Bag.DrawSeededToken(
                 Seed: (string)null,
                 Stepper: null,
                 Context: null,
                 ExceptForToken: ExceptForToken,
-                ExceptForTokens: ExceptForTokens);
-        }
+                ExceptForTokens: ExceptForTokens)
+            ;
+
 
         [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.DrawCosmetic) + " instead.")]
         public static T DrawRandomToken<T>(
             this List<T> Bag,
-            Predicate<T> Filter = null)
-        {
-            return Bag.DrawSeededToken(
+            Predicate<T> Filter = null
+            )
+            => Bag.DrawSeededToken(
                 Seed: (string)null,
                 Stepper: null,
                 Context: null,
-                Filter: Filter);
-        }
+                Filter: Filter)
+            ;
 
         [Obsolete("Cast to " + nameof(Raffle<object>) + " and use " + nameof(Raffle<object>.Draw) + " instead.")]
         public static T DrawSeededToken<T>(
@@ -1082,19 +1208,18 @@ namespace UD_Modding_Toolbox
                 int high = (drawBag.Count - 1) * 7;
                 int roll = Stat.SeededRandom(seed, low, high) % (drawBag.Count - 1);
 
-                int indent = Debug.LastIndent;
-                bool doDebug = getDoDebug(nameof(DrawSeededToken));
-                Debug.Divider(4, HONLY, Count: 25, Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(Seed)}: {Seed}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(Stepper)}: {Stepper}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(Context)}: {Context}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(seed)}: {seed}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(low)}: {low}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(drawBag.Count)} - 1: {drawBag.Count - 1}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(high)}: {high}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Entry(4, $"{nameof(roll)}: {roll}", Indent: indent + 1, Toggle: doDebug);
-                Debug.Divider(4, HONLY, Count: 25, Indent: indent + 1, Toggle: doDebug);
-                Debug.LastIndent = indent;
+                using var indent = new Indent(1);
+                Debug.LogMethod(indent);
+                Debug.Log(HONLY.ThisManyTimes(25), Indent: indent[1]);
+                Debug.Log(nameof(Seed), Seed, Indent: indent[1]);
+                Debug.Log(nameof(Stepper), Stepper, Indent: indent[1]);
+                Debug.Log(nameof(Context), Context, Indent: indent[1]);
+                Debug.Log(nameof(seed), seed, Indent: indent[1]);
+                Debug.Log(nameof(low), low, Indent: indent[1]);
+                Debug.Log($"{nameof(drawBag.Count)} - 1", drawBag.Count - 1, Indent: indent[1]);
+                Debug.Log(nameof(high), high, Indent: indent[1]);
+                Debug.Log(nameof(roll), roll, Indent: indent[1]);
+                Debug.Log(HONLY.ThisManyTimes(25), Indent: indent[1]);
 
                 token = drawBag.ElementAt(roll);
             }
@@ -1399,18 +1524,6 @@ namespace UD_Modding_Toolbox
         {
             return Object.IsPlural || (Object.IsPlayer() && Grammar.AllowSecondPerson) ? "are" : "is";
         }
-        public static string SplitCamelCase(this string @string)
-        {
-            return Regex.Replace(
-                Regex.Replace(
-                    @string,
-                    @"(\P{Ll})(\P{Ll}\p{Ll})",
-                    "$1 $2"
-                ),
-                @"(\p{Ll})(\P{Ll})",
-                "$1 $2"
-            );
-        }
 
         public static T Sample<T>(this Dictionary<T, int> WeightedList)
             where T : class
@@ -1455,163 +1568,6 @@ namespace UD_Modding_Toolbox
             }
         }
 
-        public static bool TagIsIncludedOrNotExcluded(this GameObjectBlueprint Blueprint, string TagName, Dictionary<string, bool> IncludeExclude)
-        {
-            Debug.Entry(4, 
-                $"* ({Blueprint.Name})."
-                + $"{nameof(TagIsIncludedOrNotExcluded)}" 
-                + $"(string TagName: {TagName}, Dictionary<string, bool> IncludeExclude)",
-                Indent: 0, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-
-            if (!IncludeExclude.IsNullOrEmpty())
-            {
-
-                Debug.CheckYeh(4, $"IncludeExclude Not Empty", Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-
-                List<string> includeTags = new();
-                List<string> excludeTags = new();
-
-                Debug.Entry(4, $"IncludeExclude values:", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                foreach ((string entryValue, bool entryInclude) in IncludeExclude)
-                {
-                    if (entryInclude) includeTags.Add(entryValue);
-                    else excludeTags.Add(entryValue);
-                    Debug.LoopItem(4, $"{(entryInclude ? "include" : "exclude")}: {entryValue}", 
-                        Indent: 2, Good: entryInclude, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                }
-
-                bool noBlueprintTagValue = !Blueprint.TryGetTag(TagName, out string blueprintTagValue);
-                bool noBlueprintPart = true;
-                foreach ((string part,_) in Blueprint.Parts)
-                {
-                    if (includeTags.Contains(part.ToLower()))
-                    {
-                        noBlueprintPart = false;
-                        break;
-                    }
-                }
-                bool noBlueprintTagOrPart = noBlueprintTagValue && noBlueprintPart;
-                if (!includeTags.IsNullOrEmpty() && noBlueprintTagOrPart)
-                {
-                    Debug.CheckNah(4, $"includeTags not empty and {Blueprint.Name} doesn't have \"{TagName}\" tag or equivalent Part", 
-                        Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                    return false; 
-                }
-                else if (noBlueprintTagOrPart)
-                {
-                    Debug.CheckYeh(4, 
-                        $"includeTags is empty and {Blueprint.Name} doesn't have \"{TagName}\" tag or equivalent Part, " + 
-                        $"exclusions are irrelevant",
-                        Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                    return true;
-                }
-
-                Debug.CheckYeh(4, $"{TagName}: \"{blueprintTagValue}\"", Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                List<string> blueprintTagValues = new();
-                if (blueprintTagValue != null)
-                {
-                    if (blueprintTagValue.Contains(","))
-                    {
-                        Debug.Entry(4, $"blueprintTagValue contains \",\"", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                        string[] tagsArray = blueprintTagValue.Split(',');
-                        foreach (string value in tagsArray)
-                        {
-                            Debug.LoopItem(4, $" \"{value}\" added to values list", Indent: 3, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                            blueprintTagValues.Add(value);
-                        }
-                    }
-                    else
-                    {
-                        Debug.Entry(4, $"blueprintTagValue doesn't contain \",\"", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                        Debug.LoopItem(4, $" \"{blueprintTagValue}\" added to values list", Indent: 3, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                        blueprintTagValues.Add(blueprintTagValue);
-                    }
-                }
-                foreach ((string part, _) in Blueprint.Parts)
-                {
-                    blueprintTagValues.Add(part.ToLower());
-                }
-
-                List<string> inclusionMatches = new();
-                List<string> exclusionMatches = new();
-
-                Debug.Entry(4, $"blueprintTagValues Matches:", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                foreach (string tagValue in blueprintTagValues)
-                {
-                    if (includeTags.Contains(tagValue))
-                    {
-                        Debug.CheckYeh(4, $"includeTags contains {tagValue}", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                        inclusionMatches.Add(tagValue);
-                    }
-                    if (excludeTags.Contains(tagValue))
-                    {
-                        Debug.CheckNah(4, $"excludeTags contains {tagValue}", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                        exclusionMatches.Add(tagValue);
-                    }
-                }
-
-                Debug.Entry(4, $"inclusionMatches:", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                foreach (string entry in inclusionMatches)
-                {
-                    Debug.CheckYeh(4, $"{entry}", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                }
-                if (inclusionMatches.IsNullOrEmpty())
-                    Debug.CheckNah(4, $"Empty", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-
-                Debug.Entry(4, $"exclusionMatches:", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                foreach (string entry in exclusionMatches)
-                {
-                    Debug.CheckNah(4, $"{entry}", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-                }
-                if (exclusionMatches.IsNullOrEmpty())
-                    Debug.CheckYeh(4, $"Empty", Indent: 2, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-
-                if (!includeTags.IsNullOrEmpty() && inclusionMatches.IsNullOrEmpty())
-                    return false;
-                Debug.CheckYeh(4, $"includeTags was Empty, or there was at least one inclusionMatch", Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-
-                if (!excludeTags.IsNullOrEmpty() && !exclusionMatches.IsNullOrEmpty())
-                    return false;
-                Debug.CheckYeh(4, $"excludeTags was Empty, or there were no exclusionMatchs", Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-            }
-            Debug.CheckYeh(4, $"IncludeExclude was empty or filter allowed blueprint through", Indent: 1, Toggle: getDoDebug(nameof(TagIsIncludedOrNotExcluded)));
-            return true;
-        }
-
-        public static void MakeIncludeExclude(this string valueString, Dictionary<string, bool> @return)
-        {
-            Debug.Entry(4,
-                $"* {valueString}."
-                + $"{nameof(MakeIncludeExclude)}"
-                + $"(Dictionary<string, bool> @return)",
-                Indent: 0, Toggle: getDoDebug(nameof(MakeIncludeExclude)));
-
-            if (!valueString.IsNullOrEmpty())
-            {
-                Debug.Entry(4, $"value not empty or null", Indent: 1, Toggle: getDoDebug(nameof(MakeIncludeExclude)));
-                if (valueString.Contains(","))
-                {
-                    Debug.Entry(4, $"valueString contains \",\"", Indent: 1, Toggle: getDoDebug(nameof(MakeIncludeExclude)));
-                    string[] classesArray = valueString.Split(',');
-                    foreach (string entry in classesArray)
-                    {
-                        bool isNot = entry.StartsWith("!");
-                        string value = isNot ? entry.Substring(1) : entry;
-                        Debug.LoopItem(4, $"{value}: {(!isNot ? "include" : "exclude")}", Indent: 2, Good: !isNot, Toggle: getDoDebug(nameof(MakeIncludeExclude)));
-                        @return.Add(value.ToLower(), !isNot);
-                    }
-                }
-                else
-                {
-                    Debug.Entry(4, $"valueString doesn't contain \",\"", Indent: 1, Toggle: getDoDebug(nameof(MakeIncludeExclude)));
-
-                    bool isNot = valueString.StartsWith("!");
-                    string value = isNot ? valueString.Substring(1) : valueString;
-                    Debug.LoopItem(4, $"{value}: {(!isNot ? "include" : "exclude")}", Indent: 2, Good: !isNot, Toggle: getDoDebug(nameof(MakeIncludeExclude)));
-                    @return.Add(value.ToLower(), !isNot);
-                }
-            }
-        }
         public static string GetOwner(this GameObjectBlueprint Blueprint)
         {
             return Blueprint?.GetPartParameter<string>("Physics", "Owner");
@@ -1768,38 +1724,41 @@ namespace UD_Modding_Toolbox
             return cellsList;
         }
 
-        public static Point2D PullInsideFromEdges(this Cell Cell, Dictionary<string,List<Cell>> Edges, string DoorSide = "")
+        public static Point2D PullInsideFromEdges(
+            this Cell Cell,
+            Dictionary<string,List<Cell>> Edges,
+            string DoorSide = ""
+            )
         {
-            Debug.Entry(4,
-                $"@ {typeof(Extensions).Name}."
-                + $"{nameof(PullInsideFromEdges)}"
-                + $"(Cell: {Cell}, List<Cell> Edge, " 
-                + $"string DoorSide: {(DoorSide.IsNullOrEmpty() ? $"".Quote() : DoorSide.Quote())})",
-                Indent: 0, Toggle: getDoDebug(nameof(PullInsideFromEdges)));
+            using var indent = new Indent(1);
+            Debug.LogMethod(indent,
+                ArgPairs: new Debug.ArgPair[]
+                {
+                    Debug.Arg(nameof(Cell), Cell != null ? $"[{Cell.Location}]" : "NO_CELL"),
+                    Debug.Arg(nameof(Edges), Edges?.Count ?? -1),
+                    Debug.Arg(nameof(DoorSide), DoorSide?.Quote() ?? "NO_DOOR_SIDE"),
+                });
 
             Point2D output = new(Cell.X, Cell.Y);
             foreach ((string Side, List<Cell> Edge) in Edges)
             {
-                Debug.Entry(4, $"Side: {Side}", Indent: 1, Toggle: getDoDebug(nameof(PullInsideFromEdges)));
-                if (DoorSide == "" || Side == DoorSide)
+                Debug.Log(nameof(Side), Side, Indent: indent[1]);
+                if (DoorSide == ""
+                    || Side == DoorSide)
                     output = Cell.PullInsideFromEdge(Edge);
             }
-            Debug.Entry(4,
-                $"x {typeof(Extensions).Name}."
-                + $"{nameof(PullInsideFromEdges)}"
-                + $"(Cell: [{Cell}], List<Cell> Edge, "
-                + $"string DoorSide: {(DoorSide.IsNullOrEmpty() ? $"".Quote() : DoorSide.Quote())}) @//",
-                Indent: 0, Toggle: getDoDebug(nameof(PullInsideFromEdges)));
             return output;
         }
 
         public static Point2D PullInsideFromEdge(this Cell Cell, List<Cell> Edge)
         {
-            Debug.Entry(4,
-                $"* {typeof(Extensions).Name}."
-                + $"{nameof(PullInsideFromEdge)}"
-                + $"(Cell: {Cell}, List<Cell> Edge)",
-                Indent: 1, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+            using var indent = new Indent(1);
+            Debug.LogMethod(indent,
+                ArgPairs: new Debug.ArgPair[]
+                {
+                    Debug.Arg(nameof(Cell), Cell != null ? $"[{Cell.Location}]" : "NO_CELL"),
+                    Debug.Arg($"{nameof(Edge)} Length", Edge?.Count ?? -1),
+                });
 
             Point2D output = new(Cell.X, Cell.Y);
             if (Edge != null && Edge.Contains(Cell))
@@ -1810,31 +1769,31 @@ namespace UD_Modding_Toolbox
                 string YsString = string.Empty;
                 foreach (Cell cell in Edge)
                 {
-                    if (!Xs.Contains(cell.X)) Xs.Add(cell.X);
-                    if (!Ys.Contains(cell.Y)) Ys.Add(cell.Y);
+                    if (!Xs.Contains(cell.X))
+                        Xs.Add(cell.X);
+
+                    if (!Ys.Contains(cell.Y))
+                        Ys.Add(cell.Y);
                 }
+
                 foreach (int X in Xs)
-                {
                     XsString += XsString == "" ? $"{X}" : $",{X}";
-                }
+
                 foreach (int Y in Ys)
-                {
                     YsString += YsString == "" ? $"{Y}" : $",{Y}";
-                }
-                Debug.Entry(4, $"Xs: {XsString}", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
-                Debug.Entry(4, $"Ys: {YsString}", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
-                if (Xs.Count > 1 &&  Ys.Count > 1)
+
+                Debug.Log(nameof(Xs), XsString.Quote(), Indent: indent[1]);
+                Debug.Log(nameof(Ys), YsString.Quote(), Indent: indent[1]);
+
+                if (Xs.Count > 1
+                    &&  Ys.Count > 1)
                 {
-                    Debug.Entry(2, 
-                        $"WARN [GigantismPlus]: " + 
-                        $"{typeof(Extensions).Name}." + 
-                        $"{nameof(PullInsideFromEdge)}() " + 
-                        $"List<Cell> Edge must be a straight line.", 
-                        Indent: 0, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+                    Warn($"{nameof(PullInsideFromEdge)}: {nameof(Edge)} must contain cells in a straight line.");
                     return output;
                 }
+
                 bool edgeIsLat = Xs.Count > 1;
-                Debug.Entry(4, $"edgeIsLat: {edgeIsLat}", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+                Debug.Log(nameof(edgeIsLat), edgeIsLat, Indent: indent[1]);
                 int max = int.MinValue;
                 int min = int.MaxValue;
                 if (edgeIsLat)
@@ -1844,14 +1803,15 @@ namespace UD_Modding_Toolbox
                         max = Math.Max(max, x);
                         min = Math.Min(min, x);
                     }
+                    string outputXString = CallChain(nameof(output), nameof(output.x));
                     if (output.x <= min)
                     {
-                        Debug.Entry(4, $"output.x ({output.x}) >= min ({min}): output.x = min + 1", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+                        Debug.Log($"{outputXString}({output.x}) <= {nameof(min)} ({min})", $"{outputXString} = {nameof(min)} + 1", Indent: indent[2]);
                         output.x = min + 1;
                     }
                     if (output.x >= max)
                     {
-                        Debug.Entry(4, $"output.x ({output.x}) <= max ({max}): output.x = max - 1", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+                        Debug.Log($"{outputXString}({output.x}) >= {nameof(max)} ({max})", $"{outputXString} = {nameof(max)} - 1", Indent: indent[2]);
                         output.x = max - 1;
                     }
                 }
@@ -1862,59 +1822,58 @@ namespace UD_Modding_Toolbox
                         max = Math.Max(max, y);
                         min = Math.Min(min, y);
                     }
+                    string outputYString = CallChain(nameof(output), nameof(output.y));
                     if (output.y <= min)
                     {
-                        Debug.Entry(4, $"output.y ({output.y}) >= min ({min}): output.y = min + 1", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+                        Debug.Log($"{outputYString}({output.y}) <= {nameof(min)} ({min})", $"{outputYString} = {nameof(min)} + 1", Indent: indent[2]);
                         output.y = min + 1;
                     }
                     if (output.y >= max)
                     {
-                        Debug.Entry(4, $"output.y ({output.y}) <= max ({max}): output.y = max - 1", Indent: 2, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
+                        Debug.Log($"{outputYString}({output.y}) >= {nameof(max)} ({max})", $"{outputYString} = {nameof(max)} - 1", Indent: indent[2]);
                         output.y = max - 1;
                     }
                 }
             }
-            Debug.Entry(4,
-                $"x {typeof(Extensions).Name}."
-                + $"{nameof(PullInsideFromEdge)}"
-                + $"(Cell: {Cell}, List<Cell> Edge) *//",
-                Indent: 1, Toggle: getDoDebug(nameof(PullInsideFromEdge)));
-
             return output;
         }
 
         public static List<string> GetNumberedTileVariants(this string Source)
         {
-            bool doDebug = getDoDebug(nameof(GetNumberedTileVariants));
-            Debug.Entry(4,
-                $"* {typeof(Extensions).Name}."
-                + $"{nameof(GetNumberedTileVariants)}"
-                + $"(string Source: {Source})",
-                Indent: 0, Toggle: doDebug);
+            using var indent = new Indent(1);
+            Debug.LogMethod(indent,
+                ArgPairs: new Debug.ArgPair[]
+                {
+                    Debug.Arg(Source ?? "NO_SOURCE"),
+                });
+
             List<string> output = new();
             
             string[] sourcePieces = Source.Split("~");
             string pathBefore = sourcePieces[0];
             string pathAfter = sourcePieces[2];
 
-            Debug.Entry(4, $"pathBefore: {pathBefore}, pathAfter: {pathAfter}", Indent: 1, Toggle: doDebug);
-            Debug.Entry(4, $"sourcePieces[1] {sourcePieces[1]}", Indent: 1, Toggle: doDebug);
+            Debug.Log(nameof(pathBefore), pathBefore, Indent: indent[1]);
+            Debug.Log(nameof(pathAfter), pathAfter, Indent: indent[1]);
+            Debug.Log($"{nameof(sourcePieces)}[1]", sourcePieces[1], Indent: indent[1]);
             
             string[] pathRange = sourcePieces[1].Split('-');
             int first = int.Parse(pathRange[0]);
             int last = int.Parse(pathRange[1]);
 
-            Debug.Entry(4, $"first {first} - last: {last}", Indent: 1, Toggle: doDebug);
+            Debug.Log($"first {first} - last: {last}", Indent: indent[1]);
 
             for (int i = first; i <= last; i++)
             {
-                Debug.Entry(4, $"i: {i}", Indent: 2, Toggle: doDebug);
+                Debug.Log($"i: {i}", Indent: indent[2]);
 
                 int padding = Math.Max(2, last.ToString().Length);
                 string number = $"{i}".PadLeft(padding, '0');
                 string path = $"{pathBefore}{number}{pathAfter}";
-                Debug.Entry(4, $"path: {path}", Indent: 2, Toggle: doDebug);
-                if (!output.Contains(path)) output.Add(path);
+
+                Debug.Log(nameof(path), path, Indent: indent[2]);
+                if (!output.Contains(path))
+                    output.Add(path);
             }
 
             return output;
@@ -2397,32 +2356,35 @@ namespace UD_Modding_Toolbox
 
         public static double GetMovementsPerTurn(this GameObject Mover, bool IgnoreSprint = false)
         {
-            if (Mover != null && Mover.TryGetStat("MoveSpeed", out Statistic MS) && Mover.TryGetStat("Speed", out Statistic QN))
-            {
-                int indent = Debug.LastIndent;
-                Debug.Entry(4, $"* {nameof(GameObject)}.{nameof(GetMovementsPerTurn)}(IgnoreSprint: {IgnoreSprint})", 
-                    Indent: indent, Toggle: getDoDebug(nameof(GetMovementsPerTurn)));
-
-                int EMS = 100 - MS.Value + 100;
-                Debug.Entry(4, $"{nameof(EMS)}", $"{EMS}",
-                    Indent: indent + 1, Toggle: getDoDebug(nameof(GetMovementsPerTurn)));
-                if (IgnoreSprint && Mover.TryGetEffect(out Running running))
+            using var indent = new Indent(1);
+            Debug.LogMethod(indent,
+                ArgPairs: new Debug.ArgPair[]
                 {
-                    EMS -= running.MovespeedBonus;
-                    Debug.Entry(4, $"{nameof(running.MovespeedBonus)}", $"{running.MovespeedBonus}",
-                        Indent: indent + 2, Toggle: getDoDebug(nameof(GetMovementsPerTurn)));
-                    Debug.Entry(4, $"{nameof(EMS)}", $"{EMS}",
-                        Indent: indent + 2, Toggle: getDoDebug(nameof(GetMovementsPerTurn)));
-                }
-                int EQN = QN.Value;
-                Debug.Entry(4, $"{nameof(EQN)}", $"{EQN}",
-                    Indent: indent + 1, Toggle: getDoDebug(nameof(GetMovementsPerTurn)));
+                    Debug.Arg(Mover?.DebugName ?? "NO_MOVER"),
+                    Debug.Arg(nameof(IgnoreSprint), IgnoreSprint),
+                });
 
-                Debug.Entry(4, $"x {nameof(GameObject)}.{nameof(GetMovementsPerTurn)}(IgnoreSprint: {IgnoreSprint}) *//",
-                    Indent: indent, Toggle: getDoDebug(nameof(GetMovementsPerTurn)));
-                return (EQN * EMS) / 10000.0;
+            if (Mover == null
+                || !Mover.TryGetStat("MoveSpeed", out Statistic MS)
+                || !Mover.TryGetStat("Speed", out Statistic QN))
+                return default;
+
+            int EMS = 100 - MS.Value + 100;
+
+            Debug.Log(nameof(EMS), EMS, Indent: indent[1]);
+            if (IgnoreSprint
+                && Mover.TryGetEffect(out Running running))
+            {
+                EMS -= running.MovespeedBonus;
+
+                Debug.Log(nameof(running.MovespeedBonus), running.MovespeedBonus, Indent: indent[2]);
+                Debug.Log(nameof(EMS), EMS, Indent: indent[2]);
             }
-            return default;
+
+            int EQN = QN.Value;
+            Debug.Log(nameof(EQN), EQN, Indent: indent[1]);
+
+            return (EQN * EMS) / 10000.0;
         }
 
         public static string Pens(this string String)
