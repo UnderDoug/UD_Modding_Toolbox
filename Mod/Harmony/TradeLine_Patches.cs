@@ -17,6 +17,7 @@ namespace UD_Modding_Toolbox.Harmony
     [HarmonyPatch]
     public static class TradeLine_Patches
     {
+        /*
         [HarmonyPatch(
             declaringType: typeof(TradeLine),
             methodName: nameof(TradeLine.setData),
@@ -120,5 +121,6 @@ namespace UD_Modding_Toolbox.Harmony
             MetricsManager.LogModInfo(ThisMod, $"Successfully transpiled {patchMethodName}");
             return codeMatcher.Vomit(Generator, doVomit).InstructionEnumeration();
         }
+        */
     }
 }

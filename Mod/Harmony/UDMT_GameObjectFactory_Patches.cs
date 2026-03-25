@@ -161,11 +161,16 @@ namespace UD_Modding_Toolbox.Harmony
 
         public static string ProcessBakedXML_MutationEntry(string MutationNodeKey)
         {
-            bool doDebug = true;
-            Debug.Entry(4, nameof(ProcessBakedXML_MutationEntry), MutationNodeKey, Indent: 0, Toggle: doDebug);
-            if (MutationFactory.GetMutationEntryByName(MutationNodeKey) is MutationEntry mutationEntry)
+            try
             {
-                return mutationEntry.Class;
+                bool doDebug = true;
+                Debug.Entry(4, nameof(ProcessBakedXML_MutationEntry), MutationNodeKey, Indent: 0, Toggle: doDebug);
+                if (MutationFactory.GetMutationEntryByName(MutationNodeKey) is MutationEntry mutationEntry)
+                    MutationNodeKey = mutationEntry?.Class ?? MutationNodeKey;
+            }
+            catch (Exception x)
+            {
+                MetricsManager.LogException($"{ThisMod.ID} - {nameof(UDMT_GameObjectFactory_Patches)}.{nameof(ProcessBakedXML_MutationEntry)}", x, "game_mod_exception");
             }
             return MutationNodeKey;
         }
