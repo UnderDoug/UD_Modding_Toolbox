@@ -11,13 +11,13 @@ using XRL.UI.Framework;
 using XRL.World;
 
 using static UD_Modding_Toolbox.Utils;
+using System.Reflection;
 
 namespace UD_Modding_Toolbox.Harmony
 {
     [HarmonyPatch]
     public static class TradeLine_Patches
     {
-        /*
         [HarmonyPatch(
             declaringType: typeof(TradeLine),
             methodName: nameof(TradeLine.setData),
@@ -73,7 +73,7 @@ namespace UD_Modding_Toolbox.Harmony
                 new(OpCodes.Ldc_I4_0),
                 new(OpCodes.Ldc_I4_0),
                 new(OpCodes.Ldc_I4_1),
-                new(OpCodes.Call, AccessTools.Method(typeof(GetDisplayNameEvent), nameof(GetDisplayNameEvent.GetFor), new Type[] { typeof(GameObject), typeof(string), typeof(int), typeof(string), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool) })),
+                new(OpCodes.Call, DisplayNameEvent_GetFor),
             };
 
             // find start of:
@@ -121,6 +121,30 @@ namespace UD_Modding_Toolbox.Harmony
             MetricsManager.LogModInfo(ThisMod, $"Successfully transpiled {patchMethodName}");
             return codeMatcher.Vomit(Generator, doVomit).InstructionEnumeration();
         }
-        */
+
+        public static MethodBase DisplayNameEvent_GetFor
+            => AccessTools.Method(
+                type: typeof(GetDisplayNameEvent),
+                name: nameof(GetDisplayNameEvent.GetFor),
+                parameters: new Type[]
+                {
+                    typeof(GameObject),
+                    typeof(string),
+                    typeof(int),
+                    typeof(string),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool),
+                    typeof(bool)
+                })
+            ;
     }
 }
